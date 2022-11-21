@@ -1,0 +1,610 @@
+[
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "IName"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "IDescription"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "ISynopsis"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "IAiringStart"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "IAiringEnd"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "IEpisodes"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "ISeasons"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "IAverageScore"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "FKStatus"
+	},
+	{
+		"TABLE_NAME" : "tanime",
+		"COLUMN_NAME" : "IImageSource"
+	},
+	{
+		"TABLE_NAME" : "tanimexgenre",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tanimexgenre",
+		"COLUMN_NAME" : "FKAnime"
+	},
+	{
+		"TABLE_NAME" : "tanimexgenre",
+		"COLUMN_NAME" : "FKGenre"
+	},
+	{
+		"TABLE_NAME" : "tanimextheme",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tanimextheme",
+		"COLUMN_NAME" : "FKAnime"
+	},
+	{
+		"TABLE_NAME" : "tanimextheme",
+		"COLUMN_NAME" : "FKTheme"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IName"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IDescription"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "ISynopsis"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IPublishStart"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IPublishEnd"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IVolumes"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IChapters"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IAverageScore"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "FKStatus"
+	},
+	{
+		"TABLE_NAME" : "tcomic",
+		"COLUMN_NAME" : "IImageSource"
+	},
+	{
+		"TABLE_NAME" : "tcomicxgenre",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tcomicxgenre",
+		"COLUMN_NAME" : "FKComic"
+	},
+	{
+		"TABLE_NAME" : "tcomicxgenre",
+		"COLUMN_NAME" : "FKGenre"
+	},
+	{
+		"TABLE_NAME" : "tcomicxtheme",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tcomicxtheme",
+		"COLUMN_NAME" : "FKComic"
+	},
+	{
+		"TABLE_NAME" : "tcomicxtheme",
+		"COLUMN_NAME" : "FKTheme"
+	},
+	{
+		"TABLE_NAME" : "terror",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "terror",
+		"COLUMN_NAME" : "IError"
+	},
+	{
+		"TABLE_NAME" : "terror",
+		"COLUMN_NAME" : "IDate"
+	},
+	{
+		"TABLE_NAME" : "tgenre",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tgenre",
+		"COLUMN_NAME" : "IGenre"
+	},
+	{
+		"TABLE_NAME" : "tlog",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tlog",
+		"COLUMN_NAME" : "ILog"
+	},
+	{
+		"TABLE_NAME" : "tlog",
+		"COLUMN_NAME" : "IDate"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IName"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IDescription"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "ISynopsis"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IPublishStart"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IPublishEnd"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IVolumes"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IChapters"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IAverageScore"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "FKStatus"
+	},
+	{
+		"TABLE_NAME" : "tmanga",
+		"COLUMN_NAME" : "IImageSource"
+	},
+	{
+		"TABLE_NAME" : "tmangaxgenre",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tmangaxgenre",
+		"COLUMN_NAME" : "FKManga"
+	},
+	{
+		"TABLE_NAME" : "tmangaxgenre",
+		"COLUMN_NAME" : "FKGenre"
+	},
+	{
+		"TABLE_NAME" : "tmangaxtheme",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tmangaxtheme",
+		"COLUMN_NAME" : "FKManga"
+	},
+	{
+		"TABLE_NAME" : "tmangaxtheme",
+		"COLUMN_NAME" : "FKTheme"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "IName"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "IDescription"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "ISynopsis"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "IAiring"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "IAverageScore"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "FKStatus"
+	},
+	{
+		"TABLE_NAME" : "tmovie",
+		"COLUMN_NAME" : "IImageSource"
+	},
+	{
+		"TABLE_NAME" : "tmoviexgenre",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tmoviexgenre",
+		"COLUMN_NAME" : "FKMovie"
+	},
+	{
+		"TABLE_NAME" : "tmoviexgenre",
+		"COLUMN_NAME" : "FKGenre"
+	},
+	{
+		"TABLE_NAME" : "tmoviextheme",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tmoviextheme",
+		"COLUMN_NAME" : "FKMovie"
+	},
+	{
+		"TABLE_NAME" : "tmoviextheme",
+		"COLUMN_NAME" : "FKTheme"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "IName"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "IFirstName"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "ILastName"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "IDescription"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "IBirthday"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "IHeight"
+	},
+	{
+		"TABLE_NAME" : "tperson",
+		"COLUMN_NAME" : "IImageSource"
+	},
+	{
+		"TABLE_NAME" : "tpersonxtrole",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tpersonxtrole",
+		"COLUMN_NAME" : "FKPerson"
+	},
+	{
+		"TABLE_NAME" : "tpersonxtrole",
+		"COLUMN_NAME" : "FKRole"
+	},
+	{
+		"TABLE_NAME" : "translation",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "translation",
+		"COLUMN_NAME" : "English"
+	},
+	{
+		"TABLE_NAME" : "translation",
+		"COLUMN_NAME" : "German"
+	},
+	{
+		"TABLE_NAME" : "trole",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "trole",
+		"COLUMN_NAME" : "IRole"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "IName"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "IDescription"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "ISynopsis"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "IAiringStart"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "IAiringEnd"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "IAverageScore"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "FKStatus"
+	},
+	{
+		"TABLE_NAME" : "tshow",
+		"COLUMN_NAME" : "IImageSource"
+	},
+	{
+		"TABLE_NAME" : "tshowxgenre",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tshowxgenre",
+		"COLUMN_NAME" : "FKShow"
+	},
+	{
+		"TABLE_NAME" : "tshowxgenre",
+		"COLUMN_NAME" : "FKGenre"
+	},
+	{
+		"TABLE_NAME" : "tstatus",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tstatus",
+		"COLUMN_NAME" : "IStatus"
+	},
+	{
+		"TABLE_NAME" : "ttheme",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "ttheme",
+		"COLUMN_NAME" : "ITheme"
+	},
+	{
+		"TABLE_NAME" : "tuser",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tuser",
+		"COLUMN_NAME" : "FKPerson"
+	},
+	{
+		"TABLE_NAME" : "tuser",
+		"COLUMN_NAME" : "IName"
+	},
+	{
+		"TABLE_NAME" : "tuser",
+		"COLUMN_NAME" : "IDescription"
+	},
+	{
+		"TABLE_NAME" : "tuser",
+		"COLUMN_NAME" : "IImageSource"
+	},
+	{
+		"TABLE_NAME" : "tuseraverage",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tuseraverage",
+		"COLUMN_NAME" : "FKUser"
+	},
+	{
+		"TABLE_NAME" : "tuseraverage",
+		"COLUMN_NAME" : "IManga"
+	},
+	{
+		"TABLE_NAME" : "tuseraverage",
+		"COLUMN_NAME" : "IComic"
+	},
+	{
+		"TABLE_NAME" : "tuseraverage",
+		"COLUMN_NAME" : "IShow"
+	},
+	{
+		"TABLE_NAME" : "tuseraverage",
+		"COLUMN_NAME" : "IMovie"
+	},
+	{
+		"TABLE_NAME" : "tuseraverage",
+		"COLUMN_NAME" : "IAnime"
+	},
+	{
+		"TABLE_NAME" : "tuserstatus",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tuserstatus",
+		"COLUMN_NAME" : "IUserStatus"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "FKUser"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "FKComic"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "FKUserStatus"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "IFavourite"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "IScore"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "IReview"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "IStartDate"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "IFinishedDate"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "IChapters"
+	},
+	{
+		"TABLE_NAME" : "tuserxcomic",
+		"COLUMN_NAME" : "IAdded"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "FKUser"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "FKManga"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "FKUserStatus"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "IFavorite"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "IScore"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "IReview"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "IStartDate"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "IEndDate"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "IChapters"
+	},
+	{
+		"TABLE_NAME" : "tuserxmanga",
+		"COLUMN_NAME" : "IAdded"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "PK"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "FKUser"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "FKShow"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "FKUserStatus"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "IFavourite"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "IScore"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "IReview"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "IStartDate"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "IFinishedDate"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "IEpisodes"
+	},
+	{
+		"TABLE_NAME" : "tuserxshow",
+		"COLUMN_NAME" : "IAdded"
+	}
+]

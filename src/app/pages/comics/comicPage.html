@@ -1,0 +1,31 @@
+<div class="col-12 ">
+    <div class="col-2 pad">
+        <div class="col-12 lazy">
+            <img [src]="item.IImageSource"
+                 class="col-12 pad">
+            <div class="col-12 t">Volumes: ({{item.IVolumes}})</div>
+            <div class="col-12 t">Chapters: ({{item.IChapters}})</div>
+            <div class="col-12 t">Average score: ({{item.IAverageScore}})</div>
+            <div class="col-12 t">Publishing start: ({{item.IPublishStart}})</div>
+            <div class="col-12 t">Publishing end: ({{item.IPublishEnd}})</div>
+            <!--            <div class="col-12">Days: {{item.days}}</div>-->
+            <!--            <div class="col-12">Status: {{item.status}}</div>-->
+            <button class="col-12">Add to list</button>
+        </div>
+    </div>
+    <div class="col pad">
+        <div class="col-12 lazy">
+            <div class="col-12">
+                <h1 class="col-12 no-mar pad">{{item.IName}}</h1>
+                <div class="col-12">
+                    <div class="col-12">{{item.IDescription}}</div>
+                    <div class="col-12">{{item.ISynopsis}}</div>
+                </div>
+                <div class="col-1">
+                    <button>Test</button>
+                    <button>Test</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

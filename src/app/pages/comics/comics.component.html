@@ -1,0 +1,7 @@
+<button (click)="testpost()">Post</button>
+<button (click)="tools.navigatePage('comicPage',{pk:1})">comic page</button>
+<app-item [title]="StringNames.Comics"
+          [rows]="rows"
+          [columns]="columns"
+          (create)="saveItems()"
+          (refresh)="loadItems()"></app-item>

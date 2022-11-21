@@ -1,0 +1,24 @@
+<div class="grid">
+    <div class="col-2 grid">
+        <div class="grid cell grid-nogutter">
+            <img [src]="item.IImageSource"
+                 class="col-12">
+            <div class="col-12">Volumes: {{item.IVolumes}}</div>
+            <div class="col-12">Chapters: {{item.IChapters}}</div>
+            <div class="col-12">Average score: {{item.IAverageScore}}</div>
+            <div class="col-12">Publishing start: {{item.IPublishStart}}</div>
+            <div class="col-12">Publishing end: {{item.IPublishEnd}}</div>
+            <div class="col-12">Days: {{item.days}}</div>
+            <div class="col-12">Status: {{item.status}}</div>
+        </div>
+        <button class="col-12">Add to list</button>
+    </div>
+    <div class="col-10 grid">
+        <h1 class="col-12">{{item.IName}}</h1>
+        <div class="col-12 grid">
+            <div class="col-12">{{item.IDescription}}</div>
+            <div class="col-12">{{item.ISynopsis}}</div>
+        </div>
+        <div class="col-offset-11 col-1"> <button>Test</button><button>Test</button></div>
+    </div>
+</div>
