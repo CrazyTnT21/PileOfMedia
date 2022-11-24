@@ -1,25 +1,23 @@
-import Queries from "./queries.js";
+import queries from "./queries.js";
 
 export default class Manga {
-    queries;
 
-    constructor(quer) {
-        this.queries = quer;
+    constructor() {
     }
 
-    async getManga(columns, wherecolumn, id, start) {
-        return await this.queries.getItems("TManga", columns, wherecolumn, id, start);
+    static async getManga(columns, wherecolumn, id, start) {
+        return await queries.getItems("TManga", columns, wherecolumn, id, start);
     }
 
-    async insertManga(rows) {
-       return await this.queries.insertItems("TManga",rows);
+    static async insertManga(rows) {
+       return await queries.insertItems("TManga",rows);
     }
 
-    async updateManga(rows) {
+    static async updateManga(rows) {
 
     }
 
-    async DeleteManga(columns, id) {
+    static async DeleteManga(columns, id) {
         //     const pk = pks.split(",");
 //     for (let i = 0; i < pk.length; i++) {
 //         //TMangaXGenre

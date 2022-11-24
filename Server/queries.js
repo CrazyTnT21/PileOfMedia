@@ -1,16 +1,14 @@
-export default class Queries {
-    server;
-    con;
+import {Server} from "./server.js";
 
-    constructor(servers, con) {
-        this.server = servers;
-        this.con = con;
+export default class Queries {
+
+    constructor() {
     }
 
-    count = 50;
+    static count = 50;
 
-    async QueryDB(Query) {
-        return new Promise(resolve => this.con.query(Query, (err, result) => {
+    static async QueryDB(Query) {
+        return new Promise(resolve => Server.con.query(Query, (err, result) => {
             if (err)
                 resolve(this.LogError(Object.entries(err)));
             // this.Log("Query");
@@ -20,11 +18,11 @@ export default class Queries {
 
     // async Log(log) {
     //     const table = "TLog";
-    //     const columns = ["Log", this.con.escapeId("Date")];
+    //     const columns = ["Log", Server.con.escapeId("Date")];
     //     const now = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60 * 1000)).toISOString().slice(0, 19).replace('T', ' ');
-    //     const values = [this.con.escape(log), this.con.escape(now)];
+    //     const values = [Server.con.escape(log), Server.con.escape(now)];
     //     const Query = `INSERT INTO ${table}(${columns.join()}) values(${values.join()});`;
-    //     return new Promise(resolve => this.con.query(Query, (err, result) => {
+    //     return new Promise(resolve => Server.con.query(Query, (err, result) => {
     //         if (err)
     //             resolve(this.LogError(err));
     //
@@ -32,51 +30,54 @@ export default class Queries {
     //     }));
     // }
 
-    async LogError(error) {
+    static async LogError(error) {
         const table = "TError";
-        const columns = ["Error", this.con.escapeId("Date")];
+        const columns = ["Error", Server.con.escapeId("Date")];
         const now = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60 * 1000)).toISOString().slice(0, 19).replace('T', ' ');
         const values = [`"${error.code}"`, `"${now}"`];
         const Query = `INSERT INTO ${table}(${columns.join()}) values(${values.join()});`;
-        return new Promise(resolve => this.con.query(Query, (err, result) => {
+        return new Promise(resolve => Server.con.query(Query, (err, result) => {
             if (err) {
                 console.log(err)
-                resolve(this.server.responseStatus(500));
+                resolve(Server.responseStatus(500));
             }
+            console.log(error);
             resolve(result);
         }));
     }
 
-    async getItems(Table, columns, wherecolumn, id, start) {
+    static async getItems(Table, columns, wherecolumn, id, start) {
         let colvalue = "*";
         if (!Table)
-            return this.server.responseStatus(400);
+            return Server.responseStatus(400);
         if (!start)
             start = 0;
         if (columns)
             colvalue = columns.join();
-        let Query = `SELECT ${colvalue} FROM ${this.con.escapeId(Table)} `;
+        let Query = `SELECT ${colvalue} FROM ${Server.con.escapeId(Table)} `;
         if (id && wherecolumn)
-            Query += `WHERE ${this.con.escapeId(wherecolumn)} IN (${this.con.escape(id)}) `;
+            Query += `WHERE ${Server.con.escapeId(wherecolumn)} IN (${Server.con.escape(id)}) `;
 
         Query += `LIMIT ${start * this.count},${this.count};`;
         return await this.QueryDB(Query);
     }
 
-    async insertItems(Table, rows) {
+    static async insertItems(Table, rows) {
         if (!Table || !rows || rows.length > 50)
-            return this.server.responseStatus(400);
+            return Server.responseStatus(400);
         let Insertrows = [];
         for (let i = 0; i < rows.length - 1; i++) {
             const values = Object.entries(rows[i])
             Insertrows.push(this.getRow(values));
         }
+        console.log(rows);
         const lastvalues = Object.entries(rows[rows.length - 1])
+        console.log(lastvalues);
         const InsertColumns = this.getColumns(lastvalues);
 
         Insertrows.push(this.getRow(lastvalues));
         Insertrows = Insertrows.join(",") + ";";
-        const Query = `INSERT INTO ${this.con.escapeId(Table)}${InsertColumns} values${Insertrows}`
+        const Query = `INSERT INTO ${Server.con.escapeId(Table)}${InsertColumns} values${Insertrows}`
         return await this.QueryDB(Query);
     }
 
@@ -95,53 +96,59 @@ export default class Queries {
     //     // return await this.QueryDB(Query);
     // }
 
-    async deleteItems(res, table, pks, wherecolumn) {
+    static async deleteItems(res, table, pks, wherecolumn) {
         if (!table || !wherecolumn || !pks || pks.length > 50)
-            return res.send(this.server.responseStatus(400));
+            return res.send(Server.responseStatus(400));
         // const Query = `DELETE FROM ${table} WHERE ${wherecolumn} IN (${pks.join()})`;
         // Log(`DELETE FROM ${table} WHERE PK = (${pks});`);
-        // this.con.query(Query, function (err, result, fields) {
+        // Server.con.query(Query, function (err, result, fields) {
         //     if (err) LogError(Object.entries(error));
         //     res.send(result);
         // });
     }
 
-    async selectLeftJoin(table, tablecolumn, table2, table2column, tablematch, table2match, as) {
-        let colvalue = "*"
-        if (!table || !table2column)
-            return this.server.responseStatus(400);
-        if (tablecolumn)
-            colvalue = this.con.escapeId(tablecolumn.join());
-        // select TComic.*,TTranslation.English from tcomic left join TTranslation on TComic.FkName = TTranslation.PK;
-        const Query = `select ${this.con.escapeId(table)}.${colvalue},${this.con.escapeId(table2)}.${this.con.escapeId(table2column)} as ${this.con.escapeId(as)} from ${this.con.escapeId(table)} left join ${this.con.escapeId(table2)} on ${this.con.escapeId(table2)}.${this.con.escapeId(table2match)} = ${this.con.escapeId(table)}.${this.con.escapeId(tablematch)}`
+    static async selectLeftJoin(table, joins, table2, options) {
+        if (!options)
+            options = {count: 50, start: 0}
+        if (!options.count || options.count > 50)
+            options.count = this.count;
+        let selectAliases = [];
+        let leftjoins = [];
+        let Query = "select " + table + ".*, ";
+        for (let i = 0; i < joins.length; i++) {
+            selectAliases.push(joins[i].selects + " as " + joins[i].alias);
+            leftjoins.push("left join " + Server.con.escapeId(table2) + " as " + Server.con.escapeId(joins[i].alias) + " on " + joins[i].match + " = " + joins[i].alias + "." + Server.con.escapeId(joins[i].tomatch))
+        }
+        Query += selectAliases.join(",");
+        Query += " from " + table + " ";
+        Query += leftjoins.join(" ");
+        Query += ` LIMIT ${options.start * options.count},${options.count};`;
+        console.log(Query);
         return await this.QueryDB(Query);
     }
-    async getLanguageItem(Table,lang,columns,columnmatch,as){
-        if (!lang)
-            lang = "English";
-        return await this.selectLeftJoin(Table, columns, "TTranslation", lang, columnmatch, "PK", as);
-    }
 
-    getRow(obj) {
+   static getRow(obj) {
         let values = [];
         for (let i = 0; i < obj.length; i++) {
-            values.push(this.con.escape(obj[i][1]));
+            values.push(Server.con.escape(obj[i][1]));
         }
         return "(" + values + ")";
     }
 
     //gets the columns from an object / row
-    getColumns(obj) {
+    static getColumns(obj) {
         let values = [];
         for (let i = 0; i < obj.length; i++) {
-            values.push(this.con.escapeId(obj[i][0]));
+            values.push(Server.con.escapeId(obj[i][0]));
         }
         return "(" + values.join(",") + ")";
     }
 
-    async insertTranslation(row, fkcolumn, values, columnnames) {
+
+   static async insertTranslation(row, fkcolumn, values, columnnames) {
         let insertvalues = [];
         let test = {};
+        console.log(row);
         for (let i = 0; i < columnnames.length; i++) {
             test[columnnames[i]] = row[values[i]];
 
@@ -152,4 +159,18 @@ export default class Queries {
         row[fkcolumn] = (await this.insertItems("TTranslation", insertvalues)).insertId;
         return row;
     }
+}
+
+export class Join {
+    constructor(selects, alias, match, tomatch) {
+        this.selects = selects;
+        this.alias = alias;
+        this.match = match;
+        this.tomatch = tomatch;
+    }
+
+    selects;// "`Name`.`English`",
+    alias;// "Name",
+    match;// "`TComic`.`FKName`",
+    tomatch;// "PK" --Result: `Name`.`PK`
 }

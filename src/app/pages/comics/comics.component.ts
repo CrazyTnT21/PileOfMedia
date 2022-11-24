@@ -3,6 +3,7 @@ import {AfterViewInit, Component} from '@angular/core';
 import {Base} from 'src/app/mainapp/Base';
 import {HTTPRequester} from 'src/Resources/other/HttpRequester';
 import {alignment, column, columnType} from 'src/Resources/templates/table.component';
+import {DialogComponent} from "../../../Resources/other/Dialog.Component";
 
 @Component({
     selector: 'app-comics',
@@ -10,21 +11,35 @@ import {alignment, column, columnType} from 'src/Resources/templates/table.compo
 })
 export class ComicsComponent extends Base implements AfterViewInit {
 
+    tempitem: any;
     constructor() {
         super();
+       this.tempitem = this.createTempItem();
     }
-
+    createTempItem(){
+        return {
+            NameEnglish: null,
+            DescriptionEnglish: null,
+            SynopsisEnglish: null,
+            Chapters: null,
+            Volumes: null,
+            PublishStart: null,
+            PublishEnd: null,
+            ImageSource: null};
+    }
     async ngAfterViewInit() {
         await this.loadItems();
     }
 
+    show: boolean = false;
+    test = "Test";
     rows: any[];
     columns: column[] = [
         {
             Name: this.StringNames.Cover,
             Type: columnType.image,
             Key: "ImageSource",
-            width: 5
+            width: 6
         },
         {
             Name: this.StringNames.Title,
@@ -32,6 +47,7 @@ export class ComicsComponent extends Base implements AfterViewInit {
             Key: "Name",
             alignment: alignment.left,
             width: 30,
+            Reference: ["Description","Synopsis"],
             // Reference: [
             //     {
             //         Name: this.StringNames.Description,
@@ -71,45 +87,27 @@ export class ComicsComponent extends Base implements AfterViewInit {
             Type: columnType.text,
             Key: "PublishEnd"
         }
-    ]
+    ];
 
-    async testpost() {
-        await HTTPRequester.postTable("api/items", new HttpParams().set("table", "TComic"), HTTPRequester.toTObject(this.rows));
-
-    }
-
-    async saveItems() {
-        console.log(this.rows);
-        const emptytable: any = {rows:[{
-            AverageScore: 8.45,
-            Chapters: 12,
-            DescriptionEnglish: "EnglishDescription1",
-            DescriptionGerman: "GermanDescription1",
-            ImageSource: "https://upload.wikimedia.org/wikipedia/en/a/a2/Watchmen%2C_issue_1.jpg",
-            NameEnglish: "Not Watchmen",
-            NameGerman: "Wächtermänner",
-            PublishEnd: "2104-12-02",
-            PublishStart: "2033-12-01",
-            Volumes: 2,
-        },
-            {
-                AverageScore: 8.45,
-                Chapters: 12,
-                DescriptionEnglish: "EnglishDescription12",
-                DescriptionGerman: "GermanDescription12",
-                ImageSource: "https://upload.wikimedia.org/wikipedia/en/a/a2/Watchmen%2C_issue_1.jpg",
-                NameEnglish: "Not Watchmen2",
-                NameGerman: "Wächtermänner2",
-                PublishEnd: "2104-12-02",
-                PublishStart: "2033-12-01",
-                Volumes: 2,
-            }]};
-        await HTTPRequester.Post("api/Comic", new HttpParams(), emptytable);
+    async saveItems(dialog: HTMLDialogElement, create: boolean = false) {
+        if (dialog.open)
+        {
+            if (create) {
+                console.log([this.tempitem])
+                await HTTPRequester.Post("api/Comic", new HttpParams().set("language","English"), {rows: [this.tempitem]});
+                this.tempitem = this.createTempItem();
+            }
+            DialogComponent.closeDialog(dialog);
+        }
+        else {
+            DialogComponent.openDialog(dialog);
+            console.log(this.tempitem);
+        }
 
     }
-
     async loadItems() {
-        this.rows = await HTTPRequester.Get("api/Comic", new HttpParams().set("language",Base.Language));
-        console.log(this.rows)
+
+        this.test = HTTPRequester.url;
+        this.rows = await HTTPRequester.Get("api/Comic", new HttpParams().set("language", Base.Language));
     }
 }

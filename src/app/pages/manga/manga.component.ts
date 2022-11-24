@@ -17,7 +17,7 @@ export class MangaComponent extends Base implements OnInit {
             Name: this.StringNames.Cover,
             Type: columnType.image,
             Key: "ImageSource",
-            width: 5
+            width: 10
         },
         {
             Name: this.StringNames.Title,

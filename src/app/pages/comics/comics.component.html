@@ -1,7 +1,58 @@
-<button (click)="testpost()">Post</button>
+<dialog #createitemsDialog style="border-radius: .1rem; border: 0; height: 30rem; width: 50rem" class="lazy">
+    <row>
+        <row><h3 class="no-mar pad">Add Comic</h3></row>
+        <div class="col-3 pad">
+            <row class="too-lazy" style="height: 15rem">
+                <img [src]="tempitem.ImageSource" class="fit" alt="Cover">
+            </row>
+            <row class="pad">
+                <row>Image source:</row>
+                <input class="col-12" [(ngModel)]="tempitem.ImageSource">
+            </row>
+        </div>
+        <div class="col-9 pad">
+            <row>
+                <row>Name:</row>
+                <row><input class="col-6" [(ngModel)]="tempitem.NameEnglish"></row>
+            </row>
+            <row>
+                <row>Description:</row>
+                <row><input class="col-12 pad" [(ngModel)]="tempitem.DescriptionEnglish"></row>
+            </row>
+            <row>
+                <row>Synopsis:</row>
+                <row><input class="col-12 pad" [(ngModel)]="tempitem.SynopsisEnglish"></row>
+            </row>
+            <row>
+                <div class="col-2">
+                    <row>Chapters:</row>
+                    <row><input type="number" class="number col-11" [(ngModel)]="tempitem.Chapters"></row>
+                </div>
+                <div class="col-2">
+                    <row>Volumes:</row>
+                    <row><input type="number" class="number col-11" [(ngModel)]="tempitem.Volumes"></row>
+                </div>
+            </row>
+            <row>
+                <row>Start date:</row>
+                <row><input type="date" class="col-3" [(ngModel)]="tempitem.PublishStart"></row>
+            </row>
+            <row>
+                <row>End date:</row>
+                <row><input type="date" class="col-3" [(ngModel)]="tempitem.PublishEnd"></row>
+            </row>
+        </div>
+    </row>
+    <row>
+        <button class="save mar" (click)="saveItems(createitemsDialog, true)">Send</button>
+        <button class="mar" (click)="saveItems(createitemsDialog)">Close</button></row>
+</dialog>
+
 <button (click)="tools.navigatePage('comicPage',{pk:1})">comic page</button>
-<app-item [title]="StringNames.Comics"
-          [rows]="rows"
-          [columns]="columns"
-          (create)="saveItems()"
-          (refresh)="loadItems()"></app-item>
+
+<app-table [rows]="rows"
+           [columns]="columns"
+           [showRefresh]="true"
+           [showCreate]="true"
+           (create)="saveItems(createitemsDialog)"
+           (refresh)="loadItems()"></app-table>

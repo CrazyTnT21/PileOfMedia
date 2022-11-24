@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "start": "ng serve",
-    "start server": "node server"
+    "start server": "node server",
+    "host local": "ng serve --host 0.0.0.0",
+    "build production": "ng build"
   },
   "private": true,
   "dependencies": {

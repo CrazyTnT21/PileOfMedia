@@ -1,8 +1,0 @@
-<div (click)="enterValue()">
-       <ng-content *ngIf="!edit"></ng-content>
-</div>
-<input *ngIf="edit"
-       [autofocus]="test"
-       [(ngModel)]="value"
-       (blur)="enterValue()"
-       #test />

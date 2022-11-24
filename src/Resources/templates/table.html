@@ -1,72 +1,51 @@
-<button (click)="displayType = distype.card">Cards</button>
-<button (click)="displayType = distype.list">List</button>
-<div *ngIf="rows != null">
-    <div *ngIf="displayType == distype.card"
-         class="col-12">
-        <div *ngFor="let items of rowEntries; let i= index"
-             class="col" style="background-color: lightgray">
-            <div *ngFor="let item of items; let j = index" class="col-12 nopad">
-                <div *ngIf="columns[j].Type == coltype.image"><img [src]="item" [alt]="item"/></div>
-                <div *ngIf="columns[j].Type == coltype.text">
-                    <div>{{item}} </div>
-                </div>
-                <div *ngIf="columns[j].Type == coltype.headertext">
-                    <div>{{item}} </div>
-                    <div *ngFor="let item of columns[j].Reference">{{getreference(item, i)}}</div>
-                </div>
-                <div *ngIf="columns[j].Type == coltype.link">
-                    <div><a [href]="getreference('',1)">{{item}}</a></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div *ngIf="displayType == distype.list">
-        <div class=" ">
-            <div class="col-12 nopad">
-                <div class="cell {{giveclass(col.width)}}"
-                     [style.width.%]="col.width"
-                     *ngFor="let col of columns"> {{col.Name}}</div>
-            </div>
-        </div>
-        <div>
-            <div *ngFor="let row of rows" class="col-12 nopad">
-                <app-CellEdit [ngClass]="'cell ' +'top '+ giveclass(col.width)"
+<row>
+    <button *ngIf="showCreate" class="save" (click)="create.emit()">{{StringNames.CreateNew}}</button>
+    <button *ngIf="showEdit" class="edit" (click)="edit.emit()">Edit</button>
+    <button *ngIf="showDelete" class="delete" (click)="delete.emit()">Delete</button>
+    <button *ngIf="showRefresh" (click)="refresh.emit()">Refresh</button>
+</row>
+<row *ngIf="showType">
+    <button (click)="displayType = distype.card">Cards</button>
+    <button (click)="displayType = distype.list">List</button>
+</row>
+<row *ngIf="rows != null">
+    <row *ngIf="displayType == distype.card">
+        <app-card *ngFor="let row of rows" class="pad mar">
+            <row *ngFor="let col of columns">
+                <row *ngIf="col.Type==coltype.image">
+                    <img [src]="row[col.Key]" class="col-12"/>
+                </row>
+                <row *ngIf="col.Type == coltype.text"> {{row[col.Key]}} </row>
+                <row *ngIf="col.Type == coltype.headertext" style="text-align: left;">
+                    <h3><a>{{row[col.Key]}}</a></h3>
+                    <row *ngFor="let item of col.Reference">{{row[item]}}</row>
+                </row>
+            </row>
+        </app-card>
+    </row>
+    <row *ngIf="displayType == distype.list">
+        <row>
+            <row class="cell top un {{giveclass(col.width)}}"
+                 [style.width.%]="col.width"
+                 *ngFor="let col of columns"> {{col.Name}}</row>
+        </row>
+        <row>
+            <row *ngFor="let row of rows">
+                <row [ngClass]="'cell ' + 'un ' +' '+ giveclass(col.width)"
                               [style.width.%]="col.width"
-                              *ngFor="let col of columns"
-                              [(value)]="row[col.Key]">
-                    <div *ngIf="col.Type==coltype.image">
-                        <img [src]="row[col.Key]" class="col-12 nopad max" [alt]="row[col.Key]"/>
-                    </div>
+                              *ngFor="let col of columns">
+                    <row *ngIf="col.Type==coltype.image">
+                        <img [src]="row[col.Key]" class="col-12 max"/>
+                    </row>
                     <div *ngIf="col.Type == coltype.text">
                         <p>{{row[col.Key]}} </p>
                     </div>
-                    <div *ngIf="col.Type == coltype.headertext" style="text-align: left;">
-                        <h3 class=""><a>{{row[col.Key]}}</a></h3>
-                    </div>
-                </app-CellEdit>
-            </div>
-        </div>
-        <!--    <div class=" ">-->
-        <!--        <div *ngFor="let items of rowEntries; let i = index"-->
-        <!--             class=" col-12 nopad">-->
-        <!--            <app-CellEdit [ngClass]="'cell ' +'top '+ giveclass(columns[j].width)"-->
-        <!--                          [style.width.%]="columns[j].width"-->
-        <!--                          *ngFor="let item of items; let j = index"-->
-        <!--                          [(value)]="rowEntries[i][j]">-->
-        <!--                <div *ngIf="columns[j].Type==coltype.image">-->
-        <!--                    <img [src]="item" class="col-12 nopad max" [alt]="item"/>-->
-        <!--                </div>-->
-        <!--                <div *ngIf="columns[j].Type == coltype.text">-->
-        <!--                    <p>{{item}} </p>-->
-        <!--                </div>-->
-        <!--                <div *ngIf="columns[j].Type == coltype.headertext"-->
-        <!--                     style="text-align: left;">-->
-        <!--                    <h3 class=""><a [href]="tools.createurl('comicPage',[['pk',getreference('PK',i)]])">-->
-        <!--                        {{item}}</a></h3>-->
-        <!--                    <p *ngFor="let item of columns[j].Reference">{{getreference(item, i)}}</p>-->
-        <!--                </div>-->
-        <!--            </app-CellEdit>-->
-        <!--        </div>-->
-        <!--    </div>-->
-    </div>
-</div>
+                    <row *ngIf="col.Type == coltype.headertext">
+                        <h3 class="no-mar pad"><a>{{row[col.Key]}}</a></h3>
+                        <row *ngFor="let item of col.Reference" class="pad">{{row[item]}}</row>
+                    </row>
+                </row>
+            </row>
+        </row>
+    </row>
+</row>

@@ -1,23 +1,40 @@
+import {Server} from "./server.js";
+import queries, {Join} from "./queries.js";
+
 export default class Comic {
-    queries;
-
-    constructor(quer) {
-        this.queries = quer;
+    constructor() {
     }
 
-    async getComic(columns, wherecolumn, id, start, lang) {
-        return await this.queries.getLanguageItem("TComic", lang, columns, "FKName", "Name");
+    static async getComic(columns, wherecolumn, id, start, lang) {
+        if (!lang)
+            lang = "English";
+        const leftjoin = [
+            new Join("`Name`." + Server.con.escapeId(lang), "Name", "`TComic`.`FKName`", "PK"),
+            new Join("`Description`." + Server.con.escapeId(lang), "Description", "`TComic`.`FKDescription`", "PK"),
+           new Join("`Synopsis`." + Server.con.escapeId(lang), "Synopsis", "`TComic`.`FKSynopsis`", "PK")
+        ];
+        return await queries.selectLeftJoin("TComic", leftjoin, "TTranslation");
     }
 
-    async insertComic(rows) {
-        for (let i = 0; i < rows.length; i++) {
-            rows[i] = await this.queries.insertTranslation(rows[i], "FKName", ["NameEnglish", "NameGerman"], ["English", "German"]);
-            rows[i] = await this.queries.insertTranslation(rows[i], "FKDescription", ["DescriptionEnglish", "DescriptionGerman"], ["English", "German"]);
+    static async insertComic(rows,languages) {
+        languages = languages.split(",");
+       let names = [];
+        let descriptions = [];
+        let synopsises = []
+        for (let i = 0; i < languages.length; i++){
+            names.push("Name" + languages[i]);
+            descriptions.push("Description" + languages[i]);
+            synopsises.push("Synopsis" + languages[i]);
         }
-        return await this.queries.insertItems("TComic", rows);
+        for (let i = 0; i < rows.length; i++) {
+            rows[i] = await queries.insertTranslation(rows[i], "FKName", names, languages);
+            rows[i] = await queries.insertTranslation(rows[i], "FKDescription", descriptions, languages);
+            rows[i] = await queries.insertTranslation(rows[i], "FKSynopsis", synopsises, languages);
+        }
+        return await queries.insertItems("TComic", rows);
     }
 
-    async DeleteComic(columns, id) {
+    static async DeleteComic(columns, id) {
         //     const pk = pks.split(",");
 //     for (let i = 0; i < pk.length; i++) {
 //         //TMangaXGenre
@@ -31,6 +48,6 @@ export default class Comic {
 //         //TManga
 //         deleteItems(res, Table, pk[i], wherecolumn);
 //     }
-        await this.queries.deleteItems("TComic", columns, id);
+        await queries.deleteItems("TComic", columns, id);
     }
 }

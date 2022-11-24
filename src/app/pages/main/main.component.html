@@ -12,3 +12,8 @@
         <a href="#contact">Contact</a>
     </div>
 </div>
+
+<button (click)="openDialog(dialog)">open dialog</button>
+<dialog #dialog style="border: 0;" class="lazy">
+    <button (click)="closeDialog(dialog)">Close</button>
+</dialog>

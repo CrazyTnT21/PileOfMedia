@@ -1,9 +1,16 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import {Component, EventEmitter, Input, Output} from "@angular/core";
 
 @Component({
     selector: 'app-CellEdit',
-    templateUrl: './CellEdit.html',
-    providers: []
+    template: `
+        <div (click)="enterValue()">
+            <ng-container *ngIf="!edit">
+                <ng-content></ng-content>
+            </ng-container>
+        </div>
+        <input *ngIf="edit"
+               [(ngModel)]="value"
+               (blur)="enterValue()"/>`,
 })
 export class CellEdit {
 
