@@ -3,7 +3,8 @@ PK int unsigned not null auto_increment primary key,
 English varchar(500),
 German varchar(500),
 Spanish varchar(500),
-Japanese nvarchar(500)
+Japanese nvarchar(500),
+Korean nvarchar(500)
 );
 -- TPublish
 create table TPublish(
@@ -64,7 +65,7 @@ PK int unsigned not null auto_increment primary key,
 `Name` varchar(50) not null,
 FirstName varchar(50),
 LastName varchar(50),
-Description varchar(500),
+FKDescription  int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
 Birthday date,
 Height tinyint unsigned,
 ImageSource varchar(255)
@@ -77,9 +78,9 @@ FKRole int unsigned not null, foreign key (FKRole) references TRole(PK)
 -- TMovie
 create table TMovie(
 PK int unsigned not null auto_increment primary key,
-`Name` varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Airing date,
 Length smallint unsigned,
 AverageScore decimal(4,2),
@@ -105,9 +106,9 @@ FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
 -- TManga
 create table TManga(
 PK int unsigned not null auto_increment primary key,
-`Name` varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 PublishStart date,
 PublishEnd date,
 Volumes smallint unsigned,
@@ -136,9 +137,9 @@ FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
 -- TAnime
 create table TAnime(
 PK int unsigned not null auto_increment primary key,
-`Name` varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 AiringStart date,
 AiringEnd date,
 Episodes smallint unsigned,
@@ -150,9 +151,9 @@ ImageSource varchar(255)
 create table TAnimeSeason(
 PK int unsigned not null auto_increment primary key,
 FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
-Title varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Episodes smallint not null,
 PublishStart date,
 PublishEnd date,
@@ -162,8 +163,8 @@ create table TAnimeEpisode(
 PK int unsigned not null auto_increment primary key,
 FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
 FKAnimeSeason int unsigned, foreign key (FKAnimeSeason) references TAnimeSeason(PK),
-Title varchar(50) not null,
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Length smallint not null,
 AiringDate date,
 AverageScore tinyint
@@ -206,9 +207,9 @@ ImageSource varchar(255)
 create table TComicVolume(
 PK int unsigned not null auto_increment primary key,
 FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-Title varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Pages smallint not null,
 PublishDate date,
 AverageScore tinyint
@@ -217,8 +218,8 @@ create table TComicChapter(
 PK int unsigned not null auto_increment primary key,
 FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
 FKComicVolume int unsigned, foreign key (FKComicVolume) references TComicVolume(PK),
-Title varchar(50) not null,
-Synopsis varchar(500),
+FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Pages smallint not null,
 PublishDate date,
 AverageScore tinyint
@@ -248,9 +249,9 @@ FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
 -- TCartoon
 create table TCartoon(
 PK int unsigned not null auto_increment primary key,
-`Name` varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 AiringStart date,
 AiringEnd date,
 AverageScore decimal(4,2),
@@ -261,9 +262,8 @@ FKPublish int unsigned, foreign key (FKPublish) references TPublish(PK)
 create table TCartoonSeason(
 PK int unsigned not null auto_increment primary key,
 FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
-Title varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Episodes smallint,
 AiringStart date,
 AiringEnd date,
@@ -273,8 +273,8 @@ create table TCartoonEpisode(
 PK int unsigned not null auto_increment primary key,
 FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
 FKCartoonSeason int unsigned, foreign key (FKCartoonSeason) references TCartoonSeason(PK),
-Title varchar(50) not null,
-Synopsis varchar(500),
+FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Length smallint,
 AiringDate date,
 AverageScore tinyint
@@ -303,9 +303,9 @@ FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
 -- TBook
 create table TBook(
 PK int unsigned not null auto_increment primary key,
-`Name` varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Pages smallint unsigned,
 Words smallint unsigned,
 PublishDate date,
@@ -337,9 +337,9 @@ FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
 -- TTVShow
 create table TTVShow(
 PK int unsigned not null auto_increment primary key,
-`Name` varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 AiringStart date,
 AiringEnd date,
 AverageScore decimal(4,2),
@@ -350,9 +350,9 @@ FKPublish int unsigned, foreign key (FKPublish) references TPublish(PK)
 create table TTVShowSeason(
 PK int unsigned not null auto_increment primary key,
 FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-Title varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Episodes smallint,
 AiringStart date,
 AiringEnd date,
@@ -362,8 +362,8 @@ create table TTVShowEpisode(
 PK int unsigned not null auto_increment primary key,
 FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
 FKTVShowSeason int unsigned, foreign key (FKTVShowSeason) references TTVShowSeason(PK),
-Title varchar(50) not null,
-Synopsis varchar(500),
+FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Length smallint,
 AiringDate date,
 AverageScore tinyint
@@ -392,9 +392,9 @@ FKPerson int unsigned not null, foreign key (FKPerson) references TPerson(PK)
 -- TGame
 create table TGame(
 PK int unsigned not null auto_increment primary key,
-`Name` varchar(50) not null,
-`Description` varchar(500),
-Synopsis varchar(500),
+FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
+FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
 Published date,
 AverageScore decimal(4,2),
 FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
@@ -426,7 +426,7 @@ create table TUser(
 PK int unsigned not null auto_increment primary key,
 FKPerson int unsigned, foreign key (FKPerson) references TPerson(PK),
 `Name` varchar(50) not null,
-Joined date not null,
+Joined date not null DEFAULT (CURRENT_DATE),
 `Description` varchar(500),
 ImageSource varchar(255),
 MangaAverage decimal(4,2),
@@ -489,21 +489,29 @@ PK int unsigned not null auto_increment primary key,
 Log varchar(500) not null,
 `Date` datetime not null
 );
-create table TUserXRight(
+
+create table TArea(
 PK int unsigned not null auto_increment primary key,
-FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
-FKRight int unsigned not null, foreign key (FKRight) references TRight(PK)
+Area varchar(50) not null
 );
 create table TRight(
 PK int unsigned not null auto_increment primary key,
 FKArea int unsigned not null, foreign key (FKArea) references TArea(PK),
 `Add` bit,
 Edit bit,
-Delte bit
+`Delete` bit
 );
-create table TArea(
+create table TUserXRight(
 PK int unsigned not null auto_increment primary key,
-Area varchar(50) not null,
+FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
+FKRight int unsigned not null, foreign key (FKRight) references TRight(PK)
+);
+create table TAcoount(
+PK int unsigned not null auto_increment primary key,
+FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
+EMail varchar(255) not null,
+`Password` varchar(255) not null,
+Salt varchar(255) not null
 );
 create table TError(
 PK int unsigned not null auto_increment primary key,

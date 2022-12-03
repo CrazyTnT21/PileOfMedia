@@ -46,8 +46,10 @@ export default class Queries {
         }));
     }
 
-    static async getItems(Table, columns, wherecolumn, id, start) {
+    static async getItems(Table, columns, wherecolumn, id, start, count) {
         let colvalue = "*";
+        if (!count || count > 50 && count < 1)
+            count = this.count;
         if (!Table)
             return Server.responseStatus(400);
         if (!start)
@@ -58,7 +60,7 @@ export default class Queries {
         if (id && wherecolumn)
             Query += `WHERE ${Server.con.escapeId(wherecolumn)} IN (${Server.con.escape(id)}) `;
 
-        Query += `LIMIT ${start * this.count},${this.count};`;
+        Query += `LIMIT ${start * count},${count};`;
         return await this.QueryDB(Query);
     }
 
@@ -70,9 +72,7 @@ export default class Queries {
             const values = Object.entries(rows[i])
             Insertrows.push(this.getRow(values));
         }
-        console.log(rows);
         const lastvalues = Object.entries(rows[rows.length - 1])
-        console.log(lastvalues);
         const InsertColumns = this.getColumns(lastvalues);
 
         Insertrows.push(this.getRow(lastvalues));
@@ -123,7 +123,7 @@ export default class Queries {
         Query += " from " + table + " ";
         Query += leftjoins.join(" ");
         Query += ` LIMIT ${options.start * options.count},${options.count};`;
-        console.log(Query);
+       console.log(Query);
         return await this.QueryDB(Query);
     }
 
@@ -148,14 +148,11 @@ export default class Queries {
    static async insertTranslation(row, fkcolumn, values, columnnames) {
         let insertvalues = [];
         let test = {};
-        console.log(row);
         for (let i = 0; i < columnnames.length; i++) {
             test[columnnames[i]] = row[values[i]];
-
             delete row[values[i]];
         }
         insertvalues.push(test);
-        console.log(insertvalues);
         row[fkcolumn] = (await this.insertItems("TTranslation", insertvalues)).insertId;
         return row;
     }

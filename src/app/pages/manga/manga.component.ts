@@ -1,9 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {Tools} from 'src/app/tools/Tools';
-import {alignment, column, columnType} from "../../../Resources/templates/table.component";
-import {Base} from "../../mainapp/Base";
-import {HTTPRequester} from "../../../Resources/other/HttpRequester";
+import {alignment, column, columnType} from "../../../Resources/Templates/table.component";
 import {HttpParams} from "@angular/common/http";
+import {Base} from "../../../Resources/Base";
+import {HTTPRequester} from "../../../Resources/HttpRequester";
 
 @Component({
     selector: 'app-manga',
@@ -75,7 +74,6 @@ export class MangaComponent extends Base implements OnInit {
 
     async loadItems() {
         this.rows = await HTTPRequester.Get("api/manga", new HttpParams());
-        console.log(this.rows)
     }
 
     async saveItems() {

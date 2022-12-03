@@ -7,6 +7,7 @@ import cors from 'cors';
 import Queries from "./queries.js";
 import Comic from "./comic.js";
 import Manga from "./manga.js";
+import User from "./user.js";
 //
 //(GET, INSERT, UPDATE) query.id == where values (example: where FKStatus = (.id.join()))
 //(GET,INSERT,UPDATE) query.column == selected columns (example1: select .column.join() from Tcomic, example2: insert into TComic(.column.join()) values(1,2,3))
@@ -53,6 +54,15 @@ export class Server {
             res.send(await Manga.getManga(req.query.column, req.query.where, req.query.id, req.query.start));
         }).delete(function (req) {
             Manga.DeleteManga(req.query.column, req.query.id);
+        });
+        app.route("/api/user").post(async function (req, res) {
+            // if (req.query.update)
+            //     manga.updateManga(res, req.body.rows);
+            // else
+            res.send(await User.insertUser(req.body.rows));
+        }).get(async function (req, res) {
+            res.send(await User.getUser(req.query.id));
+        }).delete(function (req) {
         });
         //other
         app.route("/api").post(function (req, res) {

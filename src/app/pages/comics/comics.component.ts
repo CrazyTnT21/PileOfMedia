@@ -1,113 +1,155 @@
 import {HttpParams} from '@angular/common/http';
 import {AfterViewInit, Component} from '@angular/core';
-import {Base} from 'src/app/mainapp/Base';
-import {HTTPRequester} from 'src/Resources/other/HttpRequester';
-import {alignment, column, columnType} from 'src/Resources/templates/table.component';
-import {DialogComponent} from "../../../Resources/other/Dialog.Component";
+import {Base} from "../../../Resources/Base";
+import {alignment, columnType} from "../../../Resources/Templates/table.component";
+import {Tools} from "../../../Resources/Tools";
+import {HTTPRequester} from "../../../Resources/HttpRequester";
+import {DialogComponent} from "../../../Resources/Templates/dialog.component";
+import {TableClass} from "../../../Resources/Templates/TableClass";
+import {DatePipe} from "@angular/common";
 
 @Component({
     selector: 'app-comics',
     templateUrl: './comics.component.html'
 })
-export class ComicsComponent extends Base implements AfterViewInit {
+export class ComicsComponent extends TableClass<TComic> implements AfterViewInit {
 
-    tempitem: any;
     constructor() {
         super();
-       this.tempitem = this.createTempItem();
+        this.currentItem = this.createItem();
     }
-    createTempItem(){
-        return {
-            NameEnglish: null,
-            DescriptionEnglish: null,
-            SynopsisEnglish: null,
-            Chapters: null,
-            Volumes: null,
-            PublishStart: null,
-            PublishEnd: null,
-            ImageSource: null};
-    }
+
     async ngAfterViewInit() {
         await this.loadItems();
     }
 
     show: boolean = false;
-    test = "Test";
-    rows: any[];
-    columns: column[] = [
+    override columns = [
         {
             Name: this.StringNames.Cover,
             Type: columnType.image,
             Key: "ImageSource",
-            width: 6
+            width: 3
         },
         {
             Name: this.StringNames.Title,
             Type: columnType.headertext,
             Key: "Name",
             alignment: alignment.left,
-            width: 30,
-            Reference: ["Description","Synopsis"],
-            // Reference: [
-            //     {
-            //         Name: this.StringNames.Description,
-            //         Type: columnType.text,
-            //         Key: "IDeescription",
-            //     },
-            //     {
-            //         Name: this.StringNames.Synopsis,
-            //         Type: columnType.text,
-            //         Key: "ISynopsis",
-            //     }],
+            Reference: [
+                {
+                    Name: this.StringNames.Description,
+                    Type: columnType.text,
+                    Key: "Description"
+                },
+                {
+                    Name: this.StringNames.Synopsis,
+                    Type: columnType.text,
+                    Key: "Synopsis"
+                }
+            ],
         },
         {
             Name: this.StringNames.Volumes,
             Type: columnType.text,
             Key: "Volumes",
-            alignment: alignment.left
-        },
-        {
-            Name: this.StringNames.Chapters,
-            Type: columnType.text,
-            Key: "Chapters",
-            alignment: alignment.left
+            formatting: "Volumes: [{}]",
+            Reference: [
+                {
+                    Name: this.StringNames.Chapters,
+                    Type: columnType.text,
+                    Key: "Chapters",
+                    formatting: "Chapters: [{}]"
+                }
+            ],
+            width: 3
         },
         {
             Name: this.StringNames.AverageScore,
             Type: columnType.text,
-            Key: "AverageScore"
+            Key: "AverageScore",
+            width: 3
+        },
+        {
+            Name: this.StringNames.Status,
+            Type: columnType.text,
+            Key: "Status",
+            width: 3
         },
         {
             Name: this.StringNames.StartDate,
             Type: columnType.text,
-            Key: "PublishStart"
+            Key: "PublishStart",
+            formatting: "Publishing start: {}",
+            pipes: [new DatePipe("YYYY-MM-dd",)],
+            formatvalue: (value: any) => Tools.convertdate(value),
+            Reference: [
+                {
+                    Name: this.StringNames.EndDate,
+                    Type: columnType.text,
+                    Key: "PublishEnd",
+                    pipes: [new DatePipe("YYYY-MM-dd",)],
+                    formatvalue: (value: any) => Tools.convertdate(value),
+                    formatting: "Publishing end: {}",
+                }],
+            width: 6
         },
-        {
-            Name: this.StringNames.EndDate,
-            Type: columnType.text,
-            Key: "PublishEnd"
-        }
     ];
 
     async saveItems(dialog: HTMLDialogElement, create: boolean = false) {
-        if (dialog.open)
-        {
+        if (dialog.open) {
             if (create) {
-                console.log([this.tempitem])
-                await HTTPRequester.Post("api/Comic", new HttpParams().set("language","English"), {rows: [this.tempitem]});
-                this.tempitem = this.createTempItem();
+                await this.saveItem(this.currentItem);
+                this.currentItem = this.createItem();
             }
             DialogComponent.closeDialog(dialog);
-        }
-        else {
+        } else {
             DialogComponent.openDialog(dialog);
-            console.log(this.tempitem);
         }
 
     }
-    async loadItems() {
 
-        this.test = HTTPRequester.url;
-        this.rows = await HTTPRequester.Get("api/Comic", new HttpParams().set("language", Base.Language));
+    async loadItems() {
+        this.rows = await HTTPRequester.Get("api/Comic", new HttpParams().set("language",this.Languages[Base.currentLanguage]));
     }
+
+    createItem(): TComic {
+        return new TComic();
+    }
+
+    async deleteItem(item: TComic): Promise<any> {
+    }
+
+    async updateItem(item: TComic): Promise<any> {
+    }
+
+    async saveItem(item: TComic): Promise<any> {
+        if (item.PK)
+            console.log("Update!");
+
+        await HTTPRequester.Post("api/Comic", new HttpParams().set("language", "English"), {rows: [item]});
+    }
+}
+
+export class TComic {
+    PK: number;
+    Name: string;
+    FKName: number;
+    Description: string;
+    FKDescription: number;
+    Synopsis: string;
+    FKSynopsis: number;
+    Status: string;
+    Chapters: number;
+    Volumes: number;
+    PublishStart: Date;
+    PublishEnd: Date;
+    ImageSource: string;
+    LanguageFields: LanguageField[];
+}
+
+export class LanguageField {
+    Value: string;
+    Key: string;
+    FKLanguage: number;
 }

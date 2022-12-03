@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { routes } from '../../Resources/other/routes';
-import { TaskbarComponent } from '../../Resources/templates/taskbar.component';
+import { routes } from '../Resources/routes';
+import { TaskbarComponent } from '../Resources/Templates/taskbar.component';
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

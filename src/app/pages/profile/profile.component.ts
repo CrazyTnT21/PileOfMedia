@@ -1,39 +1,41 @@
-import { AfterViewInit, Component, Input } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Base } from 'src/app/mainapp/Base';
-import { HTTPRequester } from 'src/Resources/other/HttpRequester';
+import {Component, OnInit} from '@angular/core';
+import {HTTPRequester} from '../../../Resources/HttpRequester';
+import {HttpParams} from "@angular/common/http";
+import {TableClass} from "../../../Resources/Templates/TableClass";
 
 @Component({
-  selector: 'app-profile',
-  templateUrl: './profile.component.html'
+    selector: 'app-profile',
+    templateUrl: './profile.component.html'
 })
-export class ProfileComponent extends Base implements AfterViewInit {
+export class ProfileComponent extends TableClass<any> implements OnInit {
 
-  @Input("profilepic")
-  description: string = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et. ";
-  profilepic: string = "https://cdn.myanimelist.net/images/userimages/13921943.jpg?t=1664021400";
-  pk: number = 1;
-  item: any = {};
-  constructor(private route: ActivatedRoute, public router: Router) {
-    super();
-  }
-  async ngAfterViewInit() {
-    this.route.queryParams
-      .subscribe(params => {
+    pk: number = 1;
+    comics: any[] = [];
+    mangas: any[] = [];
+    books: any[] = [];
+    cartoons: any[] = [];
+    tvshows: any[] = [];
+    games: any[] = [];
 
-        // this.pk = params['pk'];
+    async ngOnInit() {
+        await this.loadItems();
+    }
 
-      }
-      );
-    await this.loadItems();
-  }
-  async loadItems() {
+    async loadItems() {
+        const result = await HTTPRequester.Get("api/user", new HttpParams().set("where", this.pk));
+        this.currentItem = result.user[0];
+        this.comics = result.comics;
+    }
 
-    this.item = (await HTTPRequester.getItems("","TUser", "PK", [this.pk]))[0];
-    // this.item.person = (await HTTPRequester.getItems("TPerson", "PK", [this.item.FKPerson]))[0]
-    this.item.comics = await HTTPRequester.getItems("","TUserXComic", "FKUser", [this.pk]);
-    this.item.testcomics = [];
-    for (let i = 0; i < this.item.comics.length; i++)
-      this.item.testcomics.push((await HTTPRequester.getItems("/Comic","TComic", "PK", [this.item.comics[i].FKComic]))[0])
-  }
+    createItem(): any {
+    }
+
+    deleteItem(item: any): any {
+    }
+
+    saveItem(item: any): any {
+    }
+
+    updateItem(item: any): any {
+    }
 }

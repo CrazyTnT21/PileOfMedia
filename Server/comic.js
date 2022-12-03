@@ -1,5 +1,6 @@
 import {Server} from "./server.js";
 import queries, {Join} from "./queries.js";
+import Stuff from "./stuff.js";
 
 export default class Comic {
     constructor() {
@@ -11,25 +12,33 @@ export default class Comic {
         const leftjoin = [
             new Join("`Name`." + Server.con.escapeId(lang), "Name", "`TComic`.`FKName`", "PK"),
             new Join("`Description`." + Server.con.escapeId(lang), "Description", "`TComic`.`FKDescription`", "PK"),
-           new Join("`Synopsis`." + Server.con.escapeId(lang), "Synopsis", "`TComic`.`FKSynopsis`", "PK")
+            new Join("`Synopsis`." + Server.con.escapeId(lang), "Synopsis", "`TComic`.`FKSynopsis`", "PK"),
         ];
-        return await queries.selectLeftJoin("TComic", leftjoin, "TTranslation");
+
+        let result = await queries.selectLeftJoin("TComic", leftjoin, "TTranslation");
+        for (let i = 0; i < result.length; i++)
+            result[i].Status = await Stuff.getStatus(result[i].FKStatus, lang);
+        return result;
     }
 
-    static async insertComic(rows,languages) {
+    static async insertComic(rows, languages) {
         languages = languages.split(",");
-       let names = [];
+        let names = [];
         let descriptions = [];
         let synopsises = []
-        for (let i = 0; i < languages.length; i++){
+        let status = [];
+        for (let i = 0; i < languages.length; i++) {
             names.push("Name" + languages[i]);
             descriptions.push("Description" + languages[i]);
             synopsises.push("Synopsis" + languages[i]);
+            status.push("Status" + languages[i]);
         }
         for (let i = 0; i < rows.length; i++) {
+
             rows[i] = await queries.insertTranslation(rows[i], "FKName", names, languages);
             rows[i] = await queries.insertTranslation(rows[i], "FKDescription", descriptions, languages);
             rows[i] = await queries.insertTranslation(rows[i], "FKSynopsis", synopsises, languages);
+            rows[i] = await queries.insertTranslation(rows[i], "FKStatus", status, languages);
         }
         return await queries.insertItems("TComic", rows);
     }

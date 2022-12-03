@@ -11,11 +11,14 @@ export class Tools {
         return Math.round(days / 1000 / 60 / 60 / 24) + 1;
     }
     public static convertdate(date: Date): string {
-        return new Date(date.getTimezoneOffset() * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ')
+        return new Date(date).toISOString().slice(0, 10).toString();
     }
 
-    public static navigatePage(page: string, params?: any) {
-        Tools.router.navigate([page], { queryParams: params });
+    public static navigatePage(page: string,id?: number, params?: any) {
+        let commands: any = [page];
+        if (id)
+            commands.push(id);
+        Tools.router.navigate(commands, { queryParams: params });
     }
     public static createurl(page: string, params?: any): string {
         if (params.length > 0) {

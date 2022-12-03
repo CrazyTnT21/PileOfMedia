@@ -1,7 +1,7 @@
 import { AfterViewInit, Component } from '@angular/core';
-import { Base } from 'src/app/mainapp/Base';
-import { HTTPRequester } from 'src/Resources/other/HttpRequester';
 import { ActivatedRoute } from '@angular/router';
+import {Base} from "../../../Resources/Base";
+import {HTTPRequester} from "../../../Resources/HttpRequester";
 @Component({
   selector: 'app-comicPage',
   templateUrl: './comicPage.html'
@@ -14,12 +14,13 @@ export class ComicPage extends Base implements AfterViewInit {
     super();
   }
   async ngAfterViewInit() {
-    this.route.queryParams
-      .subscribe(params => {
-        this.pk = params['pk'];
-        this.loadItems();
-      }
-      );
+    // console.log(this.route);
+    // this.route.queryParams
+    //   .subscribe(params => {
+    //     this.pk = params['pk'];
+    //     this.loadItems();
+    //   }
+    //   );
   }
   async loadItems() {
     this.item = (await HTTPRequester.getItems("/Comic","TComic", "PK", [this.pk]))[0];

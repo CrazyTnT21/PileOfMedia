@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Base } from 'src/app/mainapp/Base';
+import {Base} from "../../../Resources/Base";
 @Component({
   selector: 'app-books',
   templateUrl: './books.component.html'

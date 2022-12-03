@@ -1,103 +1,55 @@
-<div class="col-12 nopad">
-    <div class="col-2 lazy">
-        <img class="col-12 nopad" [src]="item.IImageSource"/>
-        <div class="col-12 nopad">Tets</div>
-
+<row>
+    <div class="fix-6 lazy pad">
+        <img class="col-12" [src]="currentItem.ImageSource"/>
     </div>
-    <div class="col-10 nopad l">
-        <div class="col lazy">
+    <div class="col pad lazy">
+        <row>
+            <h1 class="no-mar pad"> {{currentItem.Name}}</h1>
+        </row>
+        <row class="row-3">
+            <h3 class="no-mar pad"> {{currentItem.Description}}</h3>
+        </row>
+        <row>
+            <row>
+                <h2 class="no-mar pad">Favourites</h2>
+            </row>
+            <row *ngIf="comics != null" style="background-color: lightgray">
+                <row>
+                    <h3 class="no-mar pad">Comics</h3>
+                </row>
+                <app-card *ngFor="let comic of comics; let i = index">
+                    <row><img [src]="comic.comic.ImageSource"></row>
+                    <row> {{comic.comic.Name}}</row>
+                    <row> {{comic.comic.Description}}</row>
+                    <row> {{comic.comic.Synopsis}}</row>
+                    <row> {{comic.comic.Volumes}}</row>
+                    <row> {{comic.comic.Chapters}}</row>
+                    <row> {{comic.comic.Status}}</row>
+                    <row> {{comic.comic.PublishStart}}</row>
+                    <row> {{comic.comic.PublishEnd}}</row>
+                </app-card>
+            </row>
+        </row>
+        <ng-container class="col-3" *ngIf="currentItem.person != null"
+                      class="col-offset-3">
             <div class="col-12">
-                <h1> {{item.IName}}</h1>
+                <img [src]="currentItem.person.ImageSource"/>
             </div>
             <div class="col-12">
-                <h3> {{item.IDescription}}</h3>
+                {{currentItem.person.Name}}
             </div>
             <div class="col-12">
-                <div class="col-12 nopad l">
-                    <h2>Favourites</h2>
-                </div>
-                <div *ngIf="item.testcomics != null"
-                     class="col-12 nopad" style="background-color: lightgray">
-                    <div class="col-12 nopad l">
-                        <h3>Comics</h3>
-                    </div>
-                    <ng-container *ngFor="let comic of item.testcomics; let i = index">
-                        <div class="col nopad l"
-                             *ngIf="item.comics[i].IFavourite.data[0]">
-                            <div class="col-12 nopad r">
-                                <img [src]="comic.IImageSource" class="max">
-                                <div class="col-12 nopad">
-                                    <a href="comicPage?pk={{comic.PK}}">{{comic.IName}}</a>
-                                </div>
-                                <div class="col-12 nopad"> {{item.comics[i].IReview}}
-                                    [{{item.comics[i].IScore}}]
-                                </div>
-                            </div>
-                        </div>
-                    </ng-container>
-                </div>
-                <div *ngIf="item.testcomics != null"
-                     class="col-12 nopad" style="background-color: lightgray">
-                    <div class="col-12 nopad l">
-                        <h3>Anime</h3>
-                    </div>
-                    <ng-container *ngFor="let comic of item.testcomics; let i = index">
-                        <div class="col-2 nopad l"
-                             *ngIf="item.comics[i].IFavourite.data[0]">
-                            <div class="col-12 nopad r">
-                                <img [src]="comic.IImageSource" class="max">
-                                <div class="col-12 nopad">
-                                    <a href="comicPage?pk={{comic.PK}}">{{comic.IName}}</a>
-                                </div>
-                                <div class="col-12 nopad"> {{item.comics[i].IReview}}
-                                    [{{item.comics[i].IScore}}]
-                                </div>
-                            </div>
-                        </div>
-                    </ng-container>
-                </div>
-                <div *ngIf="item.testcomics != null"
-                     class="col-12 nopad" style="background-color: lightgray">
-                    <div class="col-12 nopad l">
-                        <h3>Manga</h3>
-                    </div>
-                    <ng-container *ngFor="let comic of item.testcomics; let i = index">
-                        <div class="col-2 nopad l"
-                             *ngIf="item.comics[i].IFavourite.data[0]">
-                            <div class="col-12 nopad r">
-                                <img [src]="comic.IImageSource" class="max">
-                                <div class="col-12 nopad">
-                                    <a href="comicPage?pk={{comic.PK}}">{{comic.IName}}</a>
-                                </div>
-                                <div class="col-12 nopad"> {{item.comics[i].IReview}}
-                                    [{{item.comics[i].IScore}}]
-                                </div>
-                            </div>
-                        </div>
-                    </ng-container>
-                </div>
+                {{currentItem.person.FirstName}}
             </div>
-            <ng-container class="col-3" *ngIf="item.person != null"
-                          class="col-offset-3">
-                <div class="col-12">
-                    <img [src]="item.person.IImageSource"/>
-                </div>
-                <div class="col-12">
-                    {{item.person.IName}}
-                </div>
-                <div class="col-12">
-                    {{item.person.IFirstName}}
-                </div>
-                <div class="col-12">
-                    {{item.person.ILastName}}
-                </div>
-                <div class="col-12">
-                    {{item.person.IBirthday}}
-                </div>
-                <div class="col-12">
-                    {{item.person.IHeight}} cm
-                </div>
-            </ng-container>
-        </div>
+            <div class="col-12">
+                {{currentItem.person.LastName}}
+            </div>
+            <div class="col-12">
+                {{currentItem.person.Birthday}}
+            </div>
+            <div class="col-12">
+                {{currentItem.person.Height}} cm
+            </div>
+        </ng-container>
     </div>
-</div>
+</row>

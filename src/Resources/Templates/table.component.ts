@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
-import {Base} from 'src/app/mainapp/Base';
+import {Component, EventEmitter, Input, OnChanges, Output, PipeTransform, SimpleChanges} from '@angular/core';
+import {Base} from '../../Resources/Base';
 
 @Component({
     selector: 'app-table',
@@ -12,19 +12,16 @@ export class table extends Base {
     @Output() delete = new EventEmitter();
     @Output() refresh = new EventEmitter();
 
+    @Input() showColumns: boolean = true;
+
     @Input() showCreate: boolean;
     @Input() showEdit: boolean;
     @Input() showDelete: boolean;
     @Input() showRefresh: boolean;
     @Input() showType: boolean = true;
 
-    giveclass(width: number | undefined): string | null {
-        if (width == null)
-            return "col";
-        return null;
-    }
     @Output()
-    CellClick: EventEmitter<any>;
+    editRow: EventEmitter<any> = new EventEmitter();
 
     @Input()
     title: string;
@@ -40,7 +37,25 @@ export class table extends Base {
     distype: typeof displayType = displayType;
     coltype: typeof columnType = columnType;
 
+    editrow(value: any) {
+        this.editRow.emit(value);
+    }
 
+    getvalue(rowvalue: string, formatting?: string, formatfunction?: Function) {
+        if (formatfunction)
+            rowvalue = formatfunction(rowvalue);
+        if (formatting && rowvalue != undefined)
+            return formatting.replace("{}", rowvalue);
+        return rowvalue;
+
+    }
+
+    giveclass(width: number | undefined): string | null {
+        if (width)
+            return "fix-" + width;
+        else
+            return "col";
+    }
 }
 
 export interface column {
@@ -48,7 +63,10 @@ export interface column {
     Type: columnType;
     Key: string;
     width?: number;
-    Reference?: string[];
+    formatting?: string;
+    formatvalue?(value: any): string;
+    pipes?: PipeTransform[];
+    Reference?: column[];
     alignment?: alignment;
     editable?: boolean;
     alt?: string;

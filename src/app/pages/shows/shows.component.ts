@@ -1,17 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import { Base } from 'src/app/mainapp/Base';
+import { Component } from '@angular/core';
+import {Base} from "../../../Resources/Base";
 
 @Component({
   selector: 'app-shows',
   templateUrl: './shows.component.html'
 })
-export class ShowsComponent extends Base implements OnInit {
+export class ShowsComponent extends Base{
 
   constructor() {
     super();
-  }
-
-  ngOnInit(): void {
   }
 
 }
