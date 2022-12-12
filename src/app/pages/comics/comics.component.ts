@@ -1,18 +1,53 @@
 import {HttpParams} from '@angular/common/http';
-import {AfterViewInit, Component} from '@angular/core';
-import {Base} from "../../../Resources/Base";
+import {AfterViewInit, Component, ViewChild} from '@angular/core';
 import {alignment, columnType} from "../../../Resources/Templates/table.component";
 import {Tools} from "../../../Resources/Tools";
 import {HTTPRequester} from "../../../Resources/HttpRequester";
 import {DialogComponent} from "../../../Resources/Templates/dialog.component";
 import {TableClass} from "../../../Resources/Templates/TableClass";
 import {DatePipe} from "@angular/common";
+import {TComic} from "../../../../schema";
 
 @Component({
     selector: 'app-comics',
     templateUrl: './comics.component.html'
 })
 export class ComicsComponent extends TableClass<TComic> implements AfterViewInit {
+
+
+    @ViewChild(DialogComponent)
+    dialog: DialogComponent;
+
+    getvalue(column: string, language: string): string {
+        if (!this.currentItem.LanguageFields)
+            this.currentItem.LanguageFields = [];
+        const result = this.currentItem.LanguageFields.findIndex(x => x.column == column);
+        console.log(result);
+        if (result > 0) {
+            const resulttwo = this.currentItem.LanguageFields[result].values.findIndex(x => x.language == language);
+            if (resulttwo > 0)
+                return this.currentItem.LanguageFields[result].values[resulttwo].value;
+            else
+                return "";
+        } else
+            return "";
+    }
+
+    changevalue(value: string, column: string, language: string) {
+        if (!this.currentItem.LanguageFields)
+            this.currentItem.LanguageFields = [];
+        console.log(this.currentItem.LanguageFields);
+        const result = this.currentItem.LanguageFields.findIndex(x => x.column == column);
+        console.log(result);
+        if (result > 0) {
+            const resulttwo = this.currentItem.LanguageFields[result].values.findIndex(x => x.language == language);
+            if (resulttwo > 0)
+                this.currentItem.LanguageFields[result].values[resulttwo].value = value;
+            else
+                this.currentItem.LanguageFields[result].values.push({language: language, value: value});
+        } else
+            this.currentItem.LanguageFields.push({column: column, values: [{value: value, language: language}]});
+    }
 
     constructor() {
         super();
@@ -23,8 +58,7 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
         await this.loadItems();
     }
 
-    show: boolean = false;
-    override columns = [
+    public override columns = [
         {
             Name: this.StringNames.Cover,
             Type: columnType.image,
@@ -96,28 +130,33 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
         },
     ];
 
-    async saveItems(dialog: HTMLDialogElement, create: boolean = false) {
-        if (dialog.open) {
-            if (create) {
-                await this.saveItem(this.currentItem);
-                this.currentItem = this.createItem();
-            }
-            DialogComponent.closeDialog(dialog);
-        } else {
-            DialogComponent.openDialog(dialog);
-        }
-
-    }
 
     async loadItems() {
-        this.rows = await HTTPRequester.Get("api/Comic", new HttpParams().set("language",this.Languages[Base.currentLanguage]));
+        this.rows = await HTTPRequester.Get("api/Comic", new HttpParams().set("language", this.Languages[this.currentLanguage].Language));
+        console.log(this.rows);
     }
 
     createItem(): TComic {
-        return new TComic();
+        let newitem = new TComic();
+        newitem.LanguageFields = [
+            {
+                column: "FKName",
+                values: [{value: "", language: this.Languages[this.currentLanguage].Language}]
+            },
+            {
+                column: "FKDescription",
+                values: [{value: "", language: this.Languages[this.currentLanguage].Language}]
+            },
+            {
+                column: "FKSynopsis",
+                values: [{value: "", language: this.Languages[this.currentLanguage].Language}]
+            }
+        ];
+        return newitem;
     }
 
     async deleteItem(item: TComic): Promise<any> {
+        await HTTPRequester.Delete("api/Comic", new HttpParams().set("id", item.PK as number));
     }
 
     async updateItem(item: TComic): Promise<any> {
@@ -127,29 +166,7 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
         if (item.PK)
             console.log("Update!");
 
-        await HTTPRequester.Post("api/Comic", new HttpParams().set("language", "English"), {rows: [item]});
+        await HTTPRequester.Post("api/Comic", new HttpParams().set("language", "English"), item);
     }
 }
 
-export class TComic {
-    PK: number;
-    Name: string;
-    FKName: number;
-    Description: string;
-    FKDescription: number;
-    Synopsis: string;
-    FKSynopsis: number;
-    Status: string;
-    Chapters: number;
-    Volumes: number;
-    PublishStart: Date;
-    PublishEnd: Date;
-    ImageSource: string;
-    LanguageFields: LanguageField[];
-}
-
-export class LanguageField {
-    Value: string;
-    Key: string;
-    FKLanguage: number;
-}

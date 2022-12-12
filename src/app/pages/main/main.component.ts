@@ -1,4 +1,4 @@
-import {Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {DialogComponent} from "Resources/Templates/dialog.component";
 import {HTTPRequester} from "Resources/HttpRequester";
 import {HttpParams} from "@angular/common/http";
@@ -39,6 +39,5 @@ export class MainComponent implements OnInit {
     update(event: Event) {
         this.data = event;//create new data
     }
-
 }
 

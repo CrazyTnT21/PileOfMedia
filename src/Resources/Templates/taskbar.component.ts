@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {Base} from '../../Resources/Base';
+import {Base} from '../Base';
 
 @Component({
     selector: 'app-taskbar',
@@ -42,10 +42,10 @@ export class TaskbarComponent extends Base {
     }
 
     setlanguage() {
-        if (Base.currentLanguage < this.Languages.length - 1)
-            Base.currentLanguage++
-        else
-            Base.currentLanguage = 0;
+        // if (Base.currentLanguage < this.Languages.length - 1)
+        //     Base.currentLanguage++
+        // else
+        //     Base.currentLanguage = 0;
     }
 }
 

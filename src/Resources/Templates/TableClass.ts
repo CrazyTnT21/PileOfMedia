@@ -1,5 +1,3 @@
-import * as StringNames from "Resources/StringNames.json";
-import {Tools} from "../Tools";
 import {column} from "./table.component";
 import {Base} from "../Base";
 

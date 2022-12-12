@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Input, OnChanges, Output, PipeTransform, SimpleChanges} from '@angular/core';
-import {Base} from '../../Resources/Base';
+import {Component, EventEmitter, Input, Output, PipeTransform} from '@angular/core';
+import {Base} from '../Base';
 
 @Component({
     selector: 'app-table',

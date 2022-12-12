@@ -1,6 +1,6 @@
 <row>
     <div class="fix-6 lazy pad">
-        <img class="col-12" [src]="currentItem.ImageSource"/>
+        <img class="col-12" [src]="currentItem.ImageSource" alt="Profile picture"/>
     </div>
     <div class="col pad lazy">
         <row>
@@ -18,7 +18,7 @@
                     <h3 class="no-mar pad">Comics</h3>
                 </row>
                 <app-card *ngFor="let comic of comics; let i = index">
-                    <row><img [src]="comic.comic.ImageSource"></row>
+                    <row><img [src]="comic.comic.ImageSource" alt="Comic cover"></row>
                     <row> {{comic.comic.Name}}</row>
                     <row> {{comic.comic.Description}}</row>
                     <row> {{comic.comic.Synopsis}}</row>
@@ -30,10 +30,9 @@
                 </app-card>
             </row>
         </row>
-        <ng-container class="col-3" *ngIf="currentItem.person != null"
-                      class="col-offset-3">
+        <ng-container class="col-3" *ngIf="currentItem.person != null">
             <div class="col-12">
-                <img [src]="currentItem.person.ImageSource"/>
+                <img [src]="currentItem.person.ImageSource" [alt]="currentItem.person.Name"/>
             </div>
             <div class="col-12">
                 {{currentItem.person.Name}}

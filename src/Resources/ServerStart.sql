@@ -1,10 +1,18 @@
+create database collectiondb;
+use collectiondb;
+create table TLanguage(
+PK int unsigned not null auto_increment primary key,
+`Language` varchar(50) character set UTF8MB4,
+ColumnName varchar(50)
+);
+insert into TLanguage(`Language`,ColumnName) values("English","English"),("Deutsch","German"),("español","Spanish"),("日本語","Japanese"),("한국어","Korean");
 create table TTranslation(
 PK int unsigned not null auto_increment primary key,
 English varchar(500),
 German varchar(500),
 Spanish varchar(500),
-Japanese nvarchar(500),
-Korean nvarchar(500)
+Japanese varchar(500) character set UTF8MB4,
+Korean varchar(500) character set UTF8MB4
 );
 -- TPublish
 create table TPublish(
@@ -506,7 +514,7 @@ PK int unsigned not null auto_increment primary key,
 FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
 FKRight int unsigned not null, foreign key (FKRight) references TRight(PK)
 );
-create table TAcoount(
+create table TAccount(
 PK int unsigned not null auto_increment primary key,
 FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
 EMail varchar(255) not null,

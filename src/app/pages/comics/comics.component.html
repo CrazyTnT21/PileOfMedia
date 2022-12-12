@@ -1,19 +1,17 @@
-<dialog #createitemsDialog style="border-radius: .1rem; border: 0; height: 30rem; width: 50rem" class="lazy">
-    <row>
+<app-dialog (save)="saveItem(this.currentItem)" [height]=30 [width]=50 class="lazy">
         <row>
             <div class="col-9">
                 <h3 class="no-mar pad">Add Comic</h3>
             </div>
             <div class="col-3">
-                <div class="col">Lanugage:</div>
-                <div class="col-8">
-                    <select class="drop col-12 pad">
-                        <option *ngFor="let language of Languages">{{language}}</option>
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <select class="drop col-12 pad" #currentlanguage>
+                        <option *ngFor="let language of Languages">{{language.Language}}</option>
                     </select>
                 </div>
             </div>
         </row>
-
         <div class="col-3 pad">
             <row class="too-lazy" style="height: 15rem">
                 <img [src]="currentItem.ImageSource" class="fit" alt="Cover">
@@ -27,12 +25,13 @@
             <row>
                 <div class="col-6 pad">
                     <row>Name:</row>
-                    <row><input class="col-12" [(ngModel)]="currentItem.Name"></row>
+                    <row><textarea #name class="col-12" (change)="changevalue(name.value,'FKName',currentlanguage.value)"
+                                   (focus)="name.value = getvalue('FKName',currentlanguage.value)"></textarea></row>
                 </div>
                 <div class="col-6 pad">
                     <row>Status:</row>
                     <row>
-                        <select [(ngModel)]="currentItem.Status" class="drop col-6">
+                        <select [(ngModel)]="currentItem.Status" class="drop col-6 pad">
                             <!--                            <option *ngFor="let status of Statuses | async"></option>-->
                         </select>
                     </row>
@@ -40,11 +39,11 @@
             </row>
             <row class="pad">
                 <row>Description:</row>
-                <row><input class="col-12 pad" [(ngModel)]="currentItem.Description"></row>
+                <row><textarea class="col-12 row-6"> </textarea></row>
             </row>
             <row class="pad">
                 <row>Synopsis:</row>
-                <row><input class="col-12 pad" [(ngModel)]="currentItem.Synopsis"></row>
+                <row><textarea class="col-12"> </textarea></row>
             </row>
             <row>
                 <div class="col-3 pad">
@@ -83,19 +82,13 @@
             <!--                </div>-->
             <!--            </row>-->
         </div>
-    </row>
-    <row class="pad">
-        <button class="save mar" (click)="saveItems(createitemsDialog, true)">Send</button>
-        <button class="mar" (click)="saveItems(createitemsDialog)">Close</button>
-    </row>
-</dialog>
-
+</app-dialog>
 <button (click)="Tools.navigatePage(StringNames.Comics,1)">comic page</button>
 
 <app-table [rows]="rows"
            [columns]="columns"
            [showRefresh]="true"
            [showCreate]="true"
-           (editRow)="saveItems(createitemsDialog,false); currentItem = $event"
-           (create)="saveItems(createitemsDialog)"
+           (editRow)="currentItem = $event; dialog.show();"
+           (create)="dialog.show()"
            (refresh)="loadItems()"></app-table>

@@ -1,4 +1,4 @@
-import { TaskbarComponent } from "../Resources/Templates/taskbar.component";
+import { TaskbarComponent } from "./Templates/taskbar.component";
 
 export const providers: any = [
     TaskbarComponent,

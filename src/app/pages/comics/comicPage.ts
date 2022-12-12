@@ -1,7 +1,6 @@
 import { AfterViewInit, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {Base} from "../../../Resources/Base";
-import {HTTPRequester} from "../../../Resources/HttpRequester";
 @Component({
   selector: 'app-comicPage',
   templateUrl: './comicPage.html'
@@ -23,7 +22,7 @@ export class ComicPage extends Base implements AfterViewInit {
     //   );
   }
   async loadItems() {
-    this.item = (await HTTPRequester.getItems("/Comic","TComic", "PK", [this.pk]))[0];
+   // this.item = (await HTTPRequester.getItems("/Comic","TComic", "PK", [this.pk]))[0];
     // const status = (await HTTPRequester.getItems("","TStatus", "id", [this.item.FKStatus]))[0];
    // this.item.status = status.IStatus;
   }

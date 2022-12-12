@@ -1,19 +1,20 @@
-import {Base} from "../../Resources/Base";
+import {Base} from "../Base";
 import {AfterViewInit, Component, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 
 
 @Component({
     selector: 'app-dialog',
     template: `
-        <dialog #dialog [ngStyle]="{'width.rem': width, 'height.rem': height}" style="border-radius: .1rem; border: 0;" class="lazy">
-            <ng-content></ng-content>
-            <row *ngIf="showSave">
-                <button class="save" (click)="closeDialog(true)">Send</button>
-                <button class="ml" (click)="closeDialog()">Close</button>
+        <dialog #dialog [ngStyle]="{'width.rem': width, 'height.rem': height}" style=" border: 0;" class="lazy">
+            <row>
+                <ng-content></ng-content>
+                <row *ngIf="showSave">
+                    <button class="save" (click)="closeDialog(true)">Send</button>
+                    <button class="ml" (click)="closeDialog()">Close</button>
+                </row>
             </row>
         </dialog>
-    `
-})
+    `})
 export class DialogComponent extends Base implements AfterViewInit {
 
     @ViewChild("dialog") dialog: HTMLDialogElement;
