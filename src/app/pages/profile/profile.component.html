@@ -1,41 +1,41 @@
 <row>
     <div class="fix-6 lazy pad">
-        <img class="col-12" [src]="currentItem.ImageSource" alt="Profile picture"/>
+        <img class="col-12" [src]="currentItem.imageSource" alt="Profile picture"/>
     </div>
     <div class="col pad lazy">
         <row>
-            <h1 class="no-mar pad"> {{currentItem.Name}}</h1>
+            <h1 class="no-mar pad"> {{currentItem.name}}</h1>
         </row>
         <row class="row-3">
-            <h3 class="no-mar pad"> {{currentItem.Description}}</h3>
+            <h3 class="no-mar pad"> {{currentItem.description}}</h3>
         </row>
         <row>
             <row>
                 <h2 class="no-mar pad">Favourites</h2>
             </row>
-            <row *ngIf="comics != null" style="background-color: lightgray">
+            <row *ngIf="comics != null" class="lazy">
                 <row>
                     <h3 class="no-mar pad">Comics</h3>
                 </row>
                 <app-card *ngFor="let comic of comics; let i = index">
-                    <row><img [src]="comic.comic.ImageSource" alt="Comic cover"></row>
-                    <row> {{comic.comic.Name}}</row>
-                    <row> {{comic.comic.Description}}</row>
-                    <row> {{comic.comic.Synopsis}}</row>
-                    <row> {{comic.comic.Volumes}}</row>
-                    <row> {{comic.comic.Chapters}}</row>
+                    <row><img [src]="comic.comic.imageSource" alt="Comic cover"></row>
+                    <row> {{comic.comic.name}}</row>
+                    <row> {{comic.comic.description}}</row>
+                    <row> {{comic.comic.synopsis}}</row>
+                    <row> {{comic.comic.volumes}}</row>
+                    <row> {{comic.comic.chapters}}</row>
                     <row> {{comic.comic.Status}}</row>
-                    <row> {{comic.comic.PublishStart}}</row>
-                    <row> {{comic.comic.PublishEnd}}</row>
+                    <row> {{comic.comic.publishStart}}</row>
+                    <row> {{comic.comic.publishEnd}}</row>
                 </app-card>
             </row>
         </row>
         <ng-container class="col-3" *ngIf="currentItem.person != null">
             <div class="col-12">
-                <img [src]="currentItem.person.ImageSource" [alt]="currentItem.person.Name"/>
+                <img [src]="currentItem.person.imageSource" [alt]="currentItem.person.name"/>
             </div>
             <div class="col-12">
-                {{currentItem.person.Name}}
+                {{currentItem.person.name}}
             </div>
             <div class="col-12">
                 {{currentItem.person.FirstName}}

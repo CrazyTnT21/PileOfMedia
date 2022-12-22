@@ -21,26 +21,24 @@ export default class Comic implements GetSetDelete<TComic> {
     }
 
     public async insertItem(item: TComic): Promise<number> {
-        if (!item.LanguageFields) {
-            console.log(`Comic insertItem - Values missing:`);
-            console.log("\nitem.LanguageFields\n");
-            console.log(item.LanguageFields);
+        if (!item || !item.languageFields) {
+            Server.Writelog(`Comic insertItem - Values missing: item ${item}"`);
             throw 400;
         }
-        const tempname = item.LanguageFields.find(x => x.column == "FKName");
+        const tempname = item.languageFields.find(x => x.column == "FKName");
         if (tempname)
-            item.FKName = await GetSetDelete.insert(GetSetDelete.langKeyVal(tempname), "TTranslation")
+            item.fkName = await GetSetDelete.insert(GetSetDelete.langKeyVal(tempname), "TTranslation")
         else
             throw 400;
 
-        const tempdescription = item.LanguageFields.find(x => x.column == "FKDescription");
+
+        const tempdescription = item.languageFields.find(x => x.column == "FKDescription");
         if (tempdescription)
-            item.FKDescription = await GetSetDelete.insert(GetSetDelete.langKeyVal(tempdescription), "TTranslation")
+            item.fkDescription = await GetSetDelete.insert(GetSetDelete.langKeyVal(tempdescription), "TTranslation")
 
-        const tempsynopsis = item.LanguageFields.find(x => x.column == "FKSynopsis");
+        const tempsynopsis = item.languageFields.find(x => x.column == "FKSynopsis");
         if (tempsynopsis)
-            item.FKSynopsis = await GetSetDelete.insert(GetSetDelete.langKeyVal(tempsynopsis), "TTranslation")
-
+            item.fkSynopsis = await GetSetDelete.insert(GetSetDelete.langKeyVal(tempsynopsis), "TTranslation")
         GetSetDelete.deleteFields(item, ["LanguageFields", "Description", "Name", "Synopsis"]);
         return GetSetDelete.insert(item, "TComic").catch(err => {
             throw err
@@ -49,8 +47,8 @@ export default class Comic implements GetSetDelete<TComic> {
 
     public async deleteItem(whereValue: any, whereColumn?: string): Promise<number> {
         if (!whereValue || whereValue < 1) {
-            console.log("Comic deleteItem - Values missing:");
-            console.log("\nwhereValue\n");
+            Server.Writelog("Comic deleteItem - Values missing:");
+            console.log("whereValue");
             console.log(whereValue);
             throw 400;
         }

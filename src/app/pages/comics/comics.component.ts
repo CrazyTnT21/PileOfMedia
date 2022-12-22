@@ -1,11 +1,10 @@
 import {HttpParams} from '@angular/common/http';
 import {AfterViewInit, Component, ViewChild} from '@angular/core';
-import {alignment, columnType} from "../../../Resources/Templates/table.component";
+import {columnType} from "../../../Resources/Templates/table.component";
 import {Tools} from "../../../Resources/Tools";
 import {HTTPRequester} from "../../../Resources/HttpRequester";
 import {DialogComponent} from "../../../Resources/Templates/dialog.component";
 import {TableClass} from "../../../Resources/Templates/TableClass";
-import {DatePipe} from "@angular/common";
 import {TComic} from "../../../../schema";
 
 @Component({
@@ -17,38 +16,6 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
 
     @ViewChild(DialogComponent)
     dialog: DialogComponent;
-
-    getvalue(column: string, language: string): string {
-        if (!this.currentItem.LanguageFields)
-            this.currentItem.LanguageFields = [];
-        const result = this.currentItem.LanguageFields.findIndex(x => x.column == column);
-        console.log(result);
-        if (result > 0) {
-            const resulttwo = this.currentItem.LanguageFields[result].values.findIndex(x => x.language == language);
-            if (resulttwo > 0)
-                return this.currentItem.LanguageFields[result].values[resulttwo].value;
-            else
-                return "";
-        } else
-            return "";
-    }
-
-    changevalue(value: string, column: string, language: string) {
-        if (!this.currentItem.LanguageFields)
-            this.currentItem.LanguageFields = [];
-        console.log(this.currentItem.LanguageFields);
-        const result = this.currentItem.LanguageFields.findIndex(x => x.column == column);
-        console.log(result);
-        if (result > 0) {
-            const resulttwo = this.currentItem.LanguageFields[result].values.findIndex(x => x.language == language);
-            if (resulttwo > 0)
-                this.currentItem.LanguageFields[result].values[resulttwo].value = value;
-            else
-                this.currentItem.LanguageFields[result].values.push({language: language, value: value});
-        } else
-            this.currentItem.LanguageFields.push({column: column, values: [{value: value, language: language}]});
-    }
-
     constructor() {
         super();
         this.currentItem = this.createItem();
@@ -63,13 +30,14 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
             Name: this.StringNames.Cover,
             Type: columnType.image,
             Key: "ImageSource",
-            width: 3
+            width: 6,
+            maxwidth: 6
         },
         {
             Name: this.StringNames.Title,
             Type: columnType.headertext,
             Key: "Name",
-            alignment: alignment.left,
+            width: 6,
             Reference: [
                 {
                     Name: this.StringNames.Description,
@@ -96,13 +64,15 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
                     formatting: "Chapters: [{}]"
                 }
             ],
-            width: 3
+            width: 6,
+            maxwidth: 6
         },
         {
             Name: this.StringNames.AverageScore,
             Type: columnType.text,
             Key: "AverageScore",
-            width: 3
+            width: 4,
+            maxwidth: 6
         },
         {
             Name: this.StringNames.Status,
@@ -115,55 +85,57 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
             Type: columnType.text,
             Key: "PublishStart",
             formatting: "Publishing start: {}",
-            pipes: [new DatePipe("YYYY-MM-dd",)],
             formatvalue: (value: any) => Tools.convertdate(value),
             Reference: [
                 {
                     Name: this.StringNames.EndDate,
                     Type: columnType.text,
                     Key: "PublishEnd",
-                    pipes: [new DatePipe("YYYY-MM-dd",)],
                     formatvalue: (value: any) => Tools.convertdate(value),
                     formatting: "Publishing end: {}",
                 }],
-            width: 6
+            width: 12,
+            maxwidth: 12
         },
     ];
 
 
     async loadItems() {
-        this.rows = await HTTPRequester.Get("api/Comic", new HttpParams().set("language", this.Languages[this.currentLanguage].Language));
-        console.log(this.rows);
+        this.Items = await HTTPRequester.Get("api/Comic/", new HttpParams().set("language", this.currentLanguage));
+        console.log(this.Items)
     }
 
     createItem(): TComic {
         let newitem = new TComic();
-        newitem.LanguageFields = [
+        newitem.languageFields = [
             {
                 column: "FKName",
-                values: [{value: "", language: this.Languages[this.currentLanguage].Language}]
+                bindProperty: "Name",
+                values: []
             },
             {
                 column: "FKDescription",
-                values: [{value: "", language: this.Languages[this.currentLanguage].Language}]
+                bindProperty: "Description",
+                values: []
             },
             {
                 column: "FKSynopsis",
-                values: [{value: "", language: this.Languages[this.currentLanguage].Language}]
+                bindProperty: "Synopsis",
+                values: []
             }
         ];
         return newitem;
     }
 
     async deleteItem(item: TComic): Promise<any> {
-        await HTTPRequester.Delete("api/Comic", new HttpParams().set("id", item.PK as number));
+        await HTTPRequester.Delete("api/Comic", new HttpParams().set("id", item.pk as number));
     }
 
     async updateItem(item: TComic): Promise<any> {
     }
 
     async saveItem(item: TComic): Promise<any> {
-        if (item.PK)
+        if (item.pk)
             console.log("Update!");
 
         await HTTPRequester.Post("api/Comic", new HttpParams().set("language", "English"), item);

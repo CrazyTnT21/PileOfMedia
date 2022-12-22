@@ -13,9 +13,10 @@ export default abstract class GetSetDelete<T> {
     public abstract deleteItem(whereValue: any, whereColumn?: string): Promise<number>;
 
     static async QueryDB(Query: string): Promise<any> {
+        console.log(Query);
         return new Promise((resolve, reject) => Server.con.query(Query, (err: any, result: any) => {
             if (err) {
-                console.log(err);
+                Server.Writelog(err);
                 switch (err.errno) {
                     case 1364:
                         reject(400);
@@ -30,11 +31,7 @@ export default abstract class GetSetDelete<T> {
 
     public static async insert(item: any, tableName: string) {
         if (!item || !tableName) {
-            console.log("GetSetDelete insert - Values missing:");
-            console.log("\nitem\n");
-            console.log(item);
-            console.log("\ntableName\n");
-            console.log(tableName);
+            Server.Writelog(`GetSetDelete insert - Values missing: item ${item} tableName ${tableName}`);
             throw 400;
         }
         const result = await this.QueryDB(Queries.Insert(tableName, item)).catch(err => {
@@ -45,8 +42,8 @@ export default abstract class GetSetDelete<T> {
 
     public static async get(tableName: string, columns?: string[], whereColumn?: string, whereValue?: any, start?: number, count?: number, override?: boolean) {
         if (!tableName) {
-            console.log("GetSetDelete get - Values missing:");
-            console.log("\ntableName\n");
+            Server.Writelog("GetSetDelete get - Values missing:");
+            console.log("tableName");
             console.log(tableName);
             throw 400;
         }
@@ -59,12 +56,12 @@ export default abstract class GetSetDelete<T> {
 
     public static async delete(tableName: string, whereColumn: string, whereValue: any): Promise<number> {
         if (!tableName || !whereColumn || !whereValue) {
-            console.log("GetSetDelete delete - Values missing:");
-            console.log("\ntableName\n");
+            Server.Writelog("GetSetDelete delete - Values missing:");
+            console.log("tableName");
             console.log(tableName);
-            console.log("\nwhereColumn\n");
+            console.log("whereColumn");
             console.log(whereColumn);
-            console.log("\nwhereValue\n");
+            console.log("whereValue");
             console.log(whereValue);
             throw 400;
         }

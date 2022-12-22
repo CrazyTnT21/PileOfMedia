@@ -20,26 +20,16 @@ export class table extends Base {
     @Input() showRefresh: boolean;
     @Input() showType: boolean = true;
 
-    @Output()
-    editRow: EventEmitter<any> = new EventEmitter();
+    @Output() editRow: EventEmitter<any> = new EventEmitter();
 
-    @Input()
-    title: string;
+    @Input() title: string;
 
-    @Input()
-    columns: column[];
+    @Input() columns: column[];
+    @Input() rows: any[];
+    @Input() displayType: displayType = displayType.list;
 
-    @Input()
-    rows: any[];
-
-    @Input()
-    displayType: displayType = displayType.list;
     distype: typeof displayType = displayType;
     coltype: typeof columnType = columnType;
-
-    editrow(value: any) {
-        this.editRow.emit(value);
-    }
 
     getvalue(rowvalue: string, formatting?: string, formatfunction?: Function) {
         if (formatfunction)
@@ -47,14 +37,6 @@ export class table extends Base {
         if (formatting && rowvalue != undefined)
             return formatting.replace("{}", rowvalue);
         return rowvalue;
-
-    }
-
-    giveclass(width: number | undefined): string | null {
-        if (width)
-            return "fix-" + width;
-        else
-            return "col";
     }
 }
 
@@ -63,15 +45,12 @@ export interface column {
     Type: columnType;
     Key: string;
     width?: number;
+    maxwidth?: number;
     formatting?: string;
     formatvalue?(value: any): string;
-    pipes?: PipeTransform[];
     Reference?: column[];
-    alignment?: alignment;
     editable?: boolean;
     alt?: string;
-
-    formatFunction?(value: any): any;
 }
 
 export enum columnType {

@@ -5,7 +5,7 @@ import {Component, Input} from '@angular/core';
     template: `
             <ng-content></ng-content>
     `,
-    host: {"class": "fix-6 lazy"}
+    host: {"class": "fix-8 lazy"}
 })
 export class CardComponent {
 

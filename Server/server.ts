@@ -22,24 +22,31 @@ export class Server {
         const app = express();
         app.use(express.json());
         app.use(cors({origin: `http://${result[4]}:4200`})); //Angular site
-        app.listen(8000, result[4], () => console.log(`Listening on ${result[4]}:8000`));
+        app.listen(8000, result[4], () => Server.Writelog(`Listening on ${result[4]}:8000`));
         //  Comic
-        app.route("/api/comic")
-            .post(async (req: any, res: any) => res.send(
-                await Server.comic.insertItem(req.body as TComic).catch((reason: number) =>
-                    res.sendStatus(reason))))
-            .get(async (req: any, res: any) => res.send(
-                await Server.comic.getItems(req.query.columns, req.query.where, req.query.id, req.query.start, req.query.language).catch((reason: number) =>
-                    res.sendStatus(reason))))
-            .delete(async (req: any, res: any) => res.send(
-                await Server.comic.deleteItem(req.query.id).catch(reason =>
-                    res.sendStatus(reason))));
+        app.route("/api/comic").post(async (req: any, res: any) => {
+            try {
+                await GetSetDelete.QueryDB("START TRANSACTION");
+                await Server.comic.insertItem(req.body);
+                await GetSetDelete.QueryDB("COMMIT");
+            } catch (reason: any) {
+                await GetSetDelete.QueryDB("ROLLBACK").catch(reason => res.sendStatus(reason));
+                res.sendStatus(reason);
+            }
+        })
+            .get(async (req: any, res: any) =>
+                res.send(await Server.comic.getItems(req.query.columns, req.query.where, req.query.id, req.query.start, req.query.language)
+                    .catch((reason: number) => res.sendStatus(reason))))
+            .delete(async (req: any, res: any) => res.send(await Server.comic.deleteItem(req.query.id).catch(reason => res.sendStatus(reason))));
 
         //Language
         app.route("/api/language")
             .get(async (req: any, res: any) => res.send(await GetSetDelete.get("TLanguage", ["Language", "ColumnName"]).catch((reason: number) => res.sendStatus(reason))));
     }
-
+    public static Writelog(log: string): void{
+        const now: string = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60 * 1000)).toISOString().slice(0, 19).replace('T', ' ');
+        console.log(now +": " + log);
+    }
 }
 
 new Server();

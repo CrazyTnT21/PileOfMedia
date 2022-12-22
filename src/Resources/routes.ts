@@ -10,6 +10,7 @@ import {MoviesComponent} from '../app/pages/movies/movies.component';
 import {ProfileComponent} from '../app/pages/profile/profile.component';
 import {ShowsComponent} from "../app/pages/shows/shows.component";
 import * as StringNames from "../Resources/StringNames.json";
+import {ComicPage} from "../app/pages/comics/comicPage";
 
 const names = StringNames;
 export const routes: Routes = [
@@ -17,6 +18,9 @@ export const routes: Routes = [
     {path: names.Manga, component: MangaComponent},
     {path: names.Books, component: BooksComponent},
     {path: names.Comics, component: ComicsComponent},
+    {path: names.Comics + "/:id", component: ComicPage},
+    // {path: names.Comics + ":id/Volumes/:id", component: ComicsComponent},
+    //  {path: names.Comics + ":id/Chapter/:id", component: ComicsComponent},
     {path: names.Shows, component: ShowsComponent},
     {path: names.Movies, component: MoviesComponent},
     {path: names.Albums, component: AlbumsComponent},

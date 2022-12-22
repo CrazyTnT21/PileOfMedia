@@ -15,9 +15,9 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({name: 'Formatting'})
 export class FormattingPipe implements PipeTransform {
 
-    transform(value: any, args: string[]): any {
-        if (args[0] && value != undefined)
-            return args[0].replace("{}", value);
+    transform(value: any, format: string): any {
+        if (format && value != undefined)
+            return format.replace("{}", value);
         return value;
     }
 }

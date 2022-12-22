@@ -105,14 +105,6 @@
   align-self: flex-start;
   box-sizing: border-box;
 }
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  flex: 0 0 auto;
-  width: 200rem;
-  align-self: flex-start;
-  box-sizing: border-box;
-}
 
 .row-12 {
   display: flex;
@@ -221,16 +213,17 @@
   align-self: flex-start;
   box-sizing: border-box;
 }
-//@media(min-width: 500px) {
-  .col-12 {
-    display: flex;
-    flex-wrap: wrap;
-    flex: 0 0 auto;
-    width: 100%;
-    align-self: flex-start;
-    box-sizing: border-box;
-  }
-//} mobile
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  width: 200rem;
+  align-self: flex-start;
+  box-sizing: border-box;
+}
+
+//mobile
 //@media(max-width: 500px) {
 //  .col-12 {
 //    display: flex;
@@ -241,6 +234,14 @@
 //    box-sizing: border-box;
 //  }
 //}
+.col-12 {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  width: 100%;
+  align-self: flex-start;
+  box-sizing: border-box;
+}
 
 .col-11 {
   display: flex;
@@ -347,6 +348,7 @@
   flex-grow: 1;
   flex-basis: 0;
 }
+
 .pad {
   padding: 0.5rem !important;
 }
@@ -399,43 +401,22 @@
   border: 0 !important;
 }
 
-$text: rgb(238, 238, 238);
-$background: rgb(41, 39, 39);
-
-.table {
-  width: 100%;
-  background-color: rgb(240, 240, 240);
-}
-
 .number {
-  appearance: $text;
   -moz-appearance: textfield;
 }
 
 img {
   object-fit: contain;
 }
-.fill{
+
+.fill {
   height: 100%;
   width: 100%;
 }
+
 .fit {
   max-height: 100%;
   max-width: 100%;
-}
-
-.dropbtn {
-  background-color: #3498DB;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-}
-
-.dropbtn:hover,
-.dropbtn:focus {
-  background-color: #2980B9;
 }
 
 .dropdown {
@@ -454,16 +435,6 @@ img {
   overflow: auto;
   z-index: 1;
 }
-.footer{
-  position: absolute;
-  bottom: 0;
-}
-.lazy {
-  background-color: #f1f1f1;
-}
-.too-lazy {
-  background-color: lightgray;
-}
 
 .dropdown-content a {
   color: black;
@@ -474,12 +445,24 @@ img {
 
 .dropdown a:hover {
   background-color: #ddd;
-
   display: block;
 }
 
-p{
-  text-overflow: clip !important;
+.footer {
+  position: absolute;
+  bottom: 0;
+}
+
+.lazy {
+  background-color: #f1f1f1;
+}
+
+.too-lazy {
+  background-color: lightgray;
+}
+
+.maxheight{
+  max-height: 50px;
 }
 .cell {
   text-align: center;
@@ -501,7 +484,7 @@ p{
   }
 
   justify-content: center;
-  word-break: break-word;
+  word-break: break-word !important;
 }
 
 .delete {
@@ -514,14 +497,9 @@ p{
   }
 }
 
-
 button {
   padding: .5rem;
-  border-right: 0;
-  border-left: 0;
-  border-top: 0;
-  border-bottom: 0;
-  border-width: 1px;
+  border: 0;
   min-width: 5rem;
   min-height: 2.2rem;
 }
@@ -534,7 +512,6 @@ button {
     background-color: rgb(18, 204, 18);
   }
 }
-
 
 .edit {
   background-color: orange;

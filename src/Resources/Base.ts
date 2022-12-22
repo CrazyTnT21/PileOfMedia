@@ -2,16 +2,14 @@ import * as StringNames from "../Resources/StringNames.json";
 import {Tools} from "./Tools";
 
 export class Base {
-
-    public currentLanguage: number = 0;
     public StringNames = StringNames;
     public Tools = Tools;
     private static _Languages: any[] = [
-        {FK: 1, Language: "English"},
-        {FK: 2, Language: "German"},
-        {FK: 3, Language: "Spanish"},
-        {FK: 4, Language: "Japanese"},
-        {FK: 5, Language: "Italian"}
+        {PK: 1, Language: "English", LanguageColumn: "English"},
+        {PK: 2, Language: "German"},
+        {PK: 3, Language: "Spanish"},
+        {PK: 4, Language: "Japanese"},
+        {PK: 5, Language: "Italian"}
     ];
     public get Languages(): any[] {
         return Base._Languages ? Base._Languages : this.setLanguages();

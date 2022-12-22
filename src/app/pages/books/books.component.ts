@@ -18,14 +18,11 @@ export class BooksComponent extends Base implements OnInit {
       .set('title', "First");
     let header = new HttpHeaders();
     this.items = this.httpClient
-      .get<any[]>('http://localhost:8000/api/items', {
+      .get<any[]>('https://localhost:8000/api/items', {
         headers: httpHeaders,
         params: httpParams
       });
 
-  }
-  test() {
-    console.log(this.items);
   }
   ngOnInit() {
   }
