@@ -34,13 +34,13 @@
                  *ngFor="let col of columns">{{col.Name}}</div>
         </row>
         <row>
-            <row *ngFor="let row of rows" (click)="editRow.emit(row)" style="flex-wrap: nowrap">
-                <div [ngClass]="'cell ' + 'un ' + ' col'"
+            <row *ngFor="let row of rows" (click)="editRow.emit(row)" class="cell" style="flex-wrap: nowrap">
+                <div [ngClass]="'' + 'un ' + ' col'"
                      [style.min-width.rem]="col.width"
                      [style.max-width.rem]="col.maxwidth"
                      *ngFor="let col of columns">
                     <row *ngIf="col.Type==coltype.image">
-                        <img [src]="row[col.Key]" class="col-12"/>
+                        <img [src]="row[col.Key] ? row[col.Key] : 'Assets/testimg.svg'" class="col-12"/>
                     </row>
                     <div *ngIf="col.Type == coltype.text">
                         <row>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}} </row>

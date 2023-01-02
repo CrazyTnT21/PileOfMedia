@@ -18,7 +18,7 @@
         </row>
         <row class="pad">
             <row>Image source:</row>
-            <input class="col-12" [(ngModel)]="currentItem.imageSource">
+            <input class="col-12" type="file" (change)="currentItem.imageSource = preview($event)">
         </row>
     </div>
     <div class="col-9">

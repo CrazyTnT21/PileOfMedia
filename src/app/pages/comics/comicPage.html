@@ -1,59 +1,99 @@
 <ng-container *ngIf="currentItem && !error">
+  <row>
+    <div class="fix-7 lazy pad">
+      <img [src]="currentItem.imageSource ? currentItem.imageSource: 'Assets/testimg.svg'"
+           [alt]="currentItem.name ? currentItem: ''"
+           class="col-12">
+      <row>
+        <row>Status: {{currentItem.status}}</row>
+        <row>Volumes: {{currentItem.volumes}}</row>
+        <row>Chapters: {{currentItem.chapters}}</row>
+        <row>Average score: {{currentItem.averageScore}}</row>
+        <row>Publishing start: {{Tools.convertdate(currentItem.publishStart)}}</row>
+        <row>Publishing end: {{Tools.convertdate(currentItem.publishEnd)}}</row>
+        <row>
+          <row><b>Genres</b></row>
+          [
+          <div *ngFor="let genre of currentItem.genres">{{genre}}.</div>
+          ]
+        </row>
+        <row>
+          <row><b>Themes</b></row>
+          [
+          <div *ngFor="let theme of currentItem.themes">{{theme}}.</div>
+          ]
+        </row>
+      </row>
+      <button class="col-12" (click)="showAdd = !showAdd">Add to list</button>
+      <ng-container *ngIf="showAdd" style="position: absolute;z-index: 100;">
+        <row> Status:</row>
+        <input>
+        <row> Start Date:</row>
+        <input>
+        <row> End Date:</row>
+        <input>
+        <row> Rating:</row>
+        <input>
+        <row> Volumes:</row>
+        <input>
+        <row> Chapters:</row>
+        <input>
+        <button>Add</button>
+        <button (click)="showAdd = !showAdd">Hide</button>
+      </ng-container>
+    </div>
+    <div class="col pad">
+      <row><h2 class="no-mar">{{currentItem.name}}</h2></row>
+      <row>
+        <row><h3 class="no-mar">Description</h3></row>
+        <row>{{currentItem.description}}</row>
+      </row>
+      <row>
+        <row><h3 class="no-mar">Synopsis</h3></row>
+        <row>{{currentItem.synopsis}}</row>
+      </row>
+    </div>
+    <div class="fix-8">
+      <row>
+        <row><h3 class="no-mar">Creator</h3></row>
+        <app-card *ngFor="let creator of currentItem.creator">
+          <img [src]="creator.person.imageSource ? creator.person.imageSource : ''"
+               [alt]="creator.person.name ? creator.person.name: ''"
+               class="col-4">
+          <div *ngIf="creator.person.name" class="col">
+            Name: ({{creator.person.name}})
+          </div>
+          <div class="col">
+            {{creator.person.firstName}}, {{creator.person.lastName}}
+          </div>
+          <div class="col">
+            Role: ({{creator.role}})
+          </div>
+        </app-card>
+      </row>
+      <row><h3 class="no-mar">Related Media</h3></row>
+      <row>
+        <app-card *ngFor="let theme of currentItem.themes">
+          <img [src]="currentItem.imageSource"
+               [alt]="currentItem.name"
+               class="col-4">
+          {{theme}}
+          <br>
+          Status: ({{currentItem.status}})
+          <br>
+          Volumes: ({{currentItem.volumes}})
+          <br>
+          Chapters: ({{currentItem.chapters}})
+          <br>
+          Average score: ({{currentItem.averageScore}})
+        </app-card>
+      </row>
+    </div>
+
+
+    <row><h3 class="no-mar">Similar Comics</h3></row>
     <row>
-        <div class="fix-7 lazy pad">
-            <img [src]="currentItem.imageSource"
-                 [alt]="currentItem.name"
-                 class="col-12">
-            <row>
-                <row>Status: ({{currentItem.status}})</row>
-                <row>Volumes: ({{currentItem.volumes}})</row>
-                <row>Chapters: ({{currentItem.chapters}})</row>
-                <row>Average score: ({{currentItem.averageScore}})</row>
-                <row>Publishing start: ({{Tools.convertdate(currentItem.publishStart)}})</row>
-                <row>Publishing end: ({{Tools.convertdate(currentItem.publishEnd)}})</row>
-                <row>
-                    [
-                    <div *ngFor="let genre of currentItem.genres"> {{genre}},</div>
-                    ]
-                </row>
-                <row>[
-                    <div *ngFor="let theme of currentItem.themes"> {{theme}},</div>
-                    ]
-                </row>
-            </row>
-            <button class="col-12">Add to list</button>
-        </div>
-        <div class="col">
-            <row>{{currentItem.name}}</row>
-            <row>{{currentItem.description}}</row>
-            <row>{{currentItem.synopsis}}</row>
-        </div>
-        <div class="fix-4">
-            Creator
-            <app-card *ngFor="let theme of currentItem.themes">
-                <img [src]="currentItem.imageSource"
-                     [alt]="currentItem.name"
-                     class="col-4">
-                {{theme}}
-                <br>
-                Status: ({{currentItem.status}})
-                <br>
-                Volumes: ({{currentItem.volumes}})
-                <br>
-                Chapters: ({{currentItem.chapters}})
-                <br>
-                Average score: ({{currentItem.averageScore}})
-            </app-card>
-        </div>
-    </row>
-</ng-container>
-<ng-container *ngIf="error">
-    <h1>Something went wrong!</h1>
-    <h3>This Comic does not exist</h3>
-</ng-container>
-<div>Similar Comics</div>
-<row>
-    <app-card *ngFor="let theme of currentItem.themes">
+      <app-card *ngFor="let theme of currentItem.themes">
         <img [src]="currentItem.imageSource"
              [alt]="currentItem.name"
              class="col-4">
@@ -66,5 +106,12 @@
         Chapters: ({{currentItem.chapters}})
         <br>
         Average score: ({{currentItem.averageScore}})
-    </app-card>
-</row>
+      </app-card>
+    </row>
+  </row>
+</ng-container>
+<ng-container *ngIf="error">
+  <h1>Something went wrong!</h1>
+  <h3>This Comic does not exist</h3>
+  Return to <a href="Comics">Comics</a>
+</ng-container>

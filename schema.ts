@@ -1,24 +1,27 @@
 //Non-existent fields - may only exist during sending or in the client
 //Client-Only fields - only exists in the client
 
-export interface TranslateFields{
+export interface TranslateFields {
     languageFields?: LanguageField[];
 }
-export class BaseTable{
+
+export class BaseTable {
     pk?: number;
 }
+
 export class TManga extends BaseTable implements TranslateFields {
     languageFields?: LanguageField[];
 }
-export class UserStats{
+
+export class UserStats {
     liked?: number;
     followed?: number;
 }
-export class ItemStats{
+
+export class ItemStats {
     status?: string;
     genres?: string[];
     themes?: string[];
-    creator?: String[];
 }
 export class TComic extends BaseTable implements TranslateFields, UserStats, ItemStats {
     fkName: number;
@@ -43,8 +46,22 @@ export class TComic extends BaseTable implements TranslateFields, UserStats, Ite
     status?: string;
     genres?: string[];
     themes?: string[];
-    creator?: String[];
-
+    creator?: TComicXCreator[];
+}
+export class TComicXCreator extends BaseTable{
+    fkPerson?: number;
+    fkRole?: number;
+    role?: string;
+    person: TPerson;
+}
+export class TPerson extends BaseTable {
+    name?: string;
+    firstName: string;
+    lastName: string;
+    fkDescription?: number;
+    birthday?: Date;
+    height?: number;
+    imageSource?: string;
 }
 
 export interface LanguageField {
@@ -57,7 +74,8 @@ export interface translation {
     language: string;
     value: string;
 }
-export class Languages{
+
+export class Languages {
     public static readonly English: string = "English";
     public static readonly German: string = "German";
     public static readonly Spanish: string = "Spanish";

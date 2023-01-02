@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.73851712"
-     inkscape:cx="569.38423"
-     inkscape:cy="606.62101"
+     inkscape:cx="679.7405"
+     inkscape:cy="633.7023"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -40,25 +40,25 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:#280b0b;stroke-width:0.264583"
-       d="M 8.5983111,15.047044 203.49336,13.972256 201.34378,290.193 l -193.8202578,1e-5 z"
+       style="fill:#280b0b;stroke-width:0.292832"
+       d="M -4.8820698,-0.97860265 214.24125,-2.1495774 l -2.4168,300.9408874 -217.9149205,10e-6 z"
        id="path1053"
        sodipodi:nodetypes="ccccc" />
     <text
        xml:space="preserve"
-       style="font-size:89.6056px;fill:#ffffff;stroke-width:0.264583"
-       x="15.5"
-       y="116.14782"
-       id="text236"><tspan
-         id="tspan234"
-         style="stroke-width:0.264583;fill:#ffffff"
-         x="15.5"
-         y="116.14782"
-         sodipodi:role="line">Test</tspan><tspan
-         style="stroke-width:0.264583;fill:#ffffff"
-         x="15.5"
-         y="228.15482"
-         id="tspan238"
-         sodipodi:role="line">img</tspan></text>
+       style="font-size:59.9722px;line-height:1;white-space:pre;inline-size:210.91;fill:#ffffff;stroke-width:0.266566"
+       x="4.2716746"
+       y="117.01813"
+       id="text236"
+       transform="matrix(1.0074931,0,0,0.99256265,3.6903238,-22.869278)"><tspan
+         x="4.2716746"
+         y="117.01813"
+         id="tspan403">Image </tspan><tspan
+         x="4.2716746"
+         y="176.99033"
+         id="tspan405">not </tspan><tspan
+         x="4.2716746"
+         y="236.96253"
+         id="tspan407">found</tspan></text>
   </g>
 </svg>

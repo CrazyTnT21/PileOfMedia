@@ -13,9 +13,13 @@ import {TComic} from "../../../../schema";
 })
 export class ComicsComponent extends TableClass<TComic> implements AfterViewInit {
 
+    preview(value: any): string {
+        return "";
+    }
 
     @ViewChild(DialogComponent)
     dialog: DialogComponent;
+
     constructor() {
         super();
         this.currentItem = this.createItem();
@@ -29,32 +33,32 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
         {
             Name: this.StringNames.Cover,
             Type: columnType.image,
-            Key: "ImageSource",
+            Key: "imageSource",
             width: 6,
             maxwidth: 6
         },
         {
             Name: this.StringNames.Title,
             Type: columnType.headertext,
-            Key: "Name",
+            Key: "name",
             width: 6,
             Reference: [
                 {
                     Name: this.StringNames.Description,
                     Type: columnType.text,
-                    Key: "Description"
+                    Key: "description"
                 },
                 {
                     Name: this.StringNames.Synopsis,
                     Type: columnType.text,
-                    Key: "Synopsis"
+                    Key: "synopsis"
                 }
             ],
         },
         {
             Name: this.StringNames.Volumes,
             Type: columnType.text,
-            Key: "Volumes",
+            Key: "volumes",
             formatting: "Volumes: [{}]",
             Reference: [
                 {
@@ -70,27 +74,27 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
         {
             Name: this.StringNames.AverageScore,
             Type: columnType.text,
-            Key: "AverageScore",
+            Key: "averageScore",
             width: 4,
             maxwidth: 6
         },
         {
             Name: this.StringNames.Status,
             Type: columnType.text,
-            Key: "Status",
+            Key: "status",
             width: 3
         },
         {
             Name: this.StringNames.StartDate,
             Type: columnType.text,
-            Key: "PublishStart",
+            Key: "publishStart",
             formatting: "Publishing start: {}",
             formatvalue: (value: any) => Tools.convertdate(value),
             Reference: [
                 {
                     Name: this.StringNames.EndDate,
                     Type: columnType.text,
-                    Key: "PublishEnd",
+                    Key: "publishEnd",
                     formatvalue: (value: any) => Tools.convertdate(value),
                     formatting: "Publishing end: {}",
                 }],
@@ -109,17 +113,17 @@ export class ComicsComponent extends TableClass<TComic> implements AfterViewInit
         let newitem = new TComic();
         newitem.languageFields = [
             {
-                column: "FKName",
+                column: "fkName",
                 bindProperty: "Name",
                 values: []
             },
             {
-                column: "FKDescription",
+                column: "fkDescription",
                 bindProperty: "Description",
                 values: []
             },
             {
-                column: "FKSynopsis",
+                column: "fkSynopsis",
                 bindProperty: "Synopsis",
                 values: []
             }

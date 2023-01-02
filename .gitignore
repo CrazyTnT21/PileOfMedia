@@ -5,6 +5,8 @@
 /tmp
 /out-tsc
 /bazel-out
+/Server/MyCollectionServer/bin/
+/Server/MyCollectionServer/obj/
 
 # Node
 /node_modules
@@ -18,6 +20,7 @@ yarn-error.log
 .c9/
 *.launch
 .settings/
+/Server/.vs/
 *.sublime-workspace
 
 # Visual Studio Code
@@ -40,7 +43,5 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
-/Server/MyCollectionServer/bin/
-/Server/MyCollectionServer/obj/
 /Server/MyCollectionServer/Properties/
-/Server/.vs/
+/Server/MyCollectionServer/GlobalSuppressions.cs
