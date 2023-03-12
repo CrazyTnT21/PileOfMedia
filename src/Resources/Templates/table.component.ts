@@ -32,6 +32,7 @@ export class table extends Base {
     coltype: typeof columnType = columnType;
 
     getvalue(rowvalue: string, formatting?: string, formatfunction?: Function) {
+      rowvalue = this.Tools.linkText(rowvalue);
         if (formatfunction)
             rowvalue = formatfunction(rowvalue);
         if (formatting && rowvalue != undefined)
@@ -40,9 +41,9 @@ export class table extends Base {
     }
 }
 
-export interface column {
+export class column {
     Name: string;
-    Type: columnType;
+    Type: columnType = columnType.text;
     Key: string;
     width?: number;
     maxwidth?: number;

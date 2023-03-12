@@ -14,17 +14,22 @@ export abstract class HTTPRequester {
             .set('Authorization', 'Basic QWxhZGRpb');
     }
 
-    static async Get(address: string, params: HttpParams): Promise<any> {
+    static async Get<T>(address: string, params: HttpParams): Promise<any> {
         const options = {headers: this.httpHeaders, params: params};
         return await firstValueFrom(this.httpClient
             .get<any>(this.url + address, options));
     }
 
-    static async Post(address: string, params: HttpParams, value: any): Promise<any> {
+    static async Post<T>(address: string, params: HttpParams, value: any): Promise<any> {
         const options = {headers: this.httpHeaders, params: params};
         return await firstValueFrom(this.httpClient
             .post<any>(this.url + address, value, options));
     }
+  static async Put<T>(address: string, params: HttpParams, value: any): Promise<any> {
+    const options = {headers: this.httpHeaders, params: params};
+    return await firstValueFrom(this.httpClient
+      .put<T>(this.url + address, value, options));
+  }
 
     static async Delete(address: string, params: HttpParams): Promise<any[]> {
         const options = {headers: this.httpHeaders, params: params};

@@ -67,13 +67,13 @@ export class EditorComponent {
   generateCS(value: GameComponent[]): string {
     let result: string = "";
     const using: string = "Microsoft.Xna.Framework";
-    const namespace: string = "Monogame-Game";
+    const namespace: string = "Monogame-Core";
     result += "using " + using + ";";
-    result += "\n\nnamespace " + namespace + "\n{\n";
-    result += "\tpublic partial class Menu\n\t{";
+    result += "\n\nnamespace " + namespace + ";\n";
+    result += "public partial class Menu\n{";
     for (let i = 0; i < value.length; i++) {
-      result += "\n\t\t";
-      result += "private " + value[i].Type;
+      result += "\n    ";
+      result += "public " + value[i].Type;
       result += " ";
       result += value[i].Name;
       result += " = new ";
@@ -83,7 +83,6 @@ export class EditorComponent {
       // result += ", "
       result += " };";
     }
-    result += "\n\t}";
     result += "\n}";
     return result;
   }
@@ -96,7 +95,7 @@ export class EditorComponent {
 }
 export class GameComponent {
   Name: string = "GameItem";
-  Type: string = "Component";
+  Type: string = "GameObject3D";
   parameters: Parameters = new Parameters();
 }
 class Parameters {
@@ -108,7 +107,6 @@ class Parameters {
   Active: boolean = true;
 }
 enum Componenttype {
-  GameObject,
-  Component,
-  UIObject
+  GameObject3D,
+  GameObject2D
 }

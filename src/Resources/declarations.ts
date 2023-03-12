@@ -21,29 +21,33 @@ import {FooterComponent} from "./Templates/footer.component";
 import {AdminComponent} from "../app/pages/admin/admin.component";
 import {FormattingPipe} from "./pipes/formatting";
 import {WrapperPipe} from "./pipes/wrapperPipe";
+import {MangaPageComponent} from "../app/pages/manga/MangaPage.component";
+import {Linkpipe} from "../app/pages/comics/linkpipe";
 
 export const declarations: any = [
-    AppComponent,
-    MainComponent,
-    TaskbarComponent,
-    MangaComponent,
-    ComicsComponent,
-    ShowsComponent,
-    MoviesComponent,
-    BooksComponent,
-    AlbumsComponent,
-    AnimeComponent,
-    ProfileComponent,
-    table,
-    EditorComponent,
-    CellEdit,
-    ComicPage,
-    RowComponent,
-    CardComponent,
-    LoginComponent,
-    DialogComponent,
-    FooterComponent,
-    AdminComponent,
-    FormattingPipe,
-    WrapperPipe
+  AppComponent,
+  MainComponent,
+  TaskbarComponent,
+  MangaComponent,
+  ComicsComponent,
+  ShowsComponent,
+  MoviesComponent,
+  BooksComponent,
+  AlbumsComponent,
+  AnimeComponent,
+  ProfileComponent,
+  table,
+  EditorComponent,
+  CellEdit,
+  ComicPage,
+  RowComponent,
+  CardComponent,
+  LoginComponent,
+  DialogComponent,
+  FooterComponent,
+  AdminComponent,
+  FormattingPipe,
+  WrapperPipe,
+  MangaPageComponent,
+  Linkpipe
 ];

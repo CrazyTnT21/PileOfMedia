@@ -19,4 +19,7 @@ export class Tools {
             commands.push(id);
         Tools.router.navigate(commands, {queryParams: params});
     }
+    public static linkText(text: string): string{
+      return text.replace(new RegExp("test([\\s\\S]*?)1"),"<a href='testlink'></a>");
+  }
 }

@@ -1,54 +1,53 @@
-<row>
-    <div class="fix-6 lazy pad">
-        <img class="col-12" [src]="currentItem.imageSource" alt="Profile picture"/>
-    </div>
-    <div class="col pad lazy">
-        <row>
-            <h1 class="no-mar pad"> {{currentItem.name}}</h1>
-        </row>
-        <row class="row-3">
-            <h3 class="no-mar pad"> {{currentItem.description}}</h3>
-        </row>
-        <row>
-            <row>
-                <h2 class="no-mar pad">Favourites</h2>
-            </row>
-            <row *ngIf="comics != null" class="lazy">
-                <row>
-                    <h3 class="no-mar pad">Comics</h3>
-                </row>
-                <app-card *ngFor="let comic of comics; let i = index">
-                    <row><img [src]="comic.comic.imageSource" alt="Comic cover"></row>
-                    <row> {{comic.comic.name}}</row>
-                    <row> {{comic.comic.description}}</row>
-                    <row> {{comic.comic.synopsis}}</row>
-                    <row> {{comic.comic.volumes}}</row>
-                    <row> {{comic.comic.chapters}}</row>
-                    <row> {{comic.comic.Status}}</row>
-                    <row> {{comic.comic.publishStart}}</row>
-                    <row> {{comic.comic.publishEnd}}</row>
-                </app-card>
-            </row>
-        </row>
-        <ng-container class="col-3" *ngIf="currentItem.person != null">
-            <div class="col-12">
-                <img [src]="currentItem.person.imageSource" [alt]="currentItem.person.name"/>
-            </div>
-            <div class="col-12">
-                {{currentItem.person.name}}
-            </div>
-            <div class="col-12">
-                {{currentItem.person.FirstName}}
-            </div>
-            <div class="col-12">
-                {{currentItem.person.LastName}}
-            </div>
-            <div class="col-12">
-                {{currentItem.person.Birthday}}
-            </div>
-            <div class="col-12">
-                {{currentItem.person.Height}} cm
-            </div>
-        </ng-container>
-    </div>
-</row>
+<!--<row>-->
+<!--    <div class="fix-6 lazy pad">-->
+<!--        <img class="col-12" [src]="item.imageSource" alt="Profile picture"/>-->
+<!--    </div>-->
+<!--    <div class="col pad lazy">-->
+<!--        <row>-->
+<!--            <h1 class="no-mar pad"> {{item.name}}</h1>-->
+<!--        </row>-->
+<!--        <row class="row-3">-->
+<!--            <h3 class="no-mar pad"> {{item.description}}</h3>-->
+<!--        </row>-->
+<!--        <row>-->
+<!--            <row>-->
+<!--                <h2 class="no-mar pad">Favourites</h2>-->
+<!--            </row>-->
+<!--            <row *ngIf="comics != null" class="lazy">-->
+<!--                <row>-->
+<!--                    <h3 class="no-mar pad">Comics</h3>-->
+<!--                </row>-->
+<!--                <app-card *ngFor="let comic of comics; let i = index">-->
+<!--                    <row><img [src]="comic.comic.imageSource" alt="Comic cover"></row>-->
+<!--                    <row> {{comic.comic.name}}</row>-->
+<!--                    <row> {{comic.comic.description}}</row>-->
+<!--                    <row> {{comic.comic.volumes}}</row>-->
+<!--                    <row> {{comic.comic.chapters}}</row>-->
+<!--                    <row> {{comic.comic.Status}}</row>-->
+<!--                    <row> {{comic.comic.publishStart}}</row>-->
+<!--                    <row> {{comic.comic.publishEnd}}</row>-->
+<!--                </app-card>-->
+<!--            </row>-->
+<!--        </row>-->
+<!--        <ng-container class="col-3" *ngIf="item.person != null">-->
+<!--            <div class="col-12">-->
+<!--                <img [src]="item.person.imageSource" [alt]="item.person.name"/>-->
+<!--            </div>-->
+<!--            <div class="col-12">-->
+<!--                {{item.person.name}}-->
+<!--            </div>-->
+<!--            <div class="col-12">-->
+<!--                {{item.person.FirstName}}-->
+<!--            </div>-->
+<!--            <div class="col-12">-->
+<!--                {{item.person.LastName}}-->
+<!--            </div>-->
+<!--            <div class="col-12">-->
+<!--                {{item.person.Birthday}}-->
+<!--            </div>-->
+<!--            <div class="col-12">-->
+<!--                {{item.person.Height}} cm-->
+<!--            </div>-->
+<!--        </ng-container>-->
+<!--    </div>-->
+<!--</row>-->

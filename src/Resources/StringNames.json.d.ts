@@ -41,7 +41,6 @@ interface StringNames {
     readonly Average: string;
     readonly AverageScore: string;
     readonly Popularity: string;
-    readonly Synopsis: string;
     readonly Edit: string;
     readonly Delete: string;
     readonly Link: string;

@@ -1,528 +1,591 @@
 create database collectiondb;
 use collectiondb;
-create table TLanguage(
+create table `Language`(
 PK int unsigned not null auto_increment primary key,
-`Language` varchar(50) character set UTF8MB4,
-ColumnName varchar(50)
+`Language` varchar(50) character set UTF8MB4 not null,
+`Column` char(2) not null
 );
-insert into TLanguage(`Language`,ColumnName) values("English","English"),("Deutsch","German"),("español","Spanish"),("日本語","Japanese"),("한국어","Korean");
-create table TTranslation(
+insert into `Language`(`Language`,`Column`) values("English","EN"),("Deutsch","DE"),("español","ES"),("日本語","JA"),("한국어","KO"),("中文","ZH"),("Nederlands","NL"),("dansk","DA");
+create table Translation(
 PK int unsigned not null auto_increment primary key,
-English varchar(500),
-German varchar(500),
-Spanish varchar(500),
-Japanese varchar(500) character set UTF8MB4,
-Korean varchar(500) character set UTF8MB4
+Prefered char(2),
+EN varchar(500),
+DE varchar(500),
+ES varchar(500),
+DA varchar(500),
+NL varchar(500),
+JA varchar(500) character set UTF8MB4,
+KO varchar(500) character set UTF8MB4,
+ZH varchar(500) character set UTF8MB4
 );
--- TPublish
-create table TPublish(
+create table Relation(
 PK int unsigned not null auto_increment primary key,
-FKPublish int unsigned not null, foreign key (FKPublish) references TTranslation(PK)
+FKRelation int unsigned not null, foreign key (FKRelation) references Translation(PK)
 );
--- TRelation
-create table TRelation(
+INSERT INTO Translation (EN, DE) VALUES ('Unkown', 'Unbekannt'); insert into Relation (FKRelation) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Prequel', 'Prequel'); insert into Relation (FKRelation) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Sequel', 'Fortsetzung'); insert into Relation (FKRelation) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Adaptation', 'Adaption'); insert into Relation (FKRelation) Values(LAST_INSERT_ID());
+create table Genre(
 PK int unsigned not null auto_increment primary key,
-FKRelation int unsigned not null, foreign key (FKRelation) references TTranslation(PK)
+FKGenre int unsigned not null, foreign key (FKGenre) references Translation(PK)
 );
--- insert into TRelation(Relation) values("Unkown"),("Prequel"),("Sequel"),("Adaptation");
--- TGenre
-create table TGenre(
+INSERT INTO Translation (EN, DE) VALUES ('Action', 'Action'); insert into Genre (FKGenre) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Romance', 'Romanze'); insert into Genre (FKGenre) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Horror', 'Horror'); insert into Genre (FKGenre) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Comedy', 'Komödie'); insert into Genre (FKGenre) Values(LAST_INSERT_ID());
+create table `Status`(
 PK int unsigned not null auto_increment primary key,
-FKGenre int unsigned not null, foreign key (FKGenre) references TTranslation(PK)
+FKStatus int unsigned not null, foreign key (FKStatus) references Translation(PK),
+`Status` tinyint unsigned not null
 );
--- insert into TGenre(Genre) values("Action"),("Romance"),("Horror");
--- TStatus
-create table TStatus(
+INSERT INTO Translation (EN, DE) VALUES ('Unkown', 'Unbekannt'); insert into `Status` (FKStatus, `Status`) Values(LAST_INSERT_ID(),0);
+INSERT INTO Translation (EN, DE) VALUES ('Not started', 'Noch nicht gestartet'); insert into `Status` (FKStatus, `Status`) Values(LAST_INSERT_ID(),1);
+INSERT INTO Translation (EN, DE) VALUES ('Running', 'Am laufen'); insert into `Status` (FKStatus, `Status`) Values(LAST_INSERT_ID(),2);
+INSERT INTO Translation (EN, DE) VALUES ('Publishing', 'Zurzeit veröffentlicht'); insert into `Status` (FKStatus, `Status`) Values(LAST_INSERT_ID(),2);
+INSERT INTO Translation (EN, DE) VALUES ('Finished', 'Abgeschlossen'); insert into `Status` (FKStatus, `Status`) Values(LAST_INSERT_ID(),3);
+INSERT INTO Translation (EN, DE) VALUES ('Hiatus', 'Pausiert'); insert into `Status` (FKStatus, `Status`) Values(LAST_INSERT_ID(),4);
+create table UserStatus(
 PK int unsigned not null auto_increment primary key,
-FKStatus int unsigned not null, foreign key (FKStatus) references TTranslation(PK)
+FKUserStatus int unsigned not null, foreign key (FKUserStatus) references Translation(PK),
+`Status` tinyint unsigned not null
 );
--- insert into TStatus(Status) values("Unkown"),("Not started"),("Running"),("Publishing"),("Finished"),("Hiatus");
--- TUserStatus
-create table TUserStatus(
+INSERT INTO Translation (EN, DE) VALUES ('Not started', 'Noch nicht gestartet'); insert into UserStatus (FKUserStatus,`Status`) Values(LAST_INSERT_ID(),1);
+INSERT INTO Translation (EN, DE) VALUES ('Reading', 'Am Lesen'); insert into UserStatus (FKUserStatus,`Status`) Values(LAST_INSERT_ID(),2);
+INSERT INTO Translation (EN, DE) VALUES ('Playing', 'Am Spielen'); insert into UserStatus (FKUserStatus,`Status`) Values(LAST_INSERT_ID(),2);
+INSERT INTO Translation (EN, DE) VALUES ('Watching', 'Am Schauen'); insert into UserStatus (FKUserStatus,`Status`) Values(LAST_INSERT_ID(),2);
+INSERT INTO Translation (EN, DE) VALUES ('Finished', 'Abgeschlossen'); insert into UserStatus (FKUserStatus,`Status`) Values(LAST_INSERT_ID(),3);
+INSERT INTO Translation (EN, DE) VALUES ('Paused', 'Pausiert'); insert into UserStatus (FKUserStatus,`Status`) Values(LAST_INSERT_ID(),4);
+create table Theme(
 PK int unsigned not null auto_increment primary key,
-FKUserStatus int unsigned not null, foreign key (FKUserStatus) references TTranslation(PK)
+FKTheme int unsigned not null, foreign key (FKTheme) references Translation(PK)
 );
--- insert into TUserStatus(UserStatus) values("Not started"),("Reading"),("Watching"),("Finished"),("Paused");
--- TTheme
-create table TTheme(
+INSERT INTO Translation (EN, DE) VALUES ('Psychological', 'Psychologisch'); insert into Theme (FKTheme) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Gore', 'Blut'); insert into Theme (FKTheme) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Mythology', 'Mythologie'); insert into Theme (FKTheme) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Military', 'Militär'); insert into Theme (FKTheme) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Sinister', 'Finster'); insert into Theme (FKTheme) Values(LAST_INSERT_ID());
+create table `Role`(
 PK int unsigned not null auto_increment primary key,
-FKTheme int unsigned not null, foreign key (FKTheme) references TTranslation(PK)
+FKRole int unsigned not null, foreign key (FKRole) references Translation(PK)
 );
--- insert into TTheme(Theme) values("Psychological"),("Gore"),("Mythology"),("Military");
--- TRole
-create table TRole(
+INSERT INTO Translation (EN, DE) VALUES ('Director', 'Regisseur'); insert into `Role` (FKRole) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Artist', 'Künstler'); insert into `Role` (FKRole) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Actor', 'Schauspieler'); insert into `Role` (FKRole) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Voice Actor', 'Synchronsprecher'); insert into `Role` (FKRole) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Sound designer', 'Sounddesigner'); insert into `Role` (FKRole) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Producer', 'Produzent'); insert into `Role` (FKRole) Values(LAST_INSERT_ID());
+INSERT INTO Translation (EN, DE) VALUES ('Writer', 'Schreiber'); insert into `Role` (FKRole) Values(LAST_INSERT_ID());
+create table `Character`(
 PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TTranslation(PK)
-);
--- insert into TRole(`Role`) values("Unkown"),("User"),("Director"),("Artist"),("Writer"),("Voice Actor"),("Sound designer"),("Producer");
-
--- TCharacter
-create table TCharacter(
-PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKFirstName int unsigned not null, foreign key (FKFirstName) references TTranslation(PK),
-FKLastName int unsigned not null, foreign key (FKLastName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKFirstName int unsigned, foreign key (FKFirstName) references Translation(PK),
+FKLastName int unsigned, foreign key (FKLastName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Birthday date,
-Height tinyint unsigned,
+Height int unsigned,
 ImageSource varchar(255)
 );
--- TPerson
-create table TPerson(
+create table Person(
 PK int unsigned not null auto_increment primary key,
 `Name` varchar(50) not null,
 FirstName varchar(50),
 LastName varchar(50),
-FKDescription  int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Birthday date,
 Height tinyint unsigned,
 ImageSource varchar(255)
 );
-create table TPersonXTRole(
-PK int unsigned not null auto_increment primary key,
-FKPerson int unsigned not null, foreign key (FKPerson) references TPerson(PK),
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK)
+create table PersonXrole(
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+primary key(FKPerson,FKRole)
 );
--- TMovie
-create table TMovie(
+create table Movie(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Airing date,
 Length smallint unsigned,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
-ImageSource varchar(255)
+FKStatus int unsigned, foreign key (FKStatus) references status(PK),
+ImageSource varchar(255),
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TMovieXGenre(
-PK int unsigned not null auto_increment primary key,
-FKMovie int unsigned not null, foreign key (FKMovie) references TMovie(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table MovieXGenre(
+FKMovie int unsigned not null, foreign key (FKMovie) references movie(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKMovie,FKGenre)
 );
-create table TMovieXTheme(
-PK int unsigned not null auto_increment primary key,
-FKMovie int unsigned not null, foreign key (FKMovie) references TMovie(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table MovieXTheme(
+FKMovie int unsigned not null, foreign key (FKMovie) references movie(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references theme(PK),
+primary key(FKMovie,FKTheme)
 );
-create table TMovieXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKMovie int unsigned not null, foreign key (FKMovie) references TMovie(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
+create table MovieXCreator(
+FKMovie int unsigned not null, foreign key (FKMovie) references movie(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+primary key(FKMovie,FKPerson,FKRole)
 );
--- TManga
-create table TManga(
+-- 
+create table Album(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+`Name` varchar(100) not null,
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
+`Release` date,
+Songs tinyint unsigned,
+AverageScore decimal(4,2),
+ImageSource varchar(255),
+Added date not null DEFAULT (CURRENT_DATE)
+);
+create table AlbumXCreator(
+FKAlbum int unsigned not null, foreign key (FKAlbum) references Album(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+primary key(FKAlbum,FKPerson,FKRole)
+);
+create table Song(
+PK int unsigned not null auto_increment primary key,
+`Name` varchar(100) not null,
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
+FKAlbum int unsigned not null, foreign key (FKAlbum) references Album(PK),
+`Release` date,
+Songs tinyint unsigned,
+AverageScore decimal(4,2),
+ImageSource varchar(255),
+Added date not null DEFAULT (CURRENT_DATE)
+);
+create table SongXGenre(
+FKSong int unsigned not null, foreign key (FKSong) references Song(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKSong,FKGenre)
+);
+create table SongXCreator(
+FKSong int unsigned not null, foreign key (FKSong) references Song(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+primary key(FKSong,FKPerson,FKRole)
+);
+create table Manga(
+PK int unsigned not null auto_increment primary key,
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 PublishStart date,
 PublishEnd date,
 Volumes smallint unsigned,
 Chapters smallint unsigned,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
+FKStatus int unsigned, foreign key (FKStatus) references status(PK),
 ImageSource varchar(255),
-FKPublish int unsigned, foreign key (FKPublish) references TPublish(PK)
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TMangaXGenre(
-PK int unsigned not null auto_increment primary key,
-FKManga int unsigned not null, foreign key (FKManga) references TManga(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table MangaXGenre(
+FKManga int unsigned not null, foreign key (FKManga) references manga(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKManga,FKGenre)
 );
-create table TMangaXTheme(
-PK int unsigned not null auto_increment primary key,
-FKManga int unsigned not null, foreign key (FKManga) references TManga(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table MangaXTheme(
+FKManga int unsigned not null, foreign key (FKManga) references manga(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references theme(PK),
+primary key(FKManga,FKTheme)
 );
-create table TMangaXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKManga int unsigned not null, foreign key (FKManga) references TManga(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
+create table MangaXCreator(
+FKManga int unsigned not null, foreign key (FKManga) references manga(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+primary key(FKManga,FKPerson,FKRole)
 );
--- TAnime
-create table TAnime(
+create table Anime(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 AiringStart date,
 AiringEnd date,
 Episodes smallint unsigned,
 Seasons smallint unsigned,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
-ImageSource varchar(255)
+FKStatus int unsigned, foreign key (FKStatus) references status(PK),
+ImageSource varchar(255),
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TAnimeSeason(
+create table AnimeSeason(
 PK int unsigned not null auto_increment primary key,
-FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
-FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKAnime int unsigned not null, foreign key (FKAnime) references Anime(PK),
+FKTitle int unsigned not null, foreign key (FKTitle) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Episodes smallint not null,
 PublishStart date,
 PublishEnd date,
 AverageScore tinyint
 );
-create table TAnimeEpisode(
+create table AnimeEpisode(
 PK int unsigned not null auto_increment primary key,
-FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
-FKAnimeSeason int unsigned, foreign key (FKAnimeSeason) references TAnimeSeason(PK),
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKAnime int unsigned not null, foreign key (FKAnime) references Anime(PK),
+FKAnimeSeason int unsigned, foreign key (FKAnimeSeason) references AnimeSeason(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Length smallint not null,
 AiringDate date,
 AverageScore tinyint
 );
-create table TAnimeXCharacter(
-PK int unsigned not null auto_increment primary key,
-FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
-FKCharacter int unsigned not null, foreign key (FKCharacter) references TCharacter(PK)
+create table AnimeXCharacter(
+FKAnime int unsigned not null, foreign key (FKAnime) references Anime(PK),
+FKCharacter int unsigned not null, foreign key (FKCharacter) references `Character`(PK),
+primary key(FKAnime,FKCharacter)
 );
-create table TAnimeXGenre(
-PK int unsigned not null auto_increment primary key,
-FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table AnimeXGenre(
+FKAnime int unsigned not null, foreign key (FKAnime) references Anime(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKAnime,FKGenre)
 );
-create table TAnimeXTheme(
-PK int unsigned not null auto_increment primary key,
-FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table AnimeXTheme(
+FKAnime int unsigned not null, foreign key (FKAnime) references Anime(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references theme(PK),
+primary key(FKAnime,FKTheme)
 );
-create table TAnimeXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKAnime int unsigned not null, foreign key (FKAnime) references TAnime(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
+create table AnimeXCreator(
+FKAnime int unsigned not null, foreign key (FKAnime) references Anime(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+primary key(FKAnime,FKPerson,FKRole)
 );
--- TComic
-create table TComic(
+create table Comic(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned, foreign key (FKSynopsis) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 PublishStart date,
 PublishEnd date,
 Volumes smallint unsigned,
 Chapters smallint unsigned,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
-ImageSource varchar(255)
+FKStatus int unsigned, foreign key (FKStatus) references status(PK),
+ImageSource varchar(255),
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TComicVolume(
+create table ComicVolume(
 PK int unsigned not null auto_increment primary key,
-FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKComic int unsigned not null, foreign key (FKComic) references Comic(PK),
+FKTitle int unsigned not null, foreign key (FKTitle) references translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Pages smallint not null,
 PublishDate date,
 AverageScore tinyint
 );
-create table TComicChapter(
+create table ComicChapter(
 PK int unsigned not null auto_increment primary key,
-FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-FKComicVolume int unsigned, foreign key (FKComicVolume) references TComicVolume(PK),
-FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKComic int unsigned not null, foreign key (FKComic) references Comic(PK),
+FKComicVolume int unsigned, foreign key (FKComicVolume) references ComicVolume(PK),
+FKTitle int unsigned not null, foreign key (FKTitle) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Pages smallint not null,
 PublishDate date,
 AverageScore tinyint
 );
 
-create table TComicXCharacter(
-PK int unsigned not null auto_increment primary key,
-FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-FKCharacter int unsigned not null, foreign key (FKCharacter) references TCharacter(PK)
+create table ComicXCharacter(
+FKComic int unsigned not null, foreign key (FKComic) references Comic(PK),
+FKCharacter int unsigned not null, foreign key (FKCharacter) references `Character`(PK),
+primary key (FKComic,FKCharacter)
 );
-create table TComicXGenre(
-PK int unsigned not null auto_increment primary key,
-FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table ComicXGenre(
+FKComic int unsigned not null, foreign key (FKComic) references Comic(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key (FKComic,FKGenre)
 );
-create table TComicXTheme(
-PK int unsigned not null auto_increment primary key,
-FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table ComicXTheme(
+FKComic int unsigned not null, foreign key (FKComic) references Comic(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references theme(PK),
+primary key (FKComic,FkTheme)
 );
-create table TComicXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references TPerson(PK)
+create table ComicXCreator(
+FKComic int unsigned not null, foreign key (FKComic) references Comic(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+primary key (FKComic,FKPerson,FKRole)
 );
--- TCartoon
-create table TCartoon(
+create table Cartoon(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 AiringStart date,
 AiringEnd date,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
+FKStatus int unsigned, foreign key (FKStatus) references status(PK),
 ImageSource varchar(255),
-FKPublish int unsigned, foreign key (FKPublish) references TPublish(PK)
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TCartoonSeason(
+create table CartoonSeason(
 PK int unsigned not null auto_increment primary key,
-FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
-FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKCartoon int unsigned not null, foreign key (FKCartoon) references Cartoon(PK),
+FKTitle int unsigned not null, foreign key (FKTitle) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Episodes smallint,
 AiringStart date,
 AiringEnd date,
 AverageScore tinyint
 );
-create table TCartoonEpisode(
+create table CartoonEpisode(
 PK int unsigned not null auto_increment primary key,
-FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
-FKCartoonSeason int unsigned, foreign key (FKCartoonSeason) references TCartoonSeason(PK),
-FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKCartoon int unsigned not null, foreign key (FKCartoon) references Cartoon(PK),
+FKCartoonSeason int unsigned, foreign key (FKCartoonSeason) references CartoonSeason(PK),
+FKTitle int unsigned not null, foreign key (FKTitle) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Length smallint,
 AiringDate date,
 AverageScore tinyint
 );
-create table TCartoonXCharacter(
-PK int unsigned not null auto_increment primary key,
-FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
-FKCharacter int unsigned not null, foreign key (FKCharacter) references TCharacter(PK)
+create table CartoonXCharacter(
+FKCartoon int unsigned not null, foreign key (FKCartoon) references Cartoon(PK),
+FKCharacter int unsigned not null, foreign key (FKCharacter) references `Character`(PK),
+primary key(FKCartoon,FKCharacter)
 );
-create table TCartoonXGenre(
-PK int unsigned not null auto_increment primary key,
-FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table CartoonXGenre(
+FKCartoon int unsigned not null, foreign key (FKCartoon) references Cartoon(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKCartoon,FKGenre)
 );
-create table TCartoonXTheme(
-PK int unsigned not null auto_increment primary key,
-FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table CartoonXTheme(
+FKCartoon int unsigned not null, foreign key (FKCartoon) references Cartoon(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references theme(PK),
+primary key(FKCartoon,FKTheme)
 );
-create table TCartoonXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKCartoon int unsigned not null, foreign key (FKCartoon) references TCartoon(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
+create table CartoonXCreator(
+FKCartoon int unsigned not null, foreign key (FKCartoon) references Cartoon(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+primary key(FKCartoon,FKRole,FKPerson)
 );
--- TBook
-create table TBook(
+create table Book(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
+Chapters tinyint unsigned,
 Pages smallint unsigned,
 Words smallint unsigned,
 PublishDate date,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
-ImageSource varchar(255)
+FKStatus int unsigned, foreign key (FKStatus) references status(PK),
+ImageSource varchar(255),
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TBookXCharacter(
-PK int unsigned not null auto_increment primary key,
-FKBook int unsigned not null, foreign key (FKBook) references TBook(PK),
-FKCharacter int unsigned not null, foreign key (FKCharacter) references TCharacter(PK)
+create table BookXCharacter(
+FKBook int unsigned not null, foreign key (FKBook) references Book(PK),
+FKCharacter int unsigned not null, foreign key (FKCharacter) references `Character`(PK),
+primary key(FKBook,FKCharacter)
 );
-create table TBookXGenre(
-PK int unsigned not null auto_increment primary key,
-FKBook int unsigned not null, foreign key (FKBook) references TBook(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table BookXGenre(
+FKBook int unsigned not null, foreign key (FKBook) references Book(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKBook,FKGenre)
 );
-create table TBookXTheme(
-PK int unsigned not null auto_increment primary key,
-FKBook int unsigned not null, foreign key (FKBook) references TBook(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table BookXTheme(
+FKBook int unsigned not null, foreign key (FKBook) references Book(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references theme(PK),
+primary key(FKBook,FKTheme)
 );
-create table TBookXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKBook int unsigned not null, foreign key (FKBook) references TBook(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
+create table BookXCreator(
+FKBook int unsigned not null, foreign key (FKBook) references Book(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+primary key(FKBook,FKRole,FKPerson)
 );
--- TTVShow
-create table TTVShow(
+create table TVShow(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 AiringStart date,
 AiringEnd date,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
+FKStatus int unsigned, foreign key (FKStatus) references status(PK),
 ImageSource varchar(255),
-FKPublish int unsigned, foreign key (FKPublish) references TPublish(PK)
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TTVShowSeason(
+create table TVShowSeason(
 PK int unsigned not null auto_increment primary key,
-FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKTVShow int unsigned not null, foreign key (FKTVShow) references TVShow(PK),
+FKTitle int unsigned not null, foreign key (FKTitle) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Episodes smallint,
 AiringStart date,
 AiringEnd date,
 AverageScore tinyint
 );
-create table TTVShowEpisode(
+create table TVShowEpisode(
 PK int unsigned not null auto_increment primary key,
-FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-FKTVShowSeason int unsigned, foreign key (FKTVShowSeason) references TTVShowSeason(PK),
-FKTitle int unsigned not null, foreign key (FKTitle) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKTVShow int unsigned not null, foreign key (FKTVShow) references TVShow(PK),
+FKTVShowSeason int unsigned, foreign key (FKTVShowSeason) references TVShowSeason(PK),
+FKTitle int unsigned not null, foreign key (FKTitle) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Length smallint,
 AiringDate date,
 AverageScore tinyint
 );
-create table TTVShowXCharacter(
-PK int unsigned not null auto_increment primary key,
-FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-FKCharacter int unsigned not null, foreign key (FKCharacter) references TCharacter(PK)
+create table TVShowXCharacter(
+FKTVShow int unsigned not null, foreign key (FKTVShow) references TVShow(PK),
+FKCharacter int unsigned not null, foreign key (FKCharacter) references `Character`(PK),
+primary key(FKTVShow,FKCharacter)
 );
-create table TTVShowXGenre(
-PK int unsigned not null auto_increment primary key,
-FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table TVShowXGenre(
+FKTVShow int unsigned not null, foreign key (FKTVShow) references TVShow(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKTVShow,FKGenre)
 );
-create table TTVShowXTheme(
-PK int unsigned not null auto_increment primary key,
-FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table TVShowXTheme(
+FKTVShow int unsigned not null, foreign key (FKTVShow) references TVShow(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references theme(PK),
+primary key(FKTVShow,FKTheme)
 );
-create table TTVShowXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references TPerson(PK)
+create table TVShowXCreator(
+FKTVShow int unsigned not null, foreign key (FKTVShow) references TVShow(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+primary key(FKTVShow,FKRole,FKPerson)
 );
--- TGame
-create table TGame(
+create table Game(
 PK int unsigned not null auto_increment primary key,
-FKName int unsigned not null, foreign key (FKName) references TTranslation(PK),
-FKDescription int unsigned not null, foreign key (FKDescription) references TTranslation(PK),
-FKSynopsis int unsigned not null, foreign key (FKSynopsis) references TTranslation(PK),
+FKName int unsigned not null, foreign key (FKName) references Translation(PK),
+FKDescription int unsigned, foreign key (FKDescription) references Translation(PK),
 Published date,
 AverageScore decimal(4,2),
-FKStatus int unsigned, foreign key (FKStatus) references TStatus(PK),
-ImageSource varchar(255)
+ImageSource varchar(255),
+Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TGameXCharacter(
-PK int unsigned not null auto_increment primary key,
-FKGame int unsigned not null, foreign key (FKGame) references TGame(PK),
-FKCharacter int unsigned not null, foreign key (FKCharacter) references TCharacter(PK)
+create table GameXCharacter(
+FKGame int unsigned not null, foreign key (FKGame) references Game(PK),
+FKCharacter int unsigned not null, foreign key (FKCharacter) references `Character`(PK),
+primary key(FKGame,FKCharacter)
 );
-create table TGameXGenre(
-PK int unsigned not null auto_increment primary key,
-FKGame int unsigned not null, foreign key (FKGame) references TGame(PK),
-FKGenre int unsigned not null, foreign key (FKGenre) references TGenre(PK)
+create table GameXGenre(
+FKGame int unsigned not null, foreign key (FKGame) references Game(PK),
+FKGenre int unsigned not null, foreign key (FKGenre) references genre(PK),
+primary key(FKGame,FKGenre)
 );
-create table TGameXTheme(
-PK int unsigned not null auto_increment primary key,
-FKGame int unsigned not null, foreign key (FKGame) references TGame(PK),
-FKTheme int unsigned not null, foreign key (FKTheme) references TTheme(PK)
+create table GameXTheme(
+FKGame int unsigned not null, foreign key (FKGame) references Game(PK),
+FKTheme int unsigned not null, foreign key (FKTheme) references Theme(PK),
+primary key(FKGame,FKTheme)
 );
-create table TGameXCreator(
-PK int unsigned not null auto_increment primary key,
-FKRole int unsigned not null, foreign key (FKRole) references TRole(PK),
-FKGame int unsigned not null, foreign key (FKGame) references TGame(PK),
-FKPerson int unsigned not null, foreign key (FKPerson) references Tperson(PK)
+create table GameXCreator(
+FKGame int unsigned not null, foreign key (FKGame) references Game(PK),
+FKRole int unsigned not null, foreign key (FKRole) references role(PK),
+FKPerson int unsigned not null, foreign key (FKPerson) references person(PK),
+primary key(FKGame,FKRole,FKPerson)
 );
--- TUser
-create table TUser(
+create table `User`(
 PK int unsigned not null auto_increment primary key,
-FKPerson int unsigned, foreign key (FKPerson) references TPerson(PK),
+FKPerson int unsigned, foreign key (FKPerson) references person(PK),
 `Name` varchar(50) not null,
 Joined date not null DEFAULT (CURRENT_DATE),
 `Description` varchar(500),
-ImageSource varchar(255),
-MangaAverage decimal(4,2),
-ComicAverage decimal(4,2),
-TVShowAverage decimal(4,2),
-MovieAverage decimal(4,2),
-AnimeAverage decimal(4,2),
-BookAverage decimal(4,2),
-CartoonAverage decimal(4,2),
-GameAverage decimal(4,2)
+ImageSource varchar(255)
 );
-create table TUserXManga(
+create table Average(
 PK int unsigned not null auto_increment primary key,
-FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
-FKManga int unsigned not null, foreign key (FKManga) references TManga(PK),
-FKUserStatus int unsigned not null, foreign key (FKUserStatus) references TUserStatus(PK),
+FKUser int unsigned, foreign key (FKUser) references User(PK),
+MangaAverage decimal(5,2)  CHECK(MangaAverage BETWEEN 0.99 AND 10.01),
+ComicAverage decimal(5,2) CHECK(ComicAverage BETWEEN 0.99 AND 10.01),
+TVShowAverage decimal(5,2) CHECK(TVShowAverage BETWEEN 0.99 AND 10.01),
+MovieAverage decimal(5,2) CHECK(MovieAverage BETWEEN 0.99 AND 10.01),
+AnimeAverage decimal(5,2)  CHECK(AnimeAverage BETWEEN 0.99 AND 10.01),
+BookAverage decimal(5,2) CHECK(BookAverage BETWEEN 0.99 AND 10.01),
+CartoonAverage decimal(5,2) CHECK(CartoonAverage BETWEEN 0.99 AND 10.01),
+GameAverage decimal(5,2)  CHECK(GameAverage BETWEEN 0.99 AND 10.01),
+AlbumAverage decimal(5,2) CHECK(AlbumAverage BETWEEN 0.99 AND 10.01),
+SongAverage decimal(5,2) CHECK(SongAverage BETWEEN 0.99 AND 10.01)
+);
+create table UserXAlbum(
+FKUser int unsigned not null, foreign key (FKUser) references `User`(PK),
+FKAlbum int unsigned not null, foreign key (FKAlbum) references Album(PK),
+Favorite bit,
+Score tinyint unsigned,
+Review varchar(255),
+Added date not null DEFAULT (CURRENT_DATE),
+primary key(FKUser, FKAlbum)
+);
+create table UserXSong(
+FKUser int unsigned not null, foreign key (FKUser) references `User`(PK),
+FKSong int unsigned not null, foreign key (FKSong) references Song(PK),
+Favorite bit,
+Score tinyint unsigned,
+Review varchar(255),
+Added date not null DEFAULT (CURRENT_DATE),
+primary key(FKUser, FKSong)
+);
+create table UserXManga(
+FKUser int unsigned not null, foreign key (FKUser) references User(PK),
+FKManga int unsigned not null, foreign key (FKManga) references manga(PK),
+FKUserStatus int unsigned not null, foreign key (FKUserStatus) references UserStatus(PK),
 Favorite bit,
 Score tinyint unsigned,
 Review varchar(255),
 StartDate date,
 EndDate date,
 Chapters smallint unsigned,
-Added date not null DEFAULT (CURRENT_DATE)
+Added date not null DEFAULT (CURRENT_DATE),
+primary key(FKUser, FKManga)
 );
-create table TUserXComic(
-PK int unsigned not null auto_increment primary key,
-FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
-FKComic int unsigned not null, foreign key (FKComic) references TComic(PK),
-FKUserStatus int unsigned not null, foreign key (FKUserStatus) references TUserStatus(PK),
+create table UserXComic(
+FKUser int unsigned not null, foreign key (FKUser) references User(PK),
+FKComic int unsigned not null, foreign key (FKComic) references Comic(PK),
+FKUserStatus int unsigned not null, foreign key (FKUserStatus) references UserStatus(PK),
 Favourite bit,
 Score tinyint unsigned,
 Review varchar(255),
 StartDate date,
 FinishedDate date,
 Chapters smallint unsigned,
-Added date not null DEFAULT (CURRENT_DATE)
+Added date not null DEFAULT (CURRENT_DATE),
+primary key(FKUser, FKComic)
 );
-create table TUserXTVShow(
-PK int unsigned not null auto_increment primary key,
-FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
-FKTVShow int unsigned not null, foreign key (FKTVShow) references TTVShow(PK),
-FKUserStatus int unsigned not null, foreign key (FKUserStatus) references TUserStatus(PK),
+create table UserXTVShow(
+FKUser int unsigned not null, foreign key (FKUser) references User(PK),
+FKTVShow int unsigned not null, foreign key (FKTVShow) references TVShow(PK),
+FKUserStatus int unsigned not null, foreign key (FKUserStatus) references UserStatus(PK),
 Favourite bit,
 Score tinyint unsigned,
 Review varchar(255),
 StartDate date,
 FinishedDate date,
 Episodes smallint unsigned,
+Added date not null DEFAULT (CURRENT_DATE),
+primary key(FKUser, FKTVShow)
+);
+create table UserXAnime(
+FKUser int unsigned not null, foreign key (FKUser) references User(PK),
+FKAnime int unsigned not null, foreign key (FKAnime) references Anime(PK),
+FKUserStatus int unsigned not null, foreign key (FKUserStatus) references UserStatus(PK),
+Favourite bit,
+Score tinyint unsigned,
+Review varchar(255),
+StartDate date,
+FinishedDate date,
+Episodes smallint unsigned,
+Added date not null DEFAULT (CURRENT_DATE),
+primary key(FKUser, FKAnime)
+);
+create table UserXGame(
+FKUser int unsigned not null, foreign key (FKUser) references User(PK),
+FKGame int unsigned not null, foreign key (FKGame) references Game(PK),
+FKUserStatus int unsigned not null, foreign key (FKUserStatus) references UserStatus(PK),
+Favourite bit,
+Score tinyint unsigned,
+Review varchar(255),
+StartDate date,
+FinishedDate date,
+PlayTime int unsigned,
+Added date not null DEFAULT (CURRENT_DATE),
+primary key(FKUser, FKGame)
+);
+create table Friendship(
+PK int unsigned not null auto_increment primary key,
+FKUser int unsigned not null, foreign key (FKUser) references User(PK),
+FKSecondUser int unsigned not null, foreign key (FKSecondUser) references User(PK),
 Added date not null DEFAULT (CURRENT_DATE)
 );
-create table TFriend(
-PK int unsigned not null auto_increment primary key,
-FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
-FKSecondUser int unsigned not null, foreign key (FKSecondUser) references TUser(PK),
-Added date not null DEFAULT (CURRENT_DATE)
-);
--- other
-create table TLog(
-PK int unsigned not null auto_increment primary key,
-Log varchar(500) not null,
-`Date` datetime not null
-);
-
-create table TArea(
-PK int unsigned not null auto_increment primary key,
-Area varchar(50) not null
-);
-create table TRight(
-PK int unsigned not null auto_increment primary key,
-FKArea int unsigned not null, foreign key (FKArea) references TArea(PK),
-`Add` bit,
-Edit bit,
-`Delete` bit
-);
-create table TUserXRight(
-PK int unsigned not null auto_increment primary key,
-FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
-FKRight int unsigned not null, foreign key (FKRight) references TRight(PK)
-);
-create table TAccount(
-PK int unsigned not null auto_increment primary key,
-FKUser int unsigned not null, foreign key (FKUser) references TUser(PK),
+create table `Account`(
+FKUser int unsigned not null primary key, foreign key (FKUser) references User(PK),
 EMail varchar(255) not null,
-`Password` varchar(255) not null,
-Salt varchar(255) not null
-);
-create table TError(
-PK int unsigned not null auto_increment primary key,
-`Error` varchar(500) not null,
-`Date` datetime not null
+`Password` char(48) not null,
+  CONSTRAINT UN_EMAIL UNIQUE (EMail)
 );

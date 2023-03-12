@@ -26,7 +26,6 @@ import {Base} from '../Base';
                 <div class="dropdown-content">
                     <button>Profile</button>
                     <button>About</button>
-                    <button (click)="setlanguage()">Language</button>
                 </div>
             </div>
         </div>
@@ -40,13 +39,6 @@ export class TaskbarComponent extends Base {
 
     constructor() {
         super();
-    }
-
-    setlanguage() {
-        // if (Base.currentLanguage < this.Languages.length - 1)
-        //     Base.currentLanguage++
-        // else
-        //     Base.currentLanguage = 0;
     }
 }
 

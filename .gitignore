@@ -45,3 +45,6 @@ testem.log
 Thumbs.db
 /Server/MyCollectionServer/Properties/
 /Server/MyCollectionServer/GlobalSuppressions.cs
+/Server/MyCollectionServer/Benchmarker.cs
+/Server/MyCollectionServer/BenchmarkDotNet.Artifacts/
+/Server/MyCollectionServer.sln.DotSettings.user

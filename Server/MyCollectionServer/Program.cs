@@ -1,104 +1,81 @@
-using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
-using System.Collections.ObjectModel;
-using System.Data.Common;
-using System.Reflection;
+//#define Benchmark
+
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging.Console;
+using MyCollectionServer;
+using MyCollectionServer.Pages;
+using MySqlConnector;
+
+#if Benchmark
+// await Benchmarker.AsyncBenchmark();
+using BenchmarkDotNet.Running;
+BenchmarkRunner.Run<Benchmarker>();
+return;
+#endif
 
 var builder = WebApplication.CreateBuilder(args);
-var MyAllowSpecificOrigins = "localhost";
-
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy(name: MyAllowSpecificOrigins,
-                    policy =>
-                    {
-                      policy.WithOrigins("http://localhost:4200").AllowAnyHeader();
-                    });
+  options.AddPolicy(name: "Server",
+    policy => { policy.WithOrigins("http://localhost:4200").AllowAnyHeader(); });
 });
+
+using var loggerFactory = LoggerFactory.Create(loggerBuilder =>
+{
+  loggerBuilder.AddSimpleConsole(i => i.ColorBehavior = LoggerColorBehavior.Enabled);
+});
+var con = new MySqlConnection($"server={args[0]};userid={args[1]};password={args[2]};database={args[3]}");
+var logger = loggerFactory.CreateLogger<Program>();
+await con.OpenAsync();
+builder.Services.AddSingleton<ILogger>(logger);
+builder.Services.AddSingleton(con);
 builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
-    {
-      var builtInFactory = options.InvalidModelStateResponseFactory;
-      options.InvalidModelStateResponseFactory = context =>
-      {
-        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-        return builtInFactory(context);
-      };
-    });
+{
+  var builtInFactory = options.InvalidModelStateResponseFactory;
+  options.InvalidModelStateResponseFactory = context => builtInFactory(context);
+});
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-  // options.JsonSerializerOptions.PropertyNamingPolicy = null;
+  //TODO: Remove once DateOnly support has been added
+  options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
   options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
-var app = builder.Build();
-app.UseHttpsRedirection();
-app.UseCors(MyAllowSpecificOrigins);
 
+var app = builder.Build();
+
+app.UseHttpsRedirection();
+app.UseCors("Server");
 app.UseAuthorization();
 app.MapControllers();
+// app.Urls.Add("");
+app.MapGet("/api/ver", () => "myCollection.ver: 0.01");
+app.MapGet("/api/query", BaseT.getParams);
+app.MapGet("/api/lang", () => BaseT.languages);
+BaseT.languages =
+  (await QueryBase.QueryDB<Language>(new MySqlCommand("select Language, `Column` from Language", con))).ToArray();
+if (BaseT.languages.Length < 1)
+  logger.LogCritical("No Languages have been found, something probably went wrong! Languages: {lang}", BaseT.languages);
 
-Server.con = new MySqlConnection($"server={args[0]};userid={args[1]};password={args[2]};database={args[3]}");
-Server.con.Open();
-Console.WriteLine("Server is listening on: http://localhost:8000");
+// var testuser = new Account();
+// testuser.FKUser = 1;
+// testuser.Password = "ABCDEFGHJ";
+// testuser.Email = "Test@Mail.com";
+//  var acc = new AccountClass(logger,con);
+// // Console.WriteLine(await acc.verify("ABC"));
+//   await acc.CreateItem(testuser);
 app.Run();
-public class Server { public static MySqlConnection? con; }
 
-[ApiController]
-[Route("[controller]")]
-public abstract class BaseClass<T> where T : new()
+public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
 {
-  [HttpGet]
-  public abstract Task<List<T>> GetItems(uint? id, string? language);
-  [HttpPost]
-  public abstract Task CreateItem([FromBody] T item);
-  [HttpPut]
-  public abstract Task UpdateItem([FromBody] T item);
-  [HttpDelete]
-  public abstract Task DeleteItem(uint id);
-  public static async Task<List<T>> QueryDB(string query, string[]? excludeColumns = null)
+  public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
-    Console.WriteLine(query);
-    List<T> items = new List<T>();
-    var result = await new MySqlCommand(query, Server.con).ExecuteReaderAsync();
-    PropertyInfo[] properties = typeof(T).GetProperties();
-    List<int[]> index = new();
-    ReadOnlyCollection<DbColumn> DbColumns = result.GetColumnSchema();
-    for (int i = 0; i < properties.Length; i++)
-    {
-      bool exclude = false;
-      for (int k = 0; k < excludeColumns?.Length; k++)
-        if (properties[i].GetCustomAttribute<DBColumnAttribute>()?.column == excludeColumns[k])
-        {
-          exclude = true;
-          break;
-        }
-      if (!exclude)
-        for (int j = 0; j < DbColumns.Count; j++)
-          if (properties[i].GetCustomAttribute<DBColumnAttribute>()?.column == DbColumns[j].ColumnName)
-          {
-            index.Add(new int[] { i, j });
-            break;
-          }
-    }
-    try
-    {
-      while (await result.ReadAsync())
-      {
-        T item = new T();
-        for (int i = 0; i < index.Count; i++)
-          properties[index[i][0]].SetValue(item, !result.IsDBNull(index[i][1]) ? result.GetValue(index[i][1]) : null);
-          items.Add(item);
-      }
-    }
-    catch (DbException ex)
-    {
-      Console.WriteLine(ex);
-      Console.WriteLine(ex.ErrorCode);
-    }
-    finally
-    {
-      result.Close();
-    }
-    return items;
+    return DateOnly.FromDateTime(reader.GetDateTime());
+  }
+
+  public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options)
+  {
+    writer.WriteStringValue(value.ToString("O"));
   }
 }

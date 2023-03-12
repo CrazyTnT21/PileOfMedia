@@ -1,93 +1,9 @@
-<app-dialog (save)="saveItem(this.currentItem)" [height]=30 [width]=50 class="lazy">
-    <row>
-        <div class="col-9">
-            <h3 class="no-mar pad">Add Comic</h3>
-        </div>
-        <div class="col-3">
-            <div class="col-6"></div>
-            <div class="col-6">
-                <select class="drop col-12 pad" [ngModel]="currentLanguage" (ngModelChange)="changelanguage($event)">
-                    <option *ngFor="let language of Languages">{{language.Language}}</option>
-                </select>
-            </div>
-        </div>
-    </row>
-    <div class="col-3 pad">
-        <row class="too-lazy" style="height: 15rem">
-            <img [src]="currentItem.imageSource" class="fit" alt="Cover">
-        </row>
-        <row class="pad">
-            <row>Image source:</row>
-            <input class="col-12" type="file" (change)="currentItem.imageSource = preview($event)">
-        </row>
-    </div>
-    <div class="col-9">
-        <row>
-            <div class="col-6 pad">
-                <row>Name:</row>
-                <row><textarea class="col-12" [(ngModel)]="currentItem.name"></textarea></row>
-            </div>
-            <div class="col-6 pad">
-                <row>Status:</row>
-                <row>
-                    <select [(ngModel)]="currentItem.status" class="drop col-6 pad">
-                        <!--                            <option *ngFor="let status of Statuses | async"></option>-->
-                    </select>
-                </row>
-            </div>
-        </row>
-        <row class="pad">
-            <row>Description:</row>
-            <row><textarea class="col-12 row-6" [(ngModel)]="currentItem.description"> </textarea></row>
-        </row>
-        <row class="pad">
-            <row>Synopsis:</row>
-            <row><textarea class="col-12" [(ngModel)]="currentItem.synopsis"></textarea></row>
-        </row>
-        <row>
-            <div class="col-3 pad">
-                <row>Volumes:</row>
-                <row><input type="number" class="number col-12" [(ngModel)]="currentItem.volumes"></row>
-            </div>
-            <div class="col-3 pad">
-                <row>Chapters:</row>
-                <row><input type="number" class="number col-12" [(ngModel)]="currentItem.chapters"></row>
-            </div>
-        </row>
-        <div class="col-3 pad">
-            <row>
-                <row>Start date:</row>
-                <row><input type="date" class="col-12" [(ngModel)]="currentItem.publishStart"></row>
-            </row>
-        </div>
-        <div class="col-3 pad">
-            <row>
-                <row>End date:</row>
-                <row><input type="date" class="col-12" [(ngModel)]="currentItem.publishEnd"></row>
-            </row>
-        </div>
-        <!--            <row>-->
-        <!--                <div class="col-3 pad">-->
-        <!--                    <row>Creator:</row>-->
-        <!--                    <select [(ngModel)]="currentItem.Contributer" class="drop col-12">-->
-        <!--                        <option></option>-->
-        <!--                    </select>-->
-        <!--                </div>-->
-        <!--                <div class="col-3 pad">-->
-        <!--                    <row>Role:</row>-->
-        <!--                    <select [(ngModel)]="currentItem.Contributer" class="drop col-12">-->
-        <!--                        <option></option>-->
-        <!--                    </select>-->
-        <!--                </div>-->
-        <!--            </row>-->
-    </div>
-</app-dialog>
 <button (click)="Tools.navigatePage(StringNames.Comics,1)">comic page</button>
-
-<app-table [rows]="Items"
+<div [innerHTML]="'ab test 2 <a href=`test`>1</a> 3'"></div>
+<app-table [rows]="items"
            [columns]="columns"
            [showRefresh]="true"
            [showCreate]="true"
-           (editRow)="currentItem = $event; Tools.navigatePage(StringNames.Comics,currentItem.pk)"
+           (editRow)="Tools.navigatePage(StringNames.Comics,$event.pk)"
            (create)="dialog.show()"
            (refresh)="loadItems()"></app-table>

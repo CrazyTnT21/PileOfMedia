@@ -16,12 +16,12 @@
                     <img [src]="row[col.Key]" class="col-12"/>
                 </row>
                 <div *ngIf="col.Type == coltype.text">
-                    <row>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}} </row>
-                    <row *ngFor="let item of col.Reference">{{getvalue(row[item.Key], item.formatting, item.formatvalue)}}</row>
+                    <row [innerHTML]="getvalue(row[col.Key], col.formatting, col.formatvalue)"> </row>
+                    <row *ngFor="let item of col.Reference" [innerHTML]="getvalue(row[item.Key], item.formatting, item.formatvalue)"></row>
                 </div>
                 <row *ngIf="col.Type == coltype.headertext" style="text-align: left;">
                     <h3><a>{{row[col.Key]}}</a></h3>
-                    <row *ngFor="let item of col.Reference">{{getvalue(row[item.Key], item.formatting, item.formatvalue)}}</row>
+                    <row *ngFor="let item of col.Reference" [innerHTML]="getvalue(row[item.Key], item.formatting, item.formatvalue)"></row>
                 </row>
             </row>
         </app-card>
@@ -35,7 +35,7 @@
         </row>
         <row>
             <row *ngFor="let row of rows" (click)="editRow.emit(row)" class="cell" style="flex-wrap: nowrap">
-                <div [ngClass]="'' + 'un ' + ' col'"
+                <div [ngClass]="'un ' + ' col'"
                      [style.min-width.rem]="col.width"
                      [style.max-width.rem]="col.maxwidth"
                      *ngFor="let col of columns">

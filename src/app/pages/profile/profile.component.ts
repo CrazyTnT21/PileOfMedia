@@ -1,41 +1,28 @@
 import {Component, OnInit} from '@angular/core';
-import {HTTPRequester} from '../../../Resources/HttpRequester';
-import {HttpParams} from "@angular/common/http";
-import {TableClass} from "../../../Resources/Templates/TableClass";
+import {TableSingle} from "../../../Resources/Templates/TableClass";
+import {TPerson} from "../../../../schema";
+import {ActivatedRoute} from "@angular/router";
 
 @Component({
-    selector: 'app-profile',
-    templateUrl: './profile.component.html'
+  selector: 'app-profile',
+  templateUrl: './profile.component.html'
 })
-export class ProfileComponent extends TableClass<any> implements OnInit {
+export class ProfileComponent extends TableSingle<TPerson> {
+  protected url: string = "api/profile/";
 
-    pk: number = 1;
-    comics: any[] = [];
-    mangas: any[] = [];
-    books: any[] = [];
-    cartoons: any[] = [];
-    tvshows: any[] = [];
-    games: any[] = [];
+  constructor(private routea: ActivatedRoute) {
+    super(routea);
+  }
 
-    async ngOnInit() {
-        await this.loadItems();
-    }
+  pk: number = 1;
+  comics: any[] = [];
+  mangas: any[] = [];
+  books: any[] = [];
+  cartoons: any[] = [];
+  tvshows: any[] = [];
+  games: any[] = [];
 
-    async loadItems() {
-        const result = await HTTPRequester.Get("api/user", new HttpParams().set("where", this.pk));
-        this.currentItem = result.user[0];
-        this.comics = result.comics;
-    }
-
-    createItem(): any {
-    }
-
-    deleteItem(item: any): any {
-    }
-
-    saveItem(item: any): any {
-    }
-
-    updateItem(item: any): any {
-    }
+  createItem(): TPerson {
+    return new TPerson();
+  }
 }
