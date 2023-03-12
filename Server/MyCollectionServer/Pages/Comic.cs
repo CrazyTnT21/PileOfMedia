@@ -69,30 +69,16 @@ public sealed class ComicClass : BaseClass<Comic>
     {
       var charSelect = new Select("ComicXCharacter")
         .Where("FKComic", result[i].PK)
-        .AddColumns(CharacterSchema.table, GetColumns<Character>(CharacterSchema.excludeGet))
-        .AddColumn(language, "TFirstName", CharacterSchema.firstName)
-        .AddColumn(language, "TName", "Name")
-        .AddColumn(language, "TDescription", "Description")
-        .Join(new Join(CharacterSchema.table, CharacterSchema.pk, "ComicXCharacter", "FKCharacter"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, CharacterSchema.table,
-          CharacterSchema.fkfirstName, "TFirstName"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, CharacterSchema.table, CharacterSchema.fkname,
-          "TName"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, CharacterSchema.table,
-          CharacterSchema.fkdescription, "TDescription"));
+        .Join(new Join(CharacterSchema.table, CharacterSchema.pk, "ComicXCharacter", "FKCharacter"));
+      CharacterClass.GetX(charSelect, language);
 
       var creatorSelect = new Select("ComicXCreator")
         .Where("FKComic", result[i].PK)
-        .AddColumns(PersonSchema.table, GetColumns<Person>(PersonSchema.excludeGet))
-        .AddColumn(language, "TDescription", "Description")
-        .AddColumn(language, "TRole", "Role")
         .Join(new Join("Role", "PK", "ComicXCreator", "FKRole"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, "Role", "FKRole", "TRole"))
-        .Join(new Join(PersonSchema.table, PersonSchema.pk, "ComicXCreator", "FKPerson"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, PersonSchema.table,
-          PersonSchema.fkdescription, "TDescription"));
+        .Join(new Join(PersonSchema.table, PersonSchema.pk, "ComicXCreator", "FKPerson"));
+      CreatorClass.GetX(creatorSelect, language);
 
-      result[0].characters = (await charSelect.QueryDB<Character>(_mysqlCon)).ToArray();
+      result[i].characters = (await charSelect.QueryDB<Character>(_mysqlCon)).ToArray();
       result[i].creators = (await creatorSelect.QueryDB<Creator>(_mysqlCon)).ToArray();
     }
 
@@ -133,30 +119,16 @@ public sealed class ComicClass : BaseClass<Comic>
     {
       var charSelect = new Select("ComicXCharacter")
         .Where("FKComic", result[i].PK)
-        .AddColumns(CharacterSchema.table, GetColumns<Character>(CharacterSchema.excludeGet))
-        .AddColumn(language, "TFirstName", CharacterSchema.firstName)
-        .AddColumn(language, "TName", "Name")
-        .AddColumn(language, "TDescription", "Description")
-        .Join(new Join(CharacterSchema.table, CharacterSchema.pk, "ComicXCharacter", "FKCharacter"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, CharacterSchema.table,
-          CharacterSchema.fkfirstName, "TFirstName"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, CharacterSchema.table, CharacterSchema.fkname,
-          "TName"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, CharacterSchema.table,
-          CharacterSchema.fkdescription, "TDescription"));
+        .Join(new Join(CharacterSchema.table, CharacterSchema.pk, "ComicXCharacter", "FKCharacter"));
+      charSelect = CharacterClass.GetX(charSelect, language);
 
       var creatorSelect = new Select("ComicXCreator")
         .Where("FKComic", result[i].PK)
-        .AddColumns(PersonSchema.table, GetColumns<Person>(PersonSchema.excludeGet))
-        .AddColumn(language, "TDescription", "Description")
-        .AddColumn(language, "TRole", "Role")
         .Join(new Join("Role", "PK", "ComicXCreator", "FKRole"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, "Role", "FKRole", "TRole"))
-        .Join(new Join(PersonSchema.table, PersonSchema.pk, "ComicXCreator", "FKPerson"))
-        .Join(new Join(TranslationSchema.table, TranslationSchema.pk, PersonSchema.table,
-          PersonSchema.fkdescription, "TDescription"));
+        .Join(new Join(PersonSchema.table, PersonSchema.pk, "ComicXCreator", "FKPerson"));
+      creatorSelect = CreatorClass.GetX(creatorSelect, language);
 
-      result[0].characters = (await charSelect.QueryDB<Character>(_mysqlCon)).ToArray();
+      result[i].characters = (await charSelect.QueryDB<Character>(_mysqlCon)).ToArray();
       result[i].creators = (await creatorSelect.QueryDB<Creator>(_mysqlCon)).ToArray();
     }
 
