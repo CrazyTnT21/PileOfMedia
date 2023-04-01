@@ -1,9 +1,10 @@
+drop database collectiondb;
 start transaction;
 create database collectiondb;
 use collectiondb;
 create table `Language`
 (
-  PK         int unsigned                      auto_increment primary key,
+  PK         int unsigned auto_increment primary key,
   `Language` varchar(50) character set UTF8MB4 not null,
   `Column`   char(2)                           not null
 );
@@ -19,8 +20,8 @@ values ("English", "EN"),
 create table Translation
 (
   PK       int unsigned auto_increment primary key,
-  Prefered char(2),
-  EN       varchar(1000),
+  Prefered char(2),                -- Fallback
+  EN       varchar(1000) not null, -- Fallback fallback
   DE       varchar(1000),
   ES       varchar(1000),
   DA       varchar(1000),
@@ -75,7 +76,7 @@ insert into Genre (FKGenre)
 Values (LAST_INSERT_ID());
 create table `Status`
 (
-  PK       int unsigned     auto_increment primary key,
+  PK       int unsigned auto_increment primary key,
   FKStatus int unsigned     not null,
   foreign key (FKStatus) references Translation (PK),
   `Status` tinyint unsigned not null
@@ -106,7 +107,7 @@ insert into `Status` (FKStatus, `Status`)
 Values (LAST_INSERT_ID(), 4);
 create table UserStatus
 (
-  PK           int unsigned     auto_increment primary key,
+  PK           int unsigned auto_increment primary key,
   FKUserStatus int unsigned     not null,
   foreign key (FKUserStatus) references Translation (PK),
   `Status`     tinyint unsigned not null
@@ -213,7 +214,7 @@ create table `Character`
 create table Person
 (
   PK            int unsigned auto_increment primary key,
-  `Name`        varchar(50)  not null,
+  `Name`        varchar(50) not null,
   FirstName     varchar(50),
   LastName      varchar(50),
   FKDescription int unsigned,
@@ -238,12 +239,10 @@ create table Movie
   Airing        date,
   Length        smallint unsigned,
   AverageScore  decimal(4, 2),
-  FKStatus      int unsigned,
   ImageSource   varchar(255),
   Added         date         not null DEFAULT (CURRENT_DATE),
   foreign key (FKName) references Translation (PK),
-  foreign key (FKDescription) references Translation (PK),
-  foreign key (FKStatus) references `Status` (PK)
+  foreign key (FKDescription) references Translation (PK)
 );
 create table MovieXGenre
 (
@@ -511,6 +510,57 @@ create table ComicXGenre
   foreign key (FKGenre) references Genre (PK),
   primary key (FKComic, FKGenre)
 );
+# create table TABLEXGenre
+# (
+#   FKTABLE int unsigned not null,
+#   FKGenre int unsigned not null,
+#   foreign key (FKTABLE) references TABLE (PK),
+#   foreign key (FKGenre) references Genre (PK),
+#   primary key (FKTABLE, FKGenre)
+# );
+# create table TABLEXTheme
+# (
+#   FKTABLE int unsigned not null,
+#   FKTheme int unsigned not null,
+#   foreign key (FKTABLE) references TABLE (PK),
+#   foreign key (FK) references Theme (PK),
+#   primary key (FKTABLE, FkTheme)
+# );
+# create table TABLEXCreator
+# (
+#   FKTABLE  int unsigned not null,
+#   FKPerson int unsigned not null,
+#   FKRole   int unsigned not null,
+#   foreign key (FKTABLE) references TABLE (PK),
+#   foreign key (FKPerson) references Person (PK),
+#   foreign key (FKRole) references `Role` (PK),
+#   primary key (FKTABLE, FKPerson, FKRole)
+# );
+# create table TABLEXCharacter
+# (
+#   FKTABLE     int unsigned not null,
+#   FKCharacter int unsigned not null,
+#   foreign key (FKTABLE) references TABLE (PK),
+#   foreign key (FKCharacter) references `Character` (PK),
+#   primary key (FKTABLE, FKCharacter)
+# );
+# create table UserXTABLE
+# (
+#   FKUser       int unsigned not null,
+#   FKTABLE      int unsigned not null,
+#   FKUserStatus int unsigned not null,
+#   Favourite    bit,
+#   Score        tinyint unsigned,
+#   Review       varchar(255),
+#   StartDate    date,
+#   FinishedDate date,
+#   Episodes     smallint unsigned,
+#   Added        date         not null DEFAULT (CURRENT_DATE),
+#   foreign key (FKUser) references `User` (PK),
+#   foreign key (FKTABLE) references TABLE (PK),
+#   foreign key (FKUserStatus) references UserStatus (PK),
+#   primary key (FKUser, FKTABLE)
+# );
 create table ComicXTheme
 (
   FKComic int unsigned not null,
@@ -617,12 +667,10 @@ create table Book
   Words         smallint unsigned,
   PublishDate   date,
   AverageScore  decimal(4, 2),
-  FKStatus      int unsigned,
   ImageSource   varchar(255),
   Added         date         not null DEFAULT (CURRENT_DATE),
   foreign key (FKName) references Translation (PK),
-  foreign key (FKDescription) references Translation (PK),
-  foreign key (FKStatus) references `Status` (PK)
+  foreign key (FKDescription) references Translation (PK)
 );
 create table BookXCharacter
 (
@@ -785,12 +833,11 @@ create table GameXCreator
 create table `User`
 (
   PK            int unsigned auto_increment primary key,
-  FKPerson      int unsigned,
-  `Name`        varchar(50)  not null,
-  Joined        date         not null DEFAULT (CURRENT_DATE),
+  `Name`        varchar(50) character set UTF8MB4 not null,
+  Joined        date                              not null DEFAULT (CURRENT_DATE),
   `Description` varchar(500),
   ImageSource   varchar(255),
-  foreign key (FKPerson) references Person (PK)
+  Deleted       bit
 );
 create table Average
 (
@@ -866,6 +913,24 @@ create table UserXComic
   foreign key (FKUserStatus) references UserStatus (PK),
   primary key (FKUser, FKComic)
 );
+create table UserXBook
+(
+  FKUser       int unsigned not null,
+  FKBook       int unsigned not null,
+  FKUserStatus int unsigned not null,
+  Favourite    bit,
+  Score        tinyint unsigned,
+  Review       varchar(255),
+  StartDate    date,
+  FinishedDate date,
+  Chapters     smallint unsigned,
+  Pages        smallint unsigned,
+  Added        date         not null DEFAULT (CURRENT_DATE),
+  foreign key (FKUser) references `User` (PK),
+  foreign key (FKBook) references Book (PK),
+  foreign key (FKUserStatus) references UserStatus (PK),
+  primary key (FKUser, FKBook)
+);
 create table UserXTVShow
 (
   FKUser       int unsigned not null,
@@ -882,6 +947,21 @@ create table UserXTVShow
   foreign key (FKTVShow) references TVShow (PK),
   foreign key (FKUserStatus) references UserStatus (PK),
   primary key (FKUser, FKTVShow)
+);
+create table UserXMovie
+(
+  FKUser       int unsigned not null,
+  FKMovie      int unsigned not null,
+  FKUserStatus int unsigned not null,
+  Favourite    bit,
+  Score        tinyint unsigned,
+  Review       varchar(255),
+  WatchDate    date,
+  Added        date         not null DEFAULT (CURRENT_DATE),
+  foreign key (FKUser) references `User` (PK),
+  foreign key (FKMovie) references TVShow (PK),
+  foreign key (FKUserStatus) references UserStatus (PK),
+  primary key (FKUser, FKMovie)
 );
 create table UserXAnime
 (

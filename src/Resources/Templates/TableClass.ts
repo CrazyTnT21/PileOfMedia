@@ -1,11 +1,12 @@
 import {column} from "./table.component";
 import {Base} from "../Base";
 import {TranslateFields} from "../../../schema";
-import {Component, Directive, Injectable, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {HTTPRequester} from "../HttpRequester";
 import {HttpParams} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
 import {BaseTable} from "../../../tables";
+import {MainComponent} from "../../app/pages/main/main.component";
 
 @Component({
   template: ``,
@@ -13,15 +14,16 @@ import {BaseTable} from "../../../tables";
 export abstract class TableClass<T> extends Base implements OnInit {
   protected abstract readonly url: string;
   oldLanguage: string = "EN";
-
+  language: string = "EN";
+  languages: any[] = [];
 
   public abstract load(): Promise<void>;
 
-
   async ngOnInit(): Promise<void> {
-    if (!Base.languages || Base.languages.length < 2)
-      Base.languages = await HTTPRequester.Get("api/lang", new HttpParams());
-    console.log(Base.languages)
+    if (!this.languages || this.languages.length < 2) {
+      this.languages = await HTTPRequester.Get("api/lang", new HttpParams());
+      console.log(this.languages)
+    }
     await this.load();
   }
 }
@@ -29,30 +31,38 @@ export abstract class TableClass<T> extends Base implements OnInit {
 export abstract class TableSingle<T> extends TableClass<T> {
   public item: T = this.createItem();
   public edit: boolean;
+  protected loadParams: HttpParams = new HttpParams().set("language", MainComponent.config.language);
+  protected deleteParams: HttpParams = new HttpParams();
+  protected saveParams: HttpParams = new HttpParams();
+  protected updateParams: HttpParams = new HttpParams();
 
-
-  public constructor(private route: ActivatedRoute) {
+  protected constructor(private route: ActivatedRoute) {
     super();
   }
 
   public async load(): Promise<void> {
-    this.item = await this.loadItem();
+    try {
+      this.item = await this.loadItem();
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   public async loadItem(): Promise<T> {
     return new Promise((resolve) => {
-
       this.route.params.subscribe(async params => {
-
         if (params["id"] > 0) {
-          const result = await HTTPRequester.Get(this.url + params["id"], new HttpParams().set("language", Base.language));
-          if (result && result.length > 0) {
-            resolve(result[0]);
-
+          try {
+            const result = await HTTPRequester.Get(this.url + params["id"], this.loadParams);
+            if (result) {
+              resolve(result);
+            } else
+              this.error = true;
+          } catch (e) {
+            resolve(this.createItem());
           }
-          else
-            this.error = true;
-        } else
+        }
+        else
           this.edit = true;
       });
     });
@@ -60,7 +70,7 @@ export abstract class TableSingle<T> extends TableClass<T> {
 
   public async deleteItem(item: BaseTable): Promise<any> {
     if (item.pk)
-      return await HTTPRequester.Delete(this.url, new HttpParams().set("id", item.pk));
+      return await HTTPRequester.Delete(this.url, this.deleteParams.set("id", item.pk));
   }
 
   public async saveItem(item: T): Promise<any> {
@@ -108,17 +118,18 @@ export abstract class TableSingle<T> extends TableClass<T> {
   public abstract createItem(): T
 }
 
-export abstract class TableMulti<T, Page = null> extends TableClass<T> {
+export abstract class TableMulti<T, Page extends TableSingle<T> | null> extends TableClass<T> {
   public items: T[];
   protected selectedItems: T[];
   protected abstract columns: column[];
 
   public async load(): Promise<void> {
     this.items = await this.loadItems();
+    console.log(this.items);
   }
 
   public async loadItems(): Promise<T[]> {
-    return await HTTPRequester.Get(this.url, new HttpParams().set("language", Base.language));
+    return await HTTPRequester.Get(this.url, new HttpParams().set("language", MainComponent.config.language));
   }
 
 }

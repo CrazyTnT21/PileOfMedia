@@ -1,6 +1,4 @@
 <app-table [rows]="items"
            [columns]="columns"
-           [showRefresh]="true"
            [showCreate]="true"
-           (editRow)="Tools.navigatePage(StringNames.Manga,$event.pk)"
-           (refresh)="loadItems()"></app-table>
+           (editRow)="Tools.navigatePage(StringNames.Manga,$event.pk)"></app-table>

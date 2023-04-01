@@ -25,6 +25,7 @@ export class Manga extends BaseTable implements TranslationFields {
   themes?: string[];
   creators?: string[];
 }
+
 export class Comic extends BaseTable implements TranslationFields {
   name: string;
   description?: string;
@@ -38,13 +39,14 @@ export class Comic extends BaseTable implements TranslationFields {
   added: string;
   languageFields?: LanguageField[];
   //Seperate queries
-  genres?: string[];
+  genres?: Genre[];
   themes?: string[];
-  creators?: string[];
+  creators?: Creator[];
 
   characters?: Character[];
 }
-export class Character extends BaseTable implements TranslationFields{
+
+export class Character extends BaseTable implements TranslationFields {
 
   name: string;
   firstname: string;
@@ -54,4 +56,29 @@ export class Character extends BaseTable implements TranslationFields{
   height?: number;
   imageSource?: string;
   languageFields?: LanguageField[];
+}
+
+export class Person extends BaseTable implements TranslationFields {
+  name: string;
+  FirstName?: string;
+  LastName?: string;
+  Description?: string;
+  Birthday?: Date;
+  Height?: number;
+  imageSource?: string;
+  languageFields?: LanguageField[];
+}
+
+export class Creator extends Person {
+  Role: string;
+}
+export class Genre{
+  name: string;
+}
+export class User extends BaseTable {
+  name: string;
+  description?: string;
+  joined?: Date;
+  Birthday?: Date;
+  imageSource?: string;
 }

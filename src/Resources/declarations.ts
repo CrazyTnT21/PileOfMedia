@@ -23,6 +23,8 @@ import {FormattingPipe} from "./pipes/formatting";
 import {WrapperPipe} from "./pipes/wrapperPipe";
 import {MangaPageComponent} from "../app/pages/manga/MangaPage.component";
 import {Linkpipe} from "../app/pages/comics/linkpipe";
+import {TextInputComponent} from "./Templates/textinput.component";
+import {TextAreaInputComponent} from "./Templates/textAreaInput.component";
 
 export const declarations: any = [
   AppComponent,
@@ -49,5 +51,7 @@ export const declarations: any = [
   FormattingPipe,
   WrapperPipe,
   MangaPageComponent,
-  Linkpipe
+  Linkpipe,
+  TextInputComponent,
+  TextAreaInputComponent
 ];

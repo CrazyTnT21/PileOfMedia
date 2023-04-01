@@ -1,4 +1,33 @@
-<!--<row>-->
+<ng-container *ngIf="item">
+  <div class="pad col-12">
+    <div class="fix-3">
+      <img [src]="item.imageSource" class="col-12 pad lazy"/>
+      <row class="mt lazy pad">
+        {{item.joined}}
+      </row>
+    </div>
+    <div class="col pad lazy ml">
+      <row>
+        {{item.name}}
+      </row>
+      <row>
+        {{item.description}}
+      </row>
+    </div>
+  </div>
+  <div *ngFor="let item of [].constructor(10); let i = index">
+    <app-card class="pad mb">
+      <img src="https://cdn.myanimelist.net/images/userimages/13921943.jpg?t=1678557000"
+           class="fix-1"/>
+      <row>
+        Test1
+      </row>
+      <row>
+        Test2
+      </row>
+    </app-card>
+  </div>
+</ng-container>
 <!--    <div class="fix-6 lazy pad">-->
 <!--        <img class="col-12" [src]="item.imageSource" alt="Profile picture"/>-->
 <!--    </div>-->

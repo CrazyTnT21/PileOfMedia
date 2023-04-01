@@ -9,15 +9,22 @@ import {Comic} from "../../../../tables";
 })
 export class ComicPage extends TableSingle<Comic> {
   public url: string = "api/comic/";
+  public showAdd: boolean = false;
+  public currentPage: number = 0;
 
   constructor(private routea: ActivatedRoute) {
     super(routea);
   }
-  public loadItems(): Promise<Comic[]> {
-    throw new Error('Method not implemented.');
+
+  advanceEdit() {
+    this.currentPage++;
   }
 
-  showAdd: boolean = false;
+  reverseEdit() {
+    if (this.currentPage > 0)
+      this.currentPage--;
+  }
+
   createItem(): Comic {
     return new Comic();
   }

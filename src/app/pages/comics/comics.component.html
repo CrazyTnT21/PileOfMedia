@@ -2,8 +2,5 @@
 <div [innerHTML]="'ab test 2 <a href=`test`>1</a> 3'"></div>
 <app-table [rows]="items"
            [columns]="columns"
-           [showRefresh]="true"
            [showCreate]="true"
-           (editRow)="Tools.navigatePage(StringNames.Comics,$event.pk)"
-           (create)="dialog.show()"
-           (refresh)="loadItems()"></app-table>
+           (editRow)="Tools.navigatePage(StringNames.Comics,$event.pk)"></app-table>

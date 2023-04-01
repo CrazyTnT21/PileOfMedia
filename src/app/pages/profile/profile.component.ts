@@ -1,20 +1,21 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {TableSingle} from "../../../Resources/Templates/TableClass";
-import {TPerson} from "../../../../schema";
 import {ActivatedRoute} from "@angular/router";
+import {HttpParams} from "@angular/common/http";
+import {User} from "../../../../tables";
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html'
 })
-export class ProfileComponent extends TableSingle<TPerson> {
-  protected url: string = "api/profile/";
+export class ProfileComponent extends TableSingle<User> {
+  protected url: string = "api/user/";
+  protected override loadParams: HttpParams = new HttpParams();
 
   constructor(private routea: ActivatedRoute) {
     super(routea);
   }
 
-  pk: number = 1;
   comics: any[] = [];
   mangas: any[] = [];
   books: any[] = [];
@@ -22,7 +23,7 @@ export class ProfileComponent extends TableSingle<TPerson> {
   tvshows: any[] = [];
   games: any[] = [];
 
-  createItem(): TPerson {
-    return new TPerson();
+  createItem(): User {
+    return new User();
   }
 }

@@ -1,6 +1,6 @@
-<ng-container *ngIf="item && !error">
+<ng-container *ngIf="!error && !edit">
   <row>
-    <div class="fix-7 lazy pad">
+    <div class="fix-4 lazy pad">
       <img [src]="item.imageSource ? item.imageSource: 'Assets/testimg.svg'"
            [alt]="item.name ? item: ''"
            class="col-12">
@@ -14,7 +14,7 @@
         <row>
           <row><b>Genres</b></row>
           [
-          <div *ngFor="let genre of item.genres">{{genre}}.</div>
+          <div *ngFor="let genre of item.genres">{{genre.name}}.</div>
           ]
         </row>
         <row>
@@ -49,23 +49,23 @@
         <row>{{item.description}}</row>
       </row>
     </div>
-    <div class="fix-8">
-    
+    <div class="fix-4">
+
       <row><h3 class="no-mar">Related Media</h3></row>
       <row>
-        <app-card *ngFor="let theme of item.themes">
-          <img [src]="item.imageSource"
-               [alt]="item.name"
+        <app-card *ngFor="let character of item.characters">
+          <img [src]="character.imageSource"
+               [alt]="character.name"
                class="col-4">
-          {{theme}}
+          {{character.name}}
           <br>
-          Status: ({{item.status}})
+          First name: ({{character.firstname}})
           <br>
-          Volumes: ({{item.volumes}})
+          Last name: ({{character.lastname}})
           <br>
-          Chapters: ({{item.chapters}})
+          Height: ({{character.height}})
           <br>
-          Average score: ({{item.averageScore}})
+          Birthday: ({{character.birthday}})
         </app-card>
       </row>
     </div>
@@ -73,19 +73,19 @@
 
     <row><h3 class="no-mar">Similar Comics</h3></row>
     <row>
-      <app-card *ngFor="let theme of item.themes">
-        <img [src]="item.imageSource"
-             [alt]="item.name"
+      <app-card *ngFor="let creator of item.creators">
+        <img [src]="creator.imageSource"
+             [alt]="creator.name"
              class="col-4">
-        {{theme}}
+        {{creator.name}}
         <br>
-        Status: ({{item.status}})
+        First name: ({{creator.FirstName}})
         <br>
-        Volumes: ({{item.volumes}})
+        Last name: ({{creator.LastName}})
         <br>
-        Chapters: ({{item.chapters}})
+        Birthday: ({{creator.Birthday}})
         <br>
-        Average score: ({{item.averageScore}})
+        Height: ({{creator.Height}})
       </app-card>
     </row>
   </row>
@@ -170,3 +170,47 @@
     <!--            </row>-->
   </div>
 </app-dialog>
+<ng-container *ngIf="!error && edit" class="col-12">
+  <button (click)="reverseEdit()"><</button>
+  <button (click)="advanceEdit()">></button>
+  <row *ngIf="currentPage == 0">
+    <row>
+      <h1 class="no-mar">About</h1>
+    </row>
+    <div class="lazy fix-4 row-5">Img</div>
+    <div class="col-0">
+      <row>
+        <text-input [title]="'Title'" [size]="12"></text-input>
+      </row>
+      <row>
+        <textArea-input [title]="'Description'" [rows]="12" [size]="0"></textArea-input>
+      </row>
+      <row>
+        <text-input [title]="'Title'" [size]="0"></text-input>
+      </row>
+    </div>
+  </row>
+  <row *ngIf="currentPage == 1">
+    <div class="col-0">
+      <row>
+        <text-input [title]="'Genres'" [size]="12"></text-input>
+      </row>
+      <row>
+        <textArea-input [title]="'Themes'" [rows]="12" [size]="0"></textArea-input>
+      </row>
+    </div>
+  </row>
+  <row *ngIf="currentPage == 2">
+    <row>
+      <h1 class="no-mar">Creator</h1>
+    </row>
+    <div class="col-0">
+      <row>
+        <text-input [title]="'Creator'" [size]="12"></text-input>
+      </row>
+      <row>
+        <textArea-input [title]="'Other'" [rows]="12" [size]="0"></textArea-input>
+      </row>
+    </div>
+  </row>
+</ng-container>

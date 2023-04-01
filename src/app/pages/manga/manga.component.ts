@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {TableMulti} from "../../../Resources/Templates/TableClass";
-import {columnType} from "../../../Resources/Templates/table.component";
+import {ColumnType} from "../../../Resources/Templates/table.component";
 import {Tools} from "../../../Resources/Tools";
 import {MangaPageComponent} from "./MangaPage.component";
 import {Manga} from "../../../../tables";
@@ -15,33 +15,33 @@ export class MangaComponent extends TableMulti<Manga, MangaPageComponent> {
   protected columns = [
     {
       Name: this.StringNames.Cover,
-      Type: columnType.image,
+      Type: ColumnType.image,
       Key: "imageSource",
       width: 4,
       maxwidth: 6
     },
     {
       Name: this.StringNames.Title,
-      Type: columnType.headertext,
+      Type: ColumnType.headertext,
       Key: "name",
       width: 6,
       Reference: [
         {
           Name: this.StringNames.Description,
-          Type: columnType.text,
+          Type: ColumnType.text,
           Key: "description"
         },
       ],
     },
     {
       Name: this.StringNames.Volumes,
-      Type: columnType.text,
+      Type: ColumnType.text,
       Key: "volumes",
       formatting: "Volumes: [{}]",
       Reference: [
         {
           Name: this.StringNames.Chapters,
-          Type: columnType.text,
+          Type: ColumnType.text,
           Key: "chapters",
           formatting: "Chapters: [{}]"
         }
@@ -51,27 +51,27 @@ export class MangaComponent extends TableMulti<Manga, MangaPageComponent> {
     },
     {
       Name: this.StringNames.AverageScore,
-      Type: columnType.text,
+      Type: ColumnType.text,
       Key: "averageScore",
       width: 4,
       maxwidth: 6
     },
     {
       Name: this.StringNames.Status,
-      Type: columnType.text,
+      Type: ColumnType.text,
       Key: "status",
       width: 3
     },
     {
       Name: this.StringNames.StartDate,
-      Type: columnType.text,
+      Type: ColumnType.text,
       Key: "publishStart",
       formatting: "Publishing start: {}",
       formatvalue: (value: any) => Tools.convertdate(value),
       Reference: [
         {
           Name: this.StringNames.EndDate,
-          Type: columnType.text,
+          Type: ColumnType.text,
           Key: "publishEnd",
           formatvalue: (value: any) => Tools.convertdate(value),
           formatting: "Publishing end: {}",

@@ -28,7 +28,7 @@ export const routes: Routes = [
   {path: names.Movies, component: MoviesComponent},
   {path: names.Albums, component: AlbumsComponent},
   {path: names.Anime, component: AnimeComponent},
-  {path: names.Profile, component: ProfileComponent},
+  {path: names.Profile + "/:id", component: ProfileComponent},
   {path: names.Editor, component: EditorComponent},
   {path: '**', component: MainComponent}
 ];

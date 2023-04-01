@@ -1,57 +1,51 @@
-<row>
-    <button *ngIf="showCreate" class="save" (click)="create.emit()">{{StringNames.CreateNew}}</button>
-    <button *ngIf="showEdit" class="edit" (click)="edit.emit()">Edit</button>
-    <button *ngIf="showDelete" class="delete" (click)="delete.emit()">Delete</button>
-    <button *ngIf="showRefresh" (click)="refresh.emit()">Refresh</button>
-</row>
-<row *ngIf="showType">
-    <button (click)="displayType = distype.card">Cards</button>
-    <button (click)="displayType = distype.list">List</button>
-</row>
+
 <row *ngIf="rows != null">
-    <row *ngIf="displayType == distype.card">
-        <app-card *ngFor="let row of rows" class="pad mar">
-            <row *ngFor="let col of columns" class="row-4">
-                <row *ngIf="col.Type==coltype.image">
-                    <img [src]="row[col.Key]" class="col-12"/>
-                </row>
-                <div *ngIf="col.Type == coltype.text">
-                    <row [innerHTML]="getvalue(row[col.Key], col.formatting, col.formatvalue)"> </row>
-                    <row *ngFor="let item of col.Reference" [innerHTML]="getvalue(row[item.Key], item.formatting, item.formatvalue)"></row>
-                </div>
-                <row *ngIf="col.Type == coltype.headertext" style="text-align: left;">
-                    <h3><a>{{row[col.Key]}}</a></h3>
-                    <row *ngFor="let item of col.Reference" [innerHTML]="getvalue(row[item.Key], item.formatting, item.formatvalue)"></row>
-                </row>
-            </row>
-        </app-card>
-    </row>
-    <row *ngIf="displayType == distype.list" style="overflow: scroll">
-        <row *ngIf="showColumns" style="flex-wrap: nowrap;">
-            <div class="cell col top un"
-                 [style.min-width.rem]="col.width"
-                 [style.max-width.rem]="col.maxwidth"
-                 *ngFor="let col of columns">{{col.Name}}</div>
+  <row *ngIf="DisplayType == distype.card">
+    <app-card (click)="editRow.emit(row)" *ngFor="let row of rows" class="pad mar">
+      <row *ngFor="let col of columns" class="row-4">
+        <row *ngIf="col.Type==coltype.image">
+<!--          <img [src]="row[col.Key] ? row[col.Key] : 'Assets/testimg.svg'" class="col-12"/>-->
         </row>
-        <row>
-            <row *ngFor="let row of rows" (click)="editRow.emit(row)" class="cell" style="flex-wrap: nowrap">
-                <div [ngClass]="'un ' + ' col'"
-                     [style.min-width.rem]="col.width"
-                     [style.max-width.rem]="col.maxwidth"
-                     *ngFor="let col of columns">
-                    <row *ngIf="col.Type==coltype.image">
-                        <img [src]="row[col.Key] ? row[col.Key] : 'Assets/testimg.svg'" class="col-12"/>
-                    </row>
-                    <div *ngIf="col.Type == coltype.text">
-                        <row>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}} </row>
-                        <row *ngFor="let item of col.Reference">{{getvalue(row[item.Key], item.formatting, col.formatvalue)}}</row>
-                    </div>
-                    <row *ngIf="col.Type == coltype.headertext">
-                        <h3 class="no-mar pad"><a>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}}</a></h3>
-                        <row *ngFor="let item of col.Reference" class="pad">{{getvalue(row[item.Key], item.formatting, item.formatvalue)}}</row>
-                    </row>
-                </div>
-            </row>
+        <div *ngIf="col.Type == coltype.text">
+          <row>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}} </row>
+          <row *ngFor="let item of col.Reference">{{getvalue(row[item.Key], item.formatting, col.formatvalue)}}</row>
+        </div>
+        <row *ngIf="col.Type == coltype.headertext">
+          <h3 class="no-mar pad"><a>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}}</a></h3>
+          <row *ngFor="let item of col.Reference"
+               class="pad">{{getvalue(row[item.Key], item.formatting, item.formatvalue)}}</row>
         </row>
+      </row>
+    </app-card>
+  </row>
+  <row *ngIf="DisplayType == distype.list" style="overflow: scroll">
+    <row *ngIf="showColumns" style="flex-wrap: nowrap;">
+      <div class="cell col top un"
+           [style.min-width.rem]="col.width"
+           [style.max-width.rem]="col.maxwidth"
+           *ngFor="let col of columns">{{col.Name}}</div>
     </row>
+    <row>
+      <row *ngFor="let row of rows" (click)="editRow.emit(row)" class="cell" style="flex-wrap: nowrap">
+        <div [ngClass]="'un ' + ' col'"
+             [style.min-width.rem]="col.width"
+             [style.max-width.rem]="col.maxwidth"
+             *ngFor="let col of columns">
+          <row *ngIf="col.Type==coltype.image">
+            <img [src]="row[col.Key] ? row[col.Key] : 'Assets/testimg.svg'" class="col-12"/>
+          </row>
+          <div *ngIf="col.Type == coltype.text">
+            <row>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}} </row>
+            <row
+              *ngFor="let item of col.Reference">{{getvalue(row[item.Key], item.formatting, col.formatvalue)}}</row>
+          </div>
+          <row *ngIf="col.Type == coltype.headertext">
+            <h3 class="no-mar pad"><a>{{getvalue(row[col.Key], col.formatting, col.formatvalue)}}</a></h3>
+            <row *ngFor="let item of col.Reference"
+                 class="pad">{{getvalue(row[item.Key], item.formatting, item.formatvalue)}}</row>
+          </row>
+        </div>
+      </row>
+    </row>
+  </row>
 </row>

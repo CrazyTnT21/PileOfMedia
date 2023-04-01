@@ -48,3 +48,10 @@ Thumbs.db
 /Server/MyCollectionServer/Benchmarker.cs
 /Server/MyCollectionServer/BenchmarkDotNet.Artifacts/
 /Server/MyCollectionServer.sln.DotSettings.user
+/Server/Infrastructure/bin/
+/Server/Domain/bin/
+/Server/Domain/obj/
+/Server/Infrastructure/obj/
+/Server/Application/bin/
+/Server/Application/obj/
+/Server/BenchmarkDotNet.Artifacts/
