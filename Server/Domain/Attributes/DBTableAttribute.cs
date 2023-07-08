@@ -2,7 +2,7 @@
 
 namespace Domain.Attributes;
 
-[AttributeUsage(AttributeTargets.Class, Inherited = true)]
+[AttributeUsage(AttributeTargets.Class)]
 public sealed class DBTableAttribute<T> : Attribute
 {
   public readonly string[] columns;
@@ -12,10 +12,10 @@ public sealed class DBTableAttribute<T> : Attribute
   {
     this.table = table;
     List<string> Columns = new();
-    PropertyInfo[] properties = typeof(T).GetProperties();
+    var properties = typeof(T).GetProperties();
     for (int i = 0; i < properties.Length; i++)
     {
-      DBColumnAttribute? att = properties[i].GetCustomAttribute<DBColumnAttribute>();
+      var att = properties[i].GetCustomAttribute<DBColumnAttribute>();
       if (att is not null)
         Columns.Add(att.column);
     }

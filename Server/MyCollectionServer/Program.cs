@@ -2,8 +2,10 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Domain;
+using Domain.Common;
 using Microsoft.Extensions.Logging.Console;
-using MyCollectionServer;
+using MyCollectionServer;using MyCollectionServer.Controller;
 using MyCollectionServer.Pages;
 using MySqlConnector;
 
@@ -58,24 +60,4 @@ BaseT.languages =
 if (BaseT.languages.Length < 1)
   logger.LogCritical("No Languages have been found, something probably went wrong! Languages: {lang}", BaseT.languages);
 
-// var testuser = new Account();
-// testuser.FKUser = 1;
-// testuser.Password = "ABCDEFGHJ";
-// testuser.Email = "Test@Mail.com";
-//  var acc = new AccountClass(logger,con);
-// // Console.WriteLine(await acc.verify("ABC"));
-//   await acc.CreateItem(testuser);
 app.Run();
-
-public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
-{
-  public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-  {
-    return DateOnly.FromDateTime(reader.GetDateTime());
-  }
-
-  public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options)
-  {
-    writer.WriteStringValue(value.ToString("O"));
-  }
-}

@@ -4,7 +4,7 @@ using MyCollectionServer.Controller.Base;
 
 namespace MyCollectionServer.Controller;
 
-public class ComicController: BaseAPIController<Domain.Classes.Comic>
+public sealed class ComicController: BaseAPIController<Domain.Classes.Comic>
 {
   public ComicController(ILogger logger, AppDBContext dbContext) : base(logger, dbContext)
   {
@@ -22,9 +22,10 @@ public class ComicController: BaseAPIController<Domain.Classes.Comic>
 
   public override async Task<uint> Create(Domain.Classes.Comic item)
   {
-   var result = (_dbContext.Add(item)).Entity.PK;
-   await _dbContext.SaveChangesAsync();
-   return result;
+    return 0;
+    // var result = (_dbContext.Add(item)).Entity.PK;
+    // await _dbContext.SaveChangesAsync();
+    // return result;
   }
 
   public override async Task Update(Domain.Classes.Comic item)

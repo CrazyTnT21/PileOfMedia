@@ -3,9 +3,7 @@
 public static class ComicSchema
 {
   public const string Table = "Comic";
-  public static readonly string[] ExcludeGet = new string[] { FKName, FKDescription, FKStatus,"Name","Description","Status" };
-  public static readonly string[] ExcludeInsert = new string[] { "Name","Description","Status"  };
-  public const string Id = "PK";
+  public const string Id = "Id";
   public const string FKName = "FKName";
   public const string FKDescription = "FKDescription";
   public const string FKStatus = "FKStatus";
@@ -15,4 +13,6 @@ public static class ComicSchema
   public const string PublishEnd = "PublishEnd";
   public const string ImageSource = "ImageSource";
   public const string AverageScore = "AverageScore";
+  public static readonly string[] ExcludeGet = { FKName, FKDescription, FKStatus, "Name", "Description", "Status" };
+  public static readonly string[] ExcludeInsert = { "Name", "Description", "Status" };
 }

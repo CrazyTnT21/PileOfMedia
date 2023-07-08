@@ -1,6 +1,6 @@
 ﻿namespace Domain.Attributes;
 
-[AttributeUsage(AttributeTargets.Property,Inherited = true)]
+[AttributeUsage(AttributeTargets.Property)]
 public sealed class DBColumnAttribute : Attribute
 {
   public readonly string column;

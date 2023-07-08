@@ -8,11 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Common" />
       <Folder Include="Entities" />
       <Folder Include="Structs" />
       <Folder Include="ValueObjects" />
-      <Folder Include="Attributes" />
     </ItemGroup>
 
     <ItemGroup>
