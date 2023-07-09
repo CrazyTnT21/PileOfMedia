@@ -1,4 +1,5 @@
-﻿using Domain.Attributes;
+﻿using System;
+using Domain.Attributes;
 using Domain.Interfaces;
 using Domain.Schemas;
 

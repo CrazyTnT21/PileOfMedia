@@ -13,4 +13,7 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="obj\Debug\net6.0" />
+  </ItemGroup>
 </Project>

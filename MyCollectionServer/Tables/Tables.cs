@@ -1,4 +1,5 @@
-﻿using MySqlConnector;
+﻿using System;
+using MySqlConnector;
 
 namespace MyCollectionServer;
 

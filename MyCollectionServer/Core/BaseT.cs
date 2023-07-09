@@ -1,4 +1,6 @@
+using System;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
 namespace MyCollectionServer;

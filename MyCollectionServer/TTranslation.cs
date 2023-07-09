@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using MyCollectionServer.Core;
 using MySqlConnector;
-
+using Microsoft.Extensions.Logging;
 namespace MyCollectionServer;
 
 public sealed class TranslationClass: BaseClass<Language>

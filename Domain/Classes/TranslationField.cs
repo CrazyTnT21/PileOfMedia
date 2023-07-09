@@ -1,4 +1,6 @@
-﻿namespace Domain.Classes;
+﻿using System.Collections.Generic;
+
+namespace Domain.Classes;
 
 public sealed class TranslationField
 {

@@ -1,8 +1,13 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyCollectionServer.Core;
 using MySqlConnector;
+using Microsoft.Extensions.Logging;
 
 namespace MyCollectionServer.Pages;
 

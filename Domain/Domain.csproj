@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <Folder Include="Entities" />
+      <Folder Include="obj\Debug\net6.0" />
       <Folder Include="Structs" />
       <Folder Include="ValueObjects" />
     </ItemGroup>
