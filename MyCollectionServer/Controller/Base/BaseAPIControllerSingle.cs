@@ -1,38 +1,49 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Application.Controller;
-using Application.Crud;
-using Microsoft.Extensions.Logging;
-using Infrastructure.EF;
+﻿using Application.Controller;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MyCollectionServer.CrudAPI;
+using MySqlConnector;
 
 namespace MyCollectionServer.Controller.Base;
 
-public abstract class BaseAPIControllerSingle<T>: IBaseController<T>, ICrudAPI<T>
+public abstract class BaseAPIControllerSingle<T> : Base<T>, IBaseController<T>, ICrudAPI<T> where T : new()
 {
-  protected readonly ILogger _logger;
-  protected readonly DbContext _dbContext;
-
-  public BaseAPIControllerSingle(ILogger logger, AppDBContext dbContext)
+  protected BaseAPIControllerSingle(ILogger logger, MySqlConnection connection) : base(logger, connection)
   {
-    _logger = logger;
-    _dbContext = dbContext;
   }
 
+  [NonAction]
   public abstract Task<T?> GetSingle(uint id);
-  public abstract Task<IEnumerable<T>> Get();
-  public abstract Task<uint> Create(T item);
-  public abstract Task Update(T item);
-  public abstract Task Delete(uint id);
-  public abstract Task Delete(uint[] ids);
-  public abstract void Validate(T item, bool update = false);
 
+  [NonAction]
+  public abstract Task<IEnumerable<T>> Get();
+
+  [NonAction]
+  public abstract Task<T> Create(T item);
+
+  [NonAction]
+  public abstract Task<T> Update(T item);
+
+  [NonAction]
+  public abstract Task Delete(uint id);
+
+  [NonAction]
+  public abstract Task Delete(uint[] ids);
+
+  [HttpGet("{id}")]
   public abstract Task<ActionResult<T?>> GetSingleResult(uint id);
+
+  [HttpGet]
   public abstract Task<ActionResult<IEnumerable<T>>> GetResult();
-  public abstract Task<ActionResult<uint>> CreateResult(T item);
-  public abstract Task<IActionResult> UpdateResult(T item);
+
+  [HttpPost]
+  public abstract Task<ActionResult<T>> CreateResult(T item);
+
+  [HttpPut]
+  public abstract Task<ActionResult<T>> UpdateResult(T item);
+
+  [HttpDelete("{id}")]
   public abstract Task<IActionResult> DeleteResult(uint id);
+
+  [HttpDelete]
   public abstract Task<IActionResult> DeleteResult(uint[] ids);
 }

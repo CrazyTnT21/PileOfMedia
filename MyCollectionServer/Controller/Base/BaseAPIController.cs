@@ -1,43 +1,64 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 using Application.Controller;
-using Application.Crud;
-using Microsoft.Extensions.Logging;
-using Infrastructure.EF;
+using Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MyCollectionServer.CrudAPI;
+using MySqlConnector;
 
 namespace MyCollectionServer.Controller.Base;
 
-public abstract class BaseAPIController<T>: IBaseController<T>, ICrudAPI<T>
+[ApiController]
+[Route("[controller]")]
+public abstract class BaseAPIController<T> : Base<T>, IBaseController<T> where T : IEntity, new()
 {
-  protected readonly ILogger _logger;
-  protected readonly AppDBContext _dbContext;
-
-  public BaseAPIController(ILogger logger, AppDBContext dbContext)
+  protected BaseAPIController(ILogger logger, MySqlConnection connection) : base(logger, connection)
   {
-    _logger = logger;
-    _dbContext = dbContext;
   }
-  public abstract Task<T?> GetSingle(uint id);
-  public abstract Task<IEnumerable<T>> Get();
-  public abstract Task<uint> Create(T item);
-  public abstract Task Update(T item);
-  public abstract Task Delete(uint id);
-  public abstract Task Delete(uint[] ids);
-  public abstract void Validate(T item, bool update = false);
 
-  [HttpGet("{id}")]
-  public abstract Task<ActionResult<T?>> GetSingleResult(uint id);
-  [HttpGet]
-  public abstract Task<ActionResult<IEnumerable<T>>> GetResult();
-  [HttpPost]
-  public abstract Task<ActionResult<uint>> CreateResult(T item);
-  [HttpPut]
-  public abstract Task<IActionResult> UpdateResult(T item);
-  [HttpDelete("{id}")]
-  public abstract Task<IActionResult> DeleteResult(uint id);
-  [HttpDelete]
-  public abstract Task<IActionResult> DeleteResult(uint[] ids);
+  public virtual async Task<T?> GetSingle(uint id)
+  {
+    throw new NotImplementedException();
+  }
+
+  public virtual async Task<IEnumerable<T>> Get()
+  {
+    throw new NotImplementedException();
+  }
+
+  public virtual async Task<T> Create(T item)
+  {
+    throw new NotImplementedException();
+  }
+
+  public virtual async Task<T> Update(T item)
+  {
+    throw new NotImplementedException();
+  }
+
+  public virtual async Task Delete(uint id)
+  {
+    throw new NotImplementedException();
+  }
+
+  public virtual async Task Delete(uint[] ids)
+  {
+    throw new NotImplementedException();
+  }
+
+  public static List<string> GetColumns() => GetColumns(typeof(T));
+
+  public static List<string> GetColumns<A>() => GetColumns(typeof(A));
+
+  public static List<string> GetColumns(Type type)
+  {
+    var result = new List<string>();
+    var properties = type.GetProperties();
+    for (int i = 0; i < properties.Length; i++)
+    {
+      var column = properties[i].GetCustomAttribute<ColumnAttribute>();
+      result.Add(column?.Name ?? properties[i].Name);
+    }
+
+    return result;
+  }
 }

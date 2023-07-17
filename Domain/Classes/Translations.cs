@@ -12,9 +12,9 @@ public sealed class Translations : IEntity
   [Column("Id")]
   public uint Id { get; set; }
 
-  [Column] public string EN { get; set; }
-  [Column] public string DE { get; set; }
-  [Column] public string ES { get; set; }
-  [Column] public string JA { get; set; }
-  [Column] public string NL { get; set; }
+  [Column] public string EN { get; set; } = null!;
+  [Column] public string? DE { get; set; }
+  [Column] public string? ES { get; set; }
+  [Column] public string? JA { get; set; }
+  [Column] public string? NL { get; set; }
 }

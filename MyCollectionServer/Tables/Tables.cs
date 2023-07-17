@@ -1,37 +1,7 @@
-﻿using System;
-using MySqlConnector;
+﻿using MySqlConnector;
 
-namespace MyCollectionServer;
+namespace MyCollectionServer.Tables;
 
-[DBTable<Comic>(ComicSchema.table)]
-public sealed class Comic : PKClass, languageFields
-{
-  [DBColumn(ComicSchema.pk)] public uint PK { get; set; }
-
-  [DBColumn("Name", TranslationSchema.table, TranslationSchema.pk)]
-  public string Name { get; set; }
-
-  [DBColumn("Description", TranslationSchema.table, TranslationSchema.pk)]
-  public string? Description { get; set; }
-
-  [DBColumn("Status", TranslationSchema.table, TranslationSchema.pk)]
-  public string? Status { get; set; }
-
-  [DBColumn(ComicSchema.chapters)] public ushort? Chapters { get; set; }
-  [DBColumn(ComicSchema.volumes)] public ushort? Volumes { get; set; }
-  [DBColumn(ComicSchema.publishStart)] public DateOnly? PublishStart { get; set; }
-  [DBColumn(ComicSchema.publishEnd)] public DateOnly? PublishEnd { get; set; }
-  [DBColumn(ComicSchema.imageSource)] public string? ImageSource { get; set; }
-  [DBColumn(ComicSchema.averageScore)] public decimal? AverageScore { get; set; }
-
-  [DBForeign("ComicXCharacter", "PK", "FKComic")]
-  public Character[]? characters { get; set; }
-
-  [DBForeign("ComicXCreator", "PK", "FKComic")]
-  public Creator[]? creators { get; set; }
-
-  public LanguageField[]? LanguageFields { get; set; }
-};
 
 [DBTable<Manga>(MangaSchema.table)]
 public sealed class Manga : PKClass, languageFields

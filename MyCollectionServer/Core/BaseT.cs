@@ -1,9 +1,7 @@
-using System;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
-namespace MyCollectionServer;
+namespace MyCollectionServer.Core;
 
 public static class BaseT
 {

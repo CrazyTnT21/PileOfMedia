@@ -1,14 +1,14 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Attributes;
+using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Schemas;
 
 namespace Domain.Classes;
 
 [Table(ComicSchema.Table)]
-public sealed class Comic: IEntity
+public sealed class Comic : IEntity
 {
   [Key]
   [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

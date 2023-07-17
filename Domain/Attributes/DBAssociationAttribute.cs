@@ -1,4 +1,5 @@
 ﻿using System;
+using Domain.Enums;
 
 namespace Domain.Attributes;
 

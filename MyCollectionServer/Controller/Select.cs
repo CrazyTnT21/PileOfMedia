@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using Domain;
 using Domain.Attributes;
+using Domain.Enums;
 using MySqlConnector;
 
 namespace MyCollectionServer.Controller;

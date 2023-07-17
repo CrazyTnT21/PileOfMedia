@@ -1,9 +1,7 @@
-﻿using System;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Domain.Common;
-
 
 public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
 {

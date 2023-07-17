@@ -23,14 +23,14 @@ public interface IGetAPISingle<T>
   public Task<ActionResult<T?>> GetSingleResult(uint id);
 }
 
-public interface ICreateAPI<in T>
+public interface ICreateAPI<T>
 {
-  public Task<ActionResult<uint>> CreateResult(T item);
+  public Task<ActionResult<T>> CreateResult(T item);
 }
 
-public interface IUpdateAPI<in T>
+public interface IUpdateAPI<T>
 {
-  public Task<IActionResult> UpdateResult(T item);
+  public Task<ActionResult<T>> UpdateResult(T item);
 }
 
 public interface IDeleteAPI : IDeleteAPISingle

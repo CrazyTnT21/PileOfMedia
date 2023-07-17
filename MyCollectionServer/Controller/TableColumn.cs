@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Domain;
+using Domain.Enums;
 
 namespace MyCollectionServer.Controller;
 

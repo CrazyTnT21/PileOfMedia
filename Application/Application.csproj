@@ -16,6 +16,7 @@
       <Content Include="bin\Debug\net6.0\Application.pdb" />
       <Content Include="bin\Debug\net6.0\Domain.dll" />
       <Content Include="bin\Debug\net6.0\Domain.pdb" />
+      <Content Include="obj\project.assets.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -34,6 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="bin\Debug\net6.0" />
       <Folder Include="obj\Debug\net6.0" />
     </ItemGroup>
 

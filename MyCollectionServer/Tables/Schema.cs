@@ -1,4 +1,4 @@
-﻿namespace MyCollectionServer;
+﻿namespace MyCollectionServer.Tables;
 
 
 public static class ComicSchema

@@ -1,5 +1,4 @@
-﻿using System;
-using Domain.Attributes;
+﻿using Domain.Attributes;
 using Domain.Schemas;
 
 namespace Domain.Classes;

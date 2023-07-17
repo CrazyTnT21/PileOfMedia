@@ -1,5 +1,4 @@
-﻿using System;
-using Domain.Attributes;
+﻿using Domain.Attributes;
 using Domain.Interfaces;
 using Domain.Schemas;
 
@@ -11,13 +10,13 @@ public sealed class Character : ITranslationFields
   [DBColumn(CharacterSchema.Id)] public uint PK { get; set; }
 
   [DBColumn(CharacterSchema.Name, TranslationSchema.Table)]
-  public string Name { get; set; }
+  public string Name { get; set; } = null!;
 
   [DBColumn(CharacterSchema.FirstName, TranslationSchema.Table)]
-  public string FirstName { get; set; }
+  public string? FirstName { get; set; }
 
   [DBColumn(CharacterSchema.LastName, TranslationSchema.Table)]
-  public string LastName { get; set; }
+  public string? LastName { get; set; }
 
   [DBColumn(CharacterSchema.Description, TranslationSchema.Table)]
   public string? Description { get; set; }

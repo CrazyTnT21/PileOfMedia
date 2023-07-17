@@ -30,4 +30,8 @@
       <None Remove="obj\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="obj\project.assets.json" />
+    </ItemGroup>
+
 </Project>

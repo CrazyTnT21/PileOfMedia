@@ -1,5 +1,4 @@
-﻿using System;
-using Domain.Attributes;
+﻿using Domain.Attributes;
 using Domain.Interfaces;
 using Domain.Schemas;
 
@@ -11,7 +10,7 @@ public sealed class Manga : ITranslationFields
   [DBColumn(MangaSchema.Id)] public uint PK { get; set; }
 
   [DBColumn(MangaSchema.Name, TranslationSchema.Table)]
-  public string Name { get; set; }
+  public string Name { get; set; } = null!;
 
   [DBColumn(MangaSchema.Description, TranslationSchema.Table)]
   public string? Description { get; set; }

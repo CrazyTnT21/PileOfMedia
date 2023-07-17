@@ -1,23 +1,11 @@
 //#define Benchmark
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Domain;
 using Domain.Common;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
-using MyCollectionServer;using MyCollectionServer.Controller;
-using MyCollectionServer.Pages;
+using MyCollectionServer;
+using MyCollectionServer.Core;
 using MySqlConnector;
-
-#if Benchmark
-// await Benchmarker.AsyncBenchmark();
-using BenchmarkDotNet.Running;
-BenchmarkRunner.Run<Benchmarker>();
-return;
-#endif
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>

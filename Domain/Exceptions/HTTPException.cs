@@ -1,9 +1,7 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace Domain.Exceptions;
-
 
 public class HTTPException : Exception
 {
