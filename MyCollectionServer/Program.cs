@@ -14,7 +14,7 @@ string db = Environment.GetEnvironmentVariable("DB") ?? throw new Exception($"En
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("Server", policy => policy.WithOrigins("http://localhost:4000").AllowAnyHeader());
+  options.AddPolicy("Server", policy => policy.AllowAnyOrigin().AllowAnyHeader());
 });
 using var loggerFactory = LoggerFactory.Create(loggerBuilder =>
 {

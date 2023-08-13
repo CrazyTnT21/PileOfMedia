@@ -2,7 +2,7 @@
 
 namespace Application.Crud;
 
-public interface IValidate<in T>
+public interface IValidate<T, TOption>
 {
-  public HTTPError? Validate(T item, bool update = false);
+  public HTTPError? Validate(T item, TOption options);
 }

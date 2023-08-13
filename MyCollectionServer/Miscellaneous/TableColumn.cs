@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using Domain;
-using Domain.Enums;
+﻿using Domain.Enums;
 
-namespace MyCollectionServer.Controller;
+namespace MyCollectionServer.Miscellaneous;
 
 public sealed class TableColumn
 {

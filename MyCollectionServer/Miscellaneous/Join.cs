@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace MyCollectionServer.Controller;
+namespace MyCollectionServer.Miscellaneous;
 
 public struct Join
 {

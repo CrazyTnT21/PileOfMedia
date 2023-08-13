@@ -1,5 +1,4 @@
-﻿namespace MyCollectionServer.Controller;
-
+﻿namespace MyCollectionServer.Miscellaneous;
 
 public struct ColumnMapping
 {

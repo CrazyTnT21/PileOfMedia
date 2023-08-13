@@ -49,6 +49,4 @@ public sealed class Comic : IEntity
   // [NotMapped]
   // [DBMany<Creator>("ComicXCreator", "FKComic")]
   // public Creator[]? Creators { get; set; }
-
-  [NotMapped] public TranslationField[]? LanguageFields { get; set; }
 }

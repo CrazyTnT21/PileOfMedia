@@ -1,4 +1,4 @@
-﻿namespace MyCollectionServer.Controller;
+﻿namespace MyCollectionServer.Miscellaneous;
 
 public enum JoinType
 {

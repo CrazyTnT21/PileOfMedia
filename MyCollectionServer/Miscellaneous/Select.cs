@@ -1,46 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using System.Text;
-using Domain;
 using Domain.Attributes;
 using Domain.Enums;
 using MySqlConnector;
 
-namespace MyCollectionServer.Controller;
+namespace MyCollectionServer.Miscellaneous;
 
 public sealed class Select<T> where T : new()
 {
   private static readonly Dictionary<Type, TableColumn> RegisteredTypes = new();
 
-  private readonly TableColumn current;
+  private readonly TableColumn Current;
 
-  public uint maxRecursion = 3;
+  public uint MaxRecursion = 3;
 
-  public readonly Dictionary<Type, uint> _alreadyDone = new();
+  private readonly Dictionary<Type, uint> _alreadyDone = new();
 
-  public readonly Dictionary<Key, string> DynamicColumns = new();
+  private readonly Dictionary<Key, string> _dynamicColumns = new();
+
+  private uint Limit;
+
+  private Dictionary<string, List<object?>> Wheres = new();
+  private Dictionary<string, List<object?>> Likes = new();
 
   public Select()
   {
     if (!RegisteredTypes.ContainsKey(typeof(T)))
     {
-      current = new TableColumn();
+      Current = new TableColumn();
       SetColumns(typeof(T), new uint[] { });
-      RegisteredTypes.Add(typeof(T), current);
+      RegisteredTypes.Add(typeof(T), Current);
     }
     else
     {
-      current = RegisteredTypes[typeof(T)];
+      Current = RegisteredTypes[typeof(T)];
     }
   }
 
   public Select<T> AddDynamicColumn(Key key, string column)
   {
-    if (!DynamicColumns.ContainsKey(key))
+    if (!_dynamicColumns.ContainsKey(key))
     {
-      DynamicColumns.Add(key, column);
+      _dynamicColumns.Add(key, column);
     }
 
     return this;
@@ -49,6 +51,42 @@ public sealed class Select<T> where T : new()
   public Select<T> Projection()
   {
     //TODO: Implement
+    return this;
+  }
+
+  public Select<T> Take(uint count)
+  {
+    Limit = count;
+    //TODO: Implement
+    return this;
+  }
+
+  public Select<T> Where(string property, object? value)
+  {
+    if (Wheres.ContainsKey(property))
+    {
+      Wheres[property].Add(value);
+    }
+    else
+    {
+      Wheres.Add(property, new List<object?>() { value });
+    }
+
+    return this;
+  }
+
+  public Select<T> Like(string property, string value)
+  {
+    //TODO: Implement
+    if (Likes.ContainsKey(property))
+    {
+      Likes[property].Add(value);
+    }
+    else
+    {
+      Likes.Add(property, new List<object?>() { value });
+    }
+
     return this;
   }
 
@@ -64,17 +102,17 @@ public sealed class Select<T> where T : new()
     string tableAlias = table.Name[0].ToString();
     Dictionary<string, (Key, string, uint[], Join)> found = new();
 
-    foreach (var value in DynamicColumns)
-    foreach (var column in current.RuntimeJoin)
+    foreach (var value in _dynamicColumns)
+    foreach (var column in Current.RuntimeJoin)
       if (value.Key == column.Value.Item1)
         found.Add(column.Key, (value.Key, value.Value, column.Value.Item3, column.Value.Item2));
 
-    if (current.Columns.Count == 0)
+    if (Current.Columns.Count == 0)
       query.Remove(query.Length - 1, 1);
 
     uint length = 0;
 
-    foreach (var column in current.Columns)
+    foreach (var column in Current.Columns)
     {
       query.Append($"`{column.Key}`.`{column.Value[0].Column}`");
       for (int i = 1; i < column.Value.Count; i++)
@@ -82,7 +120,7 @@ public sealed class Select<T> where T : new()
         query.Append($",`{column.Key}`.`{column.Value[i].Column}`");
       }
 
-      if (length != current.Columns.Count - 1)
+      if (length != Current.Columns.Count - 1)
         query.Append(",");
       length++;
     }
@@ -94,7 +132,7 @@ public sealed class Select<T> where T : new()
 
     query.Append("FROM " + table.Name + " AS " + tableAlias);
 
-    foreach (var join in current.Joins)
+    foreach (var join in Current.Joins)
     {
       query.Append(join.Value.CreateJoin(JoinType.Left));
     }
@@ -104,17 +142,30 @@ public sealed class Select<T> where T : new()
       query.Append(join.Value.Item4.CreateJoin(JoinType.Left));
     }
 
+    foreach (var where in Wheres)
+    {
+      string[] tables = where.Key.Split(".");
+      query.Append(" WHERE ");
+      query.Append($"{where.Key} = {where.Value[0]}");
+
+      for (int i = 1; i < where.Value.Count; i++)
+        query.Append($" AND {where.Key} = {where.Value[i]}");
+    }
+
+    if (Limit > 0)
+      query.Append(" LIMIT " + Limit);
+
     Console.WriteLine(query.ToString());
     MySqlCommand cmd = new MySqlCommand(query.ToString(), connection);
 
     await cmd.PrepareAsync();
     await using MySqlDataReader result = await cmd.ExecuteReaderAsync();
-
+    uint currentRow = 0;
     while (await result.ReadAsync())
     {
       T item = new T();
       int ordinal = 0;
-      foreach (var column in current.Columns)
+      foreach (var column in Current.Columns)
       {
         for (int i = 0; i < column.Value.Count; i++)
         {
@@ -171,7 +222,7 @@ public sealed class Select<T> where T : new()
 
     if (_alreadyDone.ContainsKey(type))
     {
-      if (_alreadyDone[type] >= maxRecursion)
+      if (_alreadyDone[type] >= MaxRecursion)
         return;
       _alreadyDone[type]++;
     }
@@ -199,11 +250,11 @@ public sealed class Select<T> where T : new()
         DBAssociationAttribute? dbassociation = properties[i].GetCustomAttribute<DBAssociationAttribute>();
         if (dbassociation is not null)
         {
-          current.RuntimeJoin.Add(dbjoinalias, (dbassociation.Key, join, position));
+          Current.RuntimeJoin.Add(dbjoinalias, (dbassociation.Key, join, position));
         }
         else
         {
-          current.Joins.Add(dbjoinalias, join);
+          Current.Joins.Add(dbjoinalias, join);
           SetColumns(properties[i].PropertyType, position);
         }
       }
@@ -213,13 +264,13 @@ public sealed class Select<T> where T : new()
         if (column is not null)
         {
           ColumnMapping columnMapping = new ColumnMapping(position, column.Name ?? properties[i].Name);
-          if (current.Columns.ContainsKey(tableAlias))
+          if (Current.Columns.ContainsKey(tableAlias))
           {
-            current.Columns[tableAlias].Add(columnMapping);
+            Current.Columns[tableAlias].Add(columnMapping);
           }
           else
           {
-            current.Columns.Add(tableAlias, new List<ColumnMapping>() { columnMapping });
+            Current.Columns.Add(tableAlias, new List<ColumnMapping>() { columnMapping });
           }
         }
       }
@@ -229,12 +280,12 @@ public sealed class Select<T> where T : new()
   private string GetNextAlias(string value)
   {
     string alias = value[0].ToString();
-    if (!current.Columns.ContainsKey(alias) && !current.RuntimeJoin.ContainsKey(alias))
+    if (!Current.Columns.ContainsKey(alias) && !Current.RuntimeJoin.ContainsKey(alias))
       return alias;
 
     uint index = 1;
 
-    while (current.Columns.ContainsKey(alias + index) || current.RuntimeJoin.ContainsKey(alias + index))
+    while (Current.Columns.ContainsKey(alias + index) || Current.RuntimeJoin.ContainsKey(alias + index))
       index++;
 
     return alias + index;

@@ -1,11 +1,10 @@
 ﻿using Domain.Attributes;
-using Domain.Interfaces;
 using Domain.Schemas;
 
 namespace Domain.Classes;
 
 [DBTable<Manga>(MangaSchema.Table)]
-public sealed class Manga : ITranslationFields
+public sealed class Manga
 {
   [DBColumn(MangaSchema.Id)] public uint PK { get; set; }
 
@@ -24,6 +23,4 @@ public sealed class Manga : ITranslationFields
   [DBColumn(MangaSchema.PublishEnd)] public DateOnly? PublishEnd { get; set; }
   [DBColumn(MangaSchema.ImageSource)] public string? ImageSource { get; set; }
   [DBColumn(MangaSchema.AverageScore)] public float? AverageScore { get; set; }
-
-  public TranslationField[]? TranslationFields { get; set; }
 }

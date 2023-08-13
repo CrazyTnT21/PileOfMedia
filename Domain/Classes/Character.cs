@@ -1,11 +1,10 @@
 ﻿using Domain.Attributes;
-using Domain.Interfaces;
 using Domain.Schemas;
 
 namespace Domain.Classes;
 
 [DBTable<Character>(CharacterSchema.Table)]
-public sealed class Character : ITranslationFields
+public sealed class Character
 {
   [DBColumn(CharacterSchema.Id)] public uint PK { get; set; }
 
@@ -26,6 +25,4 @@ public sealed class Character : ITranslationFields
 
   [DBColumn(CharacterSchema.ImageSource)]
   public string? ImageSource { get; set; }
-
-  public TranslationField[]? TranslationFields { get; set; }
 }

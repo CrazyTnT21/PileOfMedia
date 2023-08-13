@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace MyCollectionServer.Controller;
+﻿namespace MyCollectionServer.Miscellaneous;
 
 public static class IAsyncEnumerableToList
 {

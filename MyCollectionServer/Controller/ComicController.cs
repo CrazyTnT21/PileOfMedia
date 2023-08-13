@@ -2,108 +2,112 @@
 using Domain;
 using Domain.Classes;
 using Domain.Enums;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using MyCollectionServer.Controller.Base;
-using MyCollectionServer.Core;
+using MyCollectionServer.Miscellaneous;
 using MySqlConnector;
-using HTTPException = Domain.Exceptions.HTTPException;
 
 namespace MyCollectionServer.Controller;
 
 [ApiController]
 [Route("Api/Comic")]
-public class ComicController : BaseAPIController<Comic>, IComicService
+public class ComicController : APIController<Comic, ComicValidateOption>, IComicService
 {
   public ComicController(ILogger logger, MySqlConnection connection) : base(logger, connection)
   {
   }
 
-  public override async Task<Comic?> GetSingle(uint id)
+  [HttpGet]
+  public async Task<ActionResult<IEnumerable<Comic>>> GetResult(string? language)
   {
-    var results = await new Select<Comic>()
-      .QueryDB(_connection)
-      .ToList();
-    if (results.Count > 0)
-      return results[0];
-    return null;
-  }
-
-  public override async Task<IEnumerable<Comic>> Get()
-  {
-    var results = await new Select<Comic>()
-      .AddDynamicColumn(Key.Language, "EN")
-      .QueryDB(_connection)
-      .ToList();
-    return results;
-  }
-
-  public override async Task<Comic> Create(Comic item)
-  {
-    var valid = Validate(item);
-    if (valid is not null)
-      throw new HTTPException(valid.Value.StatusCode, valid.Value.Reason);
-
-    object fkName = await Insert("Translation", new[] { "EN" }, new[] { "TestName" });
-    object fkDescription = await Insert("Translation", new[] { "EN" }, new[] { "TestDescription" });
-    string[] columns = new[] { "FKName", "FKDescription" };
-    object[] values = new object[] { fkName, fkDescription };
-    var result = await Insert("Comic", columns, values);
-
-    return item;
+    var options = new ComicGetOption(language ?? "EN");
+    IEnumerable<Comic> result = await Get(options);
+    return result.ToList();
   }
 
   [NonAction]
-  public async Task<long> Insert(string table, string[] columns, object?[] values)
+  public async Task<IEnumerable<Comic>> Get(ComicGetOption options)
   {
-    if (columns.Length != values.Length)
-      throw new Exception("Columns length doesn't match values length");
+    await _connection.OpenAsync();
+    var results = await new Select<Comic>()
+      .AddDynamicColumn(Key.Language, options.Language)
+      .QueryDB(_connection)
+      .ToList();
+    await _connection.CloseAsync();
 
-    await using MySqlCommand cmd =
-      new($"INSERT INTO {table}({string.Join(',', columns)}) VALUES({BaseT.RepeatUnique("@v", values.Length)})",
-        _connection);
-
-    BaseT.AddMultipleValues(cmd, BaseT.RepeatUnique("v", values.Length).Split(','), values);
-    return await QueryBase.QueryDBResult(cmd);
-  }
-
-  public override async Task<Comic> Update(Comic item)
-  {
-    var valid = Validate(item, true);
-    if (valid is not null)
-      throw new HTTPException(valid.Value.StatusCode, valid.Value.Reason);
-
-    return item;
-  }
-
-  public override HTTPError? Validate(Comic item, bool update = false)
-  {
-    if (item.LanguageFields is null)
-      return new HTTPError(StatusCodes.Status400BadRequest, "LanguageFields is missing!");
-
-    if (!Array.Exists(item.LanguageFields, x => x.Column.Equals("Name", StringComparison.OrdinalIgnoreCase)))
-      return new HTTPError(StatusCodes.Status400BadRequest, "'Name' is required!");
-
-    for (int i = 0; i < item.LanguageFields?.Length; i++)
-      if (item.LanguageFields[i].Column.Equals("Name"))
-        foreach (var val in item.LanguageFields[i].Values)
-          if (!TranslationClass.LanguageExists(val.Key))
-            return new HTTPError(StatusCodes.Status400BadRequest, $"Language code '{val.Key}' does not exist!");
-    return null;
+    return results;
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<Comic?>> GetSingleResult(uint id) => await GetSingle(id);
+  public async Task<ActionResult<Comic?>> GetSingleResult(uint id, string? language)
+  {
+    var options = new ComicGetOption(language ?? "EN");
+    Comic? result = await GetSingle(id, options);
+    if (result is null)
+      return new NotFoundResult();
+    return result;
+  }
 
-  [HttpGet]
-  public async Task<ActionResult<IEnumerable<Comic>>> GetResult() => (await Get()).ToList();
+  [NonAction]
+  public async Task<Comic?> GetSingle(uint id, ComicGetOption options)
+  {
+    await _connection.OpenAsync();
+
+    var results = await new Select<Comic>()
+      .Where("C.id", id)
+      .AddDynamicColumn(Key.Language, options.Language)
+      .Take(1)
+      .QueryDB(_connection)
+      .ToList();
+
+    await _connection.CloseAsync();
+
+    if (results.Count > 0)
+      return results[0];
+
+    return null;
+  }
 
   [HttpPost]
-  public async Task<ActionResult<Comic>> CreateResult(Comic item) => await Create(item);
+  public async Task<ActionResult<Comic>> CreateResult(Comic item)
+  {
+    return await Create(item, new ComicCreateOption());
+  }
+
+  [NonAction]
+  public async Task<Comic> Create(Comic item, ComicCreateOption options)
+  {
+    throw new NotImplementedException();
+  }
 
   [HttpPut]
   public async Task<ActionResult<Comic>> UpdateResult(Comic item)
   {
-    return await Update(item);
+    return await Update(item, new ComicUpdateOption());
+  }
+
+  [NonAction]
+  public async Task<Comic> Update(Comic item, ComicUpdateOption options)
+  {
+    var validateOptions = new ComicValidateOption() { Update = true };
+    var valid = Validate(item, validateOptions);
+    if (valid is not null)
+      throw new HTTPException(valid.Value.StatusCode, valid.Value.Reason);
+
+    throw new NotImplementedException();
+  }
+
+  [NonAction]
+  public async Task Delete(uint id)
+  {
+    throw new NotImplementedException();
+  }
+
+  [NonAction]
+  public async Task Delete(uint[] ids)
+  {
+    throw new NotImplementedException();
   }
 
   [HttpDelete("{id}")]
@@ -119,4 +123,39 @@ public class ComicController : BaseAPIController<Comic>, IComicService
     await Delete(ids);
     return new OkResult();
   }
+
+  [NonAction]
+  public override HTTPError? Validate(Comic item, ComicValidateOption options)
+  {
+    if (options.Update)
+    {
+      for (int i = 0; i < options.LanguageFields?.Length; i++)
+      {
+      }
+
+      return null;
+    }
+
+    if (options.LanguageFields is null)
+      return new HTTPError(StatusCodes.Status400BadRequest, "LanguageFields is missing!");
+
+    for (int i = 0; i < options.LanguageFields.Length; i++)
+    {
+      // if (options.LanguageFields[i].Column.Equals("Name"))
+      //   foreach (var val in item.LanguageFields[i].Values)
+      //     if (!Translations.LanguageExists(val.Key))
+      //       return new HTTPError(StatusCodes.Status400BadRequest, $"Language code '{val.Key}' does not exist!");
+    }
+
+    if (!Array.Exists(options.LanguageFields, x => x.Column.Equals("Name", StringComparison.OrdinalIgnoreCase)))
+      return new HTTPError(StatusCodes.Status400BadRequest, "'Name' is required!");
+
+    return null;
+  }
+}
+
+public struct ComicValidateOption
+{
+  public bool Update;
+  public LanguageField[]? LanguageFields;
 }
