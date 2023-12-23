@@ -8,14 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Folder Include="Attributes" />
       <Folder Include="Entities" />
+      <Folder Include="obj" />
       <Folder Include="obj\Debug\net6.0" />
-      <Folder Include="Structs" />
-      <Folder Include="ValueObjects" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     </ItemGroup>
 
     <ItemGroup>

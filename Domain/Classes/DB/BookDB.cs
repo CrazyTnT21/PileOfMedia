@@ -1,17 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Domain.Interfaces;
 
 namespace Domain.Classes.DB;
 
-public class BookDB
+public sealed class BookDB : IEntity, IUserStats, IAdded
 {
-  [Column("Id")] public uint Id { get; set; }
-  [Column("FKName")] public string Name { get; set; } = null!;
-  [Column("FKDescription")] public string? Description { get; set; }
-  [Column("Chapters")] public byte? Chapters { get; set; }
-  [Column("Pages")] public ushort? Pages { get; set; }
-  [Column("Words")] public uint? Words { get; set; }
-  [Column("PublishDate")] public DateOnly PublishDate { get; set; }
-  [Column("ImageSource")] public string? ImageSource { get; set; }
-  [Column("AverageScore")] public decimal AverageScore { get; set; }
-  [Column("Added")] public DateOnly Added { get; set; }
+  public int Id { get; set; }
+  public short? Chapters { get; set; }
+  public short? Pages { get; set; }
+  public int? Words { get; set; }
+  public DateOnly? Published { get; set; }
+  public int FKCover { get; set; }
+  public decimal Score { get; set; }
+  public int Popularity { get; set; }
+  public int Favorites { get; set; }
+  public int Members { get; set; }
+  public int Rank { get; set; }
+  public DateOnly Added { get; set; }
 }

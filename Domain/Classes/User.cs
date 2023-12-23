@@ -1,13 +1,21 @@
-﻿using Domain.Attributes;
-using Domain.Schemas;
+﻿using Domain.Interfaces;
 
 namespace Domain.Classes;
 
-public sealed class User
+public sealed class User: IEntity
 {
-  [DBColumn(UserSchema.Id)] public uint PK { get; set; }
-  [DBColumn(UserSchema.Name)] public string Name { get; set; } = null!;
-  [DBColumn(UserSchema.Joined)] public DateOnly Joined { get; set; }
-  [DBColumn(UserSchema.Description)] public string? Description { get; set; }
-  [DBColumn(UserSchema.ImageSource)] public string? ImageSource { get; set; }
+  public int Id { get; set; }
+  public string Name { get; set; } = null!;
+  public DateOnly Joined { get; set; }
+  public string? Description { get; set; }
+  public Image? ProfilePicture { get; set; }
+  public bool Deleted { get; set; }
+}
+
+public sealed class CreateUser
+{
+  public int Id { get; set; }
+  public string? Name { get; set; } = null!;
+  public string? Description { get; set; }
+  public CreateImage? ProfilePicture { get; set; }
 }

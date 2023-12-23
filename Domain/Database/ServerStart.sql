@@ -1,990 +1,810 @@
-drop database if exists collectiondb;
-create database collectiondb;
-use collectiondb;
+/*
+drop database if exists collectiondb with (FORCE);
+create database collectiondb with ENCODING 'UTF8';
+*/
+DO
+$$
+    DECLARE
+        nintendoLogo  int;
+        microsoftLogo int;
+        sonyLogo      int;
+        SegaLogo      int;
+        atariLogo     int;
+        valveLogo     int;
+        cdProjektLogo int;
+        itchioLogo    int;
+        ubisoftLogo   int;
+        eaLogo        int;
+        epicgamesLogo int;
 
-create table `Language`
-(
-  Id         int unsigned auto_increment primary key,
-  `Language` varchar(50) character set UTF8MB4 not null,
-  `Column`   char(2)                           not null
-);
-insert into `Language`(`Language`, `Column`)
-values ("English", "EN"),
-       ("Deutsch", "DE"),
-       ("español", "ES"),
-       ("日本語", "JA"),
-       ("한국어", "KO"),
-       ("中文", "ZH"),
-       ("Nederlands", "NL"),
-       ("dansk", "DA");
-create table Translation
-(
-  Id       int unsigned auto_increment primary key,
-  Prefered char(2),                -- Fallback
-  EN       varchar(1000) not null, -- Fallback fallback
-  DE       varchar(1000),
-  ES       varchar(1000),
-  DA       varchar(1000),
-  NL       varchar(1000),
-  JA       varchar(1000) character set UTF8MB4,
-  KO       varchar(1000) character set UTF8MB4,
-  ZH       varchar(1000) character set UTF8MB4
-);
-create table Relation
-(
-  Id         int unsigned auto_increment primary key,
-  FKRelation int unsigned not null,
-  foreign key (FKRelation) references Translation (Id)
-);
-INSERT INTO Translation (EN, DE)
-VALUES ('Unkown', 'Unbekannt');
-insert into Relation (FKRelation)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Prequel', 'Prequel');
-insert into Relation (FKRelation)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Sequel', 'Fortsetzung');
-insert into Relation (FKRelation)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Adaptation', 'Adaption');
-insert into Relation (FKRelation)
-Values (LAST_INSERT_ID());
-create table Genre
-(
-  Id      int unsigned auto_increment primary key,
-  FKGenre int unsigned not null,
-  foreign key (FKGenre) references Translation (Id)
-);
-INSERT INTO Translation (EN, DE)
-VALUES ('Action', 'Action');
-insert into Genre (FKGenre)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Romance', 'Romanze');
-insert into Genre (FKGenre)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Horror', 'Horror');
-insert into Genre (FKGenre)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Comedy', 'Komödie');
-insert into Genre (FKGenre)
-Values (LAST_INSERT_ID());
-create table `Status`
-(
-  Id       int unsigned auto_increment primary key,
-  FKStatus int unsigned     not null,
-  foreign key (FKStatus) references Translation (Id),
-  `Status` tinyint unsigned not null
-);
-INSERT INTO Translation (EN, DE)
-VALUES ('Unkown', 'Unbekannt');
-insert into `Status` (FKStatus, `Status`)
-Values (LAST_INSERT_ID(), 0);
-INSERT INTO Translation (EN, DE)
-VALUES ('Not started', 'Noch nicht gestartet');
-insert into `Status` (FKStatus, `Status`)
-Values (LAST_INSERT_ID(), 1);
-INSERT INTO Translation (EN, DE)
-VALUES ('Airing', 'Am laufen');
-insert into `Status` (FKStatus, `Status`)
-Values (LAST_INSERT_ID(), 2);
-INSERT INTO Translation (EN, DE)
-VALUES ('Publishing', 'Am veröffentlichen');
-insert into `Status` (FKStatus, `Status`)
-Values (LAST_INSERT_ID(), 2);
-INSERT INTO Translation (EN, DE)
-VALUES ('Finished', 'Abgeschlossen');
-insert into `Status` (FKStatus, `Status`)
-Values (LAST_INSERT_ID(), 3);
-INSERT INTO Translation (EN, DE)
-VALUES ('Hiatus', 'Pausiert');
-insert into `Status` (FKStatus, `Status`)
-Values (LAST_INSERT_ID(), 4);
-create table UserStatus
-(
-  Id           int unsigned auto_increment primary key,
-  FKUserStatus int unsigned     not null,
-  foreign key (FKUserStatus) references Translation (Id),
-  `Status`     tinyint unsigned not null
-);
-INSERT INTO Translation (EN, DE)
-VALUES ('Not started', 'Noch nicht gestartet');
-insert into UserStatus (FKUserStatus, `Status`)
-Values (LAST_INSERT_ID(), 1);
-INSERT INTO Translation (EN, DE)
-VALUES ('Reading', 'Am Lesen');
-insert into UserStatus (FKUserStatus, `Status`)
-Values (LAST_INSERT_ID(), 2);
-INSERT INTO Translation (EN, DE)
-VALUES ('Playing', 'Am Spielen');
-insert into UserStatus (FKUserStatus, `Status`)
-Values (LAST_INSERT_ID(), 2);
-INSERT INTO Translation (EN, DE)
-VALUES ('Watching', 'Am Schauen');
-insert into UserStatus (FKUserStatus, `Status`)
-Values (LAST_INSERT_ID(), 2);
-INSERT INTO Translation (EN, DE)
-VALUES ('Finished', 'Abgeschlossen');
-insert into UserStatus (FKUserStatus, `Status`)
-Values (LAST_INSERT_ID(), 3);
-INSERT INTO Translation (EN, DE)
-VALUES ('Paused', 'Pausiert');
-insert into UserStatus (FKUserStatus, `Status`)
-Values (LAST_INSERT_ID(), 4);
-create table Theme
-(
-  Id      int unsigned auto_increment primary key,
-  FKTheme int unsigned not null,
-  foreign key (FKTheme) references Translation (Id)
-);
-INSERT INTO Translation (EN, DE)
-VALUES ('Psychological', 'Psychologisch');
-insert into Theme (FKTheme)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Gore', 'Blut');
-insert into Theme (FKTheme)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Mythology', 'Mythologie');
-insert into Theme (FKTheme)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Military', 'Militär');
-insert into Theme (FKTheme)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Sinister', 'Finster');
-insert into Theme (FKTheme)
-Values (LAST_INSERT_ID());
-create table `Role`
-(
-  Id     int unsigned auto_increment primary key,
-  FKRole int unsigned not null,
-  foreign key (FKRole) references Translation (Id)
-);
-INSERT INTO Translation (EN, DE)
-VALUES ('Director', 'Regisseur');
-insert into `Role` (FKRole)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Artist', 'Künstler');
-insert into `Role` (FKRole)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Actor', 'Schauspieler');
-insert into `Role` (FKRole)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Voice Actor', 'Synchronsprecher');
-insert into `Role` (FKRole)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Sound designer', 'Sounddesigner');
-insert into `Role` (FKRole)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Producer', 'Produzent');
-insert into `Role` (FKRole)
-Values (LAST_INSERT_ID());
-INSERT INTO Translation (EN, DE)
-VALUES ('Writer', 'Schreiber');
-insert into `Role` (FKRole)
-Values (LAST_INSERT_ID());
-create table `Character`
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKFirstName   int unsigned,
-  FKLastName    int unsigned,
-  FKDescription int unsigned,
-  Birthday      date,
-  Height        int unsigned,
-  ImageSource   varchar(255),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKFirstName) references Translation (Id),
-  foreign key (FKLastName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id)
-);
-create table Person
-(
-  Id            int unsigned auto_increment primary key,
-  `Name`        varchar(50) not null,
-  FirstName     varchar(50),
-  LastName      varchar(50),
-  FKDescription int unsigned,
-  Birthday      date,
-  Height        tinyint unsigned,
-  ImageSource   varchar(255),
-  foreign key (FKDescription) references Translation (Id)
-);
-create table PersonXRole
-(
-  FKPerson int unsigned not null,
-  FKRole   int unsigned not null,
-  foreign key (FKRole) references `Role` (Id),
-  foreign key (FKPerson) references Person (Id),
-  primary key (FKPerson, FKRole)
-);
-create table Movie
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKDescription int unsigned,
-  Airing        date,
-  Length        smallint unsigned,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id)
-);
-create table MovieXGenre
-(
-  FKMovie int unsigned not null,
-  FKGenre int unsigned not null,
-  foreign key (FKMovie) references Movie (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKMovie, FKGenre)
-);
-create table MovieXTheme
-(
-  FKMovie int unsigned not null,
-  FKTheme int unsigned not null,
-  foreign key (FKMovie) references Movie (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKMovie, FKTheme)
-);
-create table MovieXCreator
-(
-  FKMovie  int unsigned not null,
-  FKPerson int unsigned not null,
-  FKRole   int unsigned not null,
-  foreign key (FKMovie) references Movie (Id),
-  foreign key (FKPerson) references Person (Id),
-  foreign key (FKRole) references `Role` (Id),
-  primary key (FKMovie, FKPerson, FKRole)
-);
+    BEGIN
+        CREATE TYPE language AS ENUM ( 'EN','DE','ES','DA','NL','JA','KO');
+        CREATE TYPE status AS ENUM ('NotStarted','Ongoing','Finished','Paused');
+        CREATE TYPE userstatus AS ENUM ('NotStarted','Ongoing','Finished','Paused');
+        CREATE TYPE imageextenstion as ENUM ('JPEG','JPG','PNG','GIF');
+        create table Franchise
+        (
+            Id   int primary key generated always as identity,
+            Name varchar(50) not null
+        );
+        create table Image
+        (
+            Id        int primary key generated always as identity,
+            Uri       varchar(2047) not null,
+            Width     smallint      not null,
+            Height    smallint      not null,
+            Extension imageextenstion
+        );
+        create table Tag
+        (
+            Id   int primary key generated always as identity,
+            Name varchar(50) not null
+        );
+        create table ImageTag
+        (
+            FKImage int references Image (Id),
+            Tag     varchar(50),
+            primary key (FKImage, Tag)
+        );
+        -- Platforms
+/*
+ -- Nintendo
+    Switch
+    3DS
+    ...
+    Playstation
+    XBox
+    Steam
+    Epic
+    GOG
+    Itch.io
+    Other
+    Id  Name  Logo  | FKPlatform => URI | Price (No API available)
+ */
+        create table Company
+        (
+            Id     int primary key generated always as identity,
+            Name   varchar(100) not null,
+            FKLogo int          not null references Image (Id)
+        );
 
-create table Album
-(
-  Id            int unsigned auto_increment primary key,
-  `Name`        varchar(100) not null,
-  FKDescription int unsigned,
-  `Release`     date,
-  Songs         tinyint unsigned,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKDescription) references Translation (Id)
-);
-create table AlbumXCreator
-(
-  FKAlbum  int unsigned not null,
-  FKPerson int unsigned not null,
-  FKRole   int unsigned not null,
-  foreign key (FKAlbum) references Album (Id),
-  foreign key (FKPerson) references Person (Id),
-  foreign key (FKRole) references `Role` (Id),
-  primary key (FKAlbum, FKPerson, FKRole)
-);
-create table Song
-(
-  Id            int unsigned auto_increment primary key,
-  `Name`        varchar(100) not null,
-  FKDescription int unsigned,
-  FKAlbum       int unsigned not null,
-  `Release`     date,
-  Songs         tinyint unsigned,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKDescription) references Translation (Id),
-  foreign key (FKAlbum) references Album (Id)
-);
-create table SongXGenre
-(
-  FKSong  int unsigned not null,
-  FKGenre int unsigned not null,
-  foreign key (FKSong) references Song (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKSong, FKGenre)
-);
-create table SongXCreator
-(
-  FKSong   int unsigned not null,
-  FKPerson int unsigned not null,
-  FKRole   int unsigned not null,
-  foreign key (FKSong) references Song (Id),
-  foreign key (FKPerson) references Person (Id),
-  foreign key (FKRole) references `Role` (Id),
-  primary key (FKSong, FKPerson, FKRole)
-);
-create table Manga
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKDescription int unsigned,
-  PublishStart  date,
-  PublishEnd    date,
-  Volumes       smallint unsigned,
-  Chapters      smallint unsigned,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  FKStatus      int unsigned,
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  foreign key (FKStatus) references `Status` (Id),
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE)
-);
-create table MangaXGenre
-(
-  FKManga int unsigned not null,
-  FKGenre int unsigned not null,
-  foreign key (FKManga) references Manga (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKManga, FKGenre)
-);
-create table MangaXTheme
-(
-  FKManga int unsigned not null,
-  FKTheme int unsigned not null,
-  foreign key (FKManga) references Manga (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKManga, FKTheme)
-);
-create table MangaXCreator
-(
-  FKManga  int unsigned not null,
-  FKPerson int unsigned not null,
-  FKRole   int unsigned not null,
-  foreign key (FKManga) references Manga (Id),
-  foreign key (FKPerson) references Person (Id),
-  foreign key (FKRole) references `Role` (Id),
-  primary key (FKManga, FKPerson, FKRole)
-);
-create table Anime
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKDescription int unsigned,
-  AiringStart   date,
-  AiringEnd     date,
-  Episodes      smallint unsigned,
-  Seasons       smallint unsigned,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  FKStatus      int unsigned,
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  foreign key (FKStatus) references `Status` (Id)
-);
-create table AnimeSeason
-(
-  Season        smallint unsigned not null,
-  FKAnime       int unsigned      not null,
-  FKTitle       int unsigned      not null,
-  FKDescription int unsigned,
-  Episodes      smallint          not null,
-  PublishStart  date,
-  PublishEnd    date,
-  AverageScore  tinyint,
-  foreign key (FKAnime) references Anime (Id),
-  foreign key (FKTitle) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKAnime, Season)
-);
-create table AnimeEpisode
-(
-  Episode       smallint unsigned not null,
-  FKAnime       int unsigned      not null,
-  FKAnimeSeason int unsigned,
-  FKName        int unsigned      not null,
-  FKDescription int unsigned,
-  Length        smallint          not null,
-  AiringDate    date,
-  AverageScore  tinyint,
-  foreign key (FKAnime) references Anime (Id),
-  foreign key (FKAnimeSeason) references AnimeSeason (Id),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKAnime, Episode)
-);
-create table AnimeXCharacter
-(
-  FKAnime     int unsigned not null,
-  FKCharacter int unsigned not null,
-  foreign key (FKAnime) references Anime (Id),
-  foreign key (FKCharacter) references `Character` (Id),
-  primary key (FKAnime, FKCharacter)
-);
-create table AnimeXGenre
-(
-  FKAnime int unsigned not null,
-  FKGenre int unsigned not null,
-  foreign key (FKAnime) references Anime (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKAnime, FKGenre)
-);
-create table AnimeXTheme
-(
-  FKAnime int unsigned not null,
-  FKTheme int unsigned not null,
-  foreign key (FKAnime) references Anime (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKAnime, FKTheme)
-);
-create table AnimeXCreator
-(
-  FKAnime  int unsigned not null,
-  FKPerson int unsigned not null,
-  FKRole   int unsigned not null,
-  foreign key (FKAnime) references Anime (Id),
-  foreign key (FKPerson) references Person (Id),
-  foreign key (FKRole) references `Role` (Id),
-  primary key (FKAnime, FKPerson, FKRole)
-);
-create table Comic
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKDescription int unsigned,
-  PublishStart  date,
-  PublishEnd    date,
-  Volumes       smallint unsigned,
-  Chapters      smallint unsigned,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  FKStatus      int unsigned,
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  foreign key (FKStatus) references `Status` (Id)
-);
-create table ComicVolume
-(
-  Volume        smallint unsigned not null,
-  FKComic       int unsigned      not null,
-  FKTitle       int unsigned      not null,
-  FKDescription int unsigned,
-  Pages         smallint          not null,
-  PublishDate   date,
-  AverageScore  tinyint,
-  foreign key (FKComic) references Comic (Id),
-  foreign key (FKTitle) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKComic, Volume)
-);
-create table ComicChapter
-(
-  Chapter       smallint unsigned not null,
-  FKComic       int unsigned      not null,
-  FKComicVolume int unsigned,
-  FKTitle       int unsigned      not null,
-  FKDescription int unsigned,
-  Pages         smallint          not null,
-  PublishDate   date,
-  AverageScore  tinyint,
-  foreign key (FKComic) references Comic (Id),
-  foreign key (FKComicVolume) references ComicVolume (Id),
-  foreign key (FKTitle) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKComic, Chapter)
-);
+        insert into image(width, height, extension, uri)
+        values (300, 300, 'PNG',
+                'https://static-cdn.jtvnw.net/jtv_user_pictures/4074674c-ad77-412d-aafe-6d276b3cacda-profile_image-300x300.png')
+        returning id into nintendoLogo;
 
-create table ComicXCharacter
-(
-  FKComic     int unsigned not null,
-  FKCharacter int unsigned not null,
-  foreign key (FKComic) references Comic (Id),
-  foreign key (FKCharacter) references `Character` (Id),
-  primary key (FKComic, FKCharacter)
-);
-create table ComicXGenre
-(
-  FKComic int unsigned not null,
-  FKGenre int unsigned not null,
-  foreign key (FKComic) references Comic (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKComic, FKGenre)
-);
-create table ComicXTheme
-(
-  FKComic int unsigned not null,
-  FKTheme int unsigned not null,
-  foreign key (FKComic) references Comic (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKComic, FkTheme)
-);
-create table ComicXCreator
-(
-  FKComic  int unsigned not null,
-  FKPerson int unsigned not null,
-  FKRole   int unsigned not null,
-  foreign key (FKComic) references Comic (Id),
-  foreign key (FKPerson) references Person (Id),
-  foreign key (FKRole) references `Role` (Id),
-  primary key (FKComic, FKPerson, FKRole)
-);
-create table Cartoon
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKDescription int unsigned,
-  AiringStart   date,
-  AiringEnd     date,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  FKStatus      int unsigned,
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  foreign key (FKStatus) references `Status` (Id)
-);
-create table CartoonSeason
-(
-  Season        smallint unsigned not null,
-  FKCartoon     int unsigned      not null,
-  FKTitle       int unsigned      not null,
-  FKDescription int unsigned,
-  Episodes      smallint,
-  AiringStart   date,
-  AiringEnd     date,
-  AverageScore  tinyint,
-  foreign key (FKCartoon) references Cartoon (Id),
-  foreign key (FKTitle) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKCartoon, Season)
-);
-create table CartoonEpisode
-(
-  Episode         smallint unsigned not null,
-  FKCartoon       int unsigned      not null,
-  FKCartoonSeason int unsigned,
-  FKTitle         int unsigned      not null,
-  FKDescription   int unsigned,
-  Length          smallint,
-  AiringDate      date,
-  AverageScore    tinyint,
-  foreign key (FKCartoon) references Cartoon (Id),
-  foreign key (FKCartoonSeason) references CartoonSeason (Id),
-  foreign key (FKTitle) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKCartoon, Episode)
-);
-create table CartoonXCharacter
-(
-  FKCartoon   int unsigned not null,
-  FKCharacter int unsigned not null,
-  foreign key (FKCartoon) references Cartoon (Id),
-  foreign key (FKCharacter) references `Character` (Id),
-  primary key (FKCartoon, FKCharacter)
-);
-create table CartoonXGenre
-(
-  FKCartoon int unsigned not null,
-  FKGenre   int unsigned not null,
-  foreign key (FKCartoon) references Cartoon (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKCartoon, FKGenre)
-);
-create table CartoonXTheme
-(
-  FKCartoon int unsigned not null,
-  FKTheme   int unsigned not null,
-  foreign key (FKCartoon) references Cartoon (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKCartoon, FKTheme)
-);
-create table CartoonXCreator
-(
-  FKCartoon int unsigned not null,
-  FKRole    int unsigned not null,
-  FKPerson  int unsigned not null,
-  foreign key (FKCartoon) references Cartoon (Id),
-  foreign key (FKRole) references `Role` (Id),
-  foreign key (FKPerson) references Person (Id),
-  primary key (FKCartoon, FKRole, FKPerson)
-);
-create table Book
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned  not null,
-  FKDescription int unsigned,
-  Chapters      tinyint unsigned,
-  Pages         smallint unsigned,
-  Words         int unsigned,
-  PublishDate   date          not null,
-  AverageScore  decimal(5, 2) not null DEFAULT 0,
-  ImageSource   varchar(255),
-  Added         date          not null DEFAULT (CURRENT_DATE),
-  `Rank`        int unsigned  not null,
-  `Popularity`  int unsigned  not null,
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id)
-);
-create table BookXCharacter
-(
-  FKBook      int unsigned not null,
-  FKCharacter int unsigned not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKCharacter) references `Character` (Id),
-  primary key (FKBook, FKCharacter)
-);
-create table BookXGenre
-(
-  FKBook  int unsigned not null,
-  FKGenre int unsigned not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKBook, FKGenre)
-);
-create table BookXTheme
-(
-  FKBook  int unsigned not null,
-  FKTheme int unsigned not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKBook, FKTheme)
-);
-create table BookXCreator
-(
-  FKBook   int unsigned not null,
-  FKRole   int unsigned not null,
-  FKPerson int unsigned not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKRole) references `Role` (Id),
-  foreign key (FKPerson) references Person (Id),
-  primary key (FKBook, FKRole, FKPerson)
-);
-create table TVShow
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKDescription int unsigned,
-  AiringStart   date,
-  AiringEnd     date,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  FKStatus      int unsigned,
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  foreign key (FKStatus) references `Status` (Id)
-);
-create table TVShowSeason
-(
-  Season        smallint unsigned not null,
-  FKTVShow      int unsigned      not null,
-  FKTitle       int unsigned      not null,
-  FKDescription int unsigned,
-  Episodes      smallint,
-  AiringStart   date,
-  AiringEnd     date,
-  AverageScore  tinyint,
-  foreign key (FKTVShow) references TVShow (Id),
-  foreign key (FKTitle) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKTVShow, Season)
-);
-create table TVShowEpisode
-(
-  Episode        smallint unsigned not null,
-  FKTVShow       int unsigned      not null,
-  FKTVShowSeason int unsigned,
-  FKTitle        int unsigned      not null,
-  FKDescription  int unsigned,
-  Length         smallint,
-  AiringDate     date,
-  AverageScore   tinyint,
-  foreign key (FKTVShow) references TVShow (Id),
-  foreign key (FKTVShowSeason) references TVShowSeason (Id),
-  foreign key (FKTitle) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id),
-  primary key (FKTVShow, Episode)
-);
-create table TVShowXCharacter
-(
-  FKTVShow    int unsigned not null,
-  FKCharacter int unsigned not null,
-  foreign key (FKTVShow) references TVShow (Id),
-  foreign key (FKCharacter) references `Character` (Id),
-  primary key (FKTVShow, FKCharacter)
-);
-create table TVShowXGenre
-(
-  FKTVShow int unsigned not null,
-  FKGenre  int unsigned not null,
-  foreign key (FKTVShow) references TVShow (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKTVShow, FKGenre)
-);
-create table TVShowXTheme
-(
-  FKTVShow int unsigned not null,
-  FKTheme  int unsigned not null,
-  foreign key (FKTVShow) references TVShow (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKTVShow, FKTheme)
-);
-create table TVShowXCreator
-(
-  FKTVShow int unsigned not null,
-  FKRole   int unsigned not null,
-  FKPerson int unsigned not null,
-  foreign key (FKTVShow) references TVShow (Id),
-  foreign key (FKRole) references `Role` (Id),
-  foreign key (FKPerson) references Person (Id),
-  primary key (FKTVShow, FKRole, FKPerson)
-);
-create table Game
-(
-  Id            int unsigned auto_increment primary key,
-  FKName        int unsigned not null,
-  FKDescription int unsigned,
-  Published     date,
-  AverageScore  decimal(5, 2) CHECK (AverageScore BETWEEN 0.99 AND 10.01),
-  ImageSource   varchar(255),
-  Added         date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKName) references Translation (Id),
-  foreign key (FKDescription) references Translation (Id)
-);
-create table GameXCharacter
-(
-  FKGame      int unsigned not null,
-  FKCharacter int unsigned not null,
-  foreign key (FKGame) references Game (Id),
-  foreign key (FKCharacter) references `Character` (Id),
-  primary key (FKGame, FKCharacter)
-);
-create table GameXGenre
-(
-  FKGame  int unsigned not null,
-  FKGenre int unsigned not null,
-  foreign key (FKGame) references Game (Id),
-  foreign key (FKGenre) references Genre (Id),
-  primary key (FKGame, FKGenre)
-);
-create table GameXTheme
-(
-  FKGame  int unsigned not null,
-  FKTheme int unsigned not null,
-  foreign key (FKGame) references Game (Id),
-  foreign key (FKTheme) references Theme (Id),
-  primary key (FKGame, FKTheme)
-);
-create table GameXCreator
-(
-  FKGame   int unsigned not null,
-  FKRole   int unsigned not null,
-  FKPerson int unsigned not null,
-  foreign key (FKGame) references Game (Id),
-  foreign key (FKRole) references `Role` (Id),
-  foreign key (FKPerson) references Person (Id),
-  primary key (FKGame, FKRole, FKPerson)
-);
-create table `User`
-(
-  Id            int unsigned auto_increment primary key,
-  `Name`        varchar(50) character set UTF8MB4 not null,
-  Joined        date                              not null DEFAULT (CURRENT_DATE),
-  `Description` varchar(500),
-  ImageSource   varchar(255),
-  Deleted       bit
-);
-create table Average
-(
-  Id             int unsigned auto_increment primary key,
-  FKUser         int unsigned,
-  MangaAverage   decimal(5, 2) CHECK (MangaAverage BETWEEN 0.99 AND 10.01),
-  ComicAverage   decimal(5, 2) CHECK (ComicAverage BETWEEN 0.99 AND 10.01),
-  TVShowAverage  decimal(5, 2) CHECK (TVShowAverage BETWEEN 0.99 AND 10.01),
-  MovieAverage   decimal(5, 2) CHECK (MovieAverage BETWEEN 0.99 AND 10.01),
-  AnimeAverage   decimal(5, 2) CHECK (AnimeAverage BETWEEN 0.99 AND 10.01),
-  BookAverage    decimal(5, 2) CHECK (BookAverage BETWEEN 0.99 AND 10.01),
-  CartoonAverage decimal(5, 2) CHECK (CartoonAverage BETWEEN 0.99 AND 10.01),
-  GameAverage    decimal(5, 2) CHECK (GameAverage BETWEEN 0.99 AND 10.01),
-  AlbumAverage   decimal(5, 2) CHECK (AlbumAverage BETWEEN 0.99 AND 10.01),
-  SongAverage    decimal(5, 2) CHECK (SongAverage BETWEEN 0.99 AND 10.01),
-  foreign key (FKUser) references `User` (Id)
-);
-create table UserXAlbum
-(
-  FKUser   int unsigned not null,
-  FKAlbum  int unsigned not null,
-  Favorite bit,
-  Score    tinyint unsigned,
-  Review   varchar(255),
-  Added    date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKAlbum) references Album (Id),
-  primary key (FKUser, FKAlbum)
-);
-create table UserXSong
-(
-  FKUser   int unsigned not null,
-  FKSong   int unsigned not null,
-  Favorite bit,
-  Score    tinyint unsigned,
-  Review   varchar(255),
-  Added    date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKSong) references Song (Id),
-  primary key (FKUser, FKSong)
-);
-create table UserXManga
-(
-  FKUser       int unsigned not null,
-  FKManga      int unsigned not null,
-  FKUserStatus int unsigned not null,
-  Favorite     bit,
-  Score        tinyint unsigned,
-  Review       varchar(255),
-  StartDate    date,
-  EndDate      date,
-  Chapters     smallint unsigned,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKManga) references Manga (Id),
-  foreign key (FKUserStatus) references UserStatus (Id),
-  primary key (FKUser, FKManga)
-);
-create table UserXComic
-(
-  FKUser       int unsigned not null,
-  FKComic      int unsigned not null,
-  FKUserStatus int unsigned not null,
-  Favourite    bit,
-  Score        tinyint unsigned,
-  Review       varchar(255),
-  StartDate    date,
-  FinishedDate date,
-  Chapters     smallint unsigned,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKComic) references Comic (Id),
-  foreign key (FKUserStatus) references UserStatus (Id),
-  primary key (FKUser, FKComic)
-);
-create table UserXBook
-(
-  FKUser       int unsigned not null,
-  FKBook       int unsigned not null,
-  FKUserStatus int unsigned not null,
-  Favourite    bit,
-  Score        tinyint unsigned,
-  Review       varchar(255),
-  StartDate    date,
-  FinishedDate date,
-  Chapters     smallint unsigned,
-  Pages        smallint unsigned,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKUserStatus) references UserStatus (Id),
-  primary key (FKUser, FKBook)
-);
-create table UserXTVShow
-(
-  FKUser       int unsigned not null,
-  FKTVShow     int unsigned not null,
-  FKUserStatus int unsigned not null,
-  Favourite    bit,
-  Score        tinyint unsigned,
-  Review       varchar(255),
-  StartDate    date,
-  FinishedDate date,
-  Episodes     smallint unsigned,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKTVShow) references TVShow (Id),
-  foreign key (FKUserStatus) references UserStatus (Id),
-  primary key (FKUser, FKTVShow)
-);
-create table UserXMovie
-(
-  FKUser       int unsigned not null,
-  FKMovie      int unsigned not null,
-  FKUserStatus int unsigned not null,
-  Favourite    bit,
-  Score        tinyint unsigned,
-  Review       varchar(255),
-  WatchDate    date,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKMovie) references TVShow (Id),
-  foreign key (FKUserStatus) references UserStatus (Id),
-  primary key (FKUser, FKMovie)
-);
-create table UserXAnime
-(
-  FKUser       int unsigned not null,
-  FKAnime      int unsigned not null,
-  FKUserStatus int unsigned not null,
-  Favourite    bit,
-  Score        tinyint unsigned,
-  Review       varchar(255),
-  StartDate    date,
-  FinishedDate date,
-  Episodes     smallint unsigned,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKAnime) references Anime (Id),
-  foreign key (FKUserStatus) references UserStatus (Id),
-  primary key (FKUser, FKAnime)
-);
-create table UserXGame
-(
-  FKUser       int unsigned not null,
-  FKGame       int unsigned not null,
-  FKUserStatus int unsigned not null,
-  Favourite    bit,
-  Score        tinyint unsigned,
-  Review       varchar(255),
-  StartDate    date,
-  FinishedDate date,
-  PlayTime     int unsigned,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKGame) references Game (Id),
-  foreign key (FKUserStatus) references UserStatus (Id),
-  primary key (FKUser, FKGame)
-);
-create table Friendship
-(
-  Id           int unsigned auto_increment primary key,
-  FKUser       int unsigned not null,
-  FKSecondUser int unsigned not null,
-  Added        date         not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references `User` (Id),
-  foreign key (FKSecondUser) references `User` (Id)
-);
-create table `Account`
-(
-  FKUser     int unsigned not null primary key,
-  EMail      varchar(255) not null,
-  `Password` char(48)     not null,
-  CONSTRAINT UN_EMAIL UNIQUE (EMail),
-  foreign key (FKUser) references `User` (Id)
-);
-create table Image
-(
-  Id        int unsigned auto_increment primary key,
-  Url       varchar(2047) not null,
-  Width     smallint      not null,
-  Height    smallint      not null,
-  Extension varchar(15)
-);
-create table ImageXTag
-(
-  FKImage int unsigned,
-  Tag     varchar(50),
-  primary key (FKImage, Tag),
-  foreign key (FKImage) references `Image` (Id)
-)
+--    TODO: Other logos
+        INSERT INTO Company(Name, FKLogo) --https://static-cdn.jtvnw.net/jtv_user_pictures/4074674c-ad77-412d-aafe-6d276b3cacda-profile_image-300x300.png
+        values ('Nintendo', nintendoLogo),
+               ('Microsoft', nintendoLogo),
+               ('Sony', nintendoLogo),
+               ('Sega', nintendoLogo),
+               ('Atari', nintendoLogo),
+               ('Valve', nintendoLogo),
+               ('CD Projekt', nintendoLogo),
+               ('itch.io', nintendoLogo),
+               ('Ubisoft', nintendoLogo),
+               ('Electronics Arts', nintendoLogo),
+               ('Epic Games', nintendoLogo);
+
+        create table Platform
+        (
+            Id        int primary key generated always as identity,
+            Name      varchar(50) not null,
+            ShortName varchar(10),
+            FKCompany int         not null references Company (Id),
+            FKLogo    int         not null references Image (Id)
+        );
+        INSERT INTO Platform(Name, ShortName, FKCompany, FKLogo)
+        values ('Switch', null, 1, nintendoLogo),
+               ('3DS', null, 1, nintendoLogo),
+               ('DS', null, 1, nintendoLogo),
+               ('Wii U', null, 1, nintendoLogo),
+               ('Wii', null, 1, nintendoLogo),
+               ('Gamecube', null, 1, nintendoLogo),
+               ('Gameboy Advance', 'GBA', 1, nintendoLogo),
+               ('Gameboy Color', null, 1, nintendoLogo),
+               ('Gameboy', null, 1, nintendoLogo),
+               ('Game & Watch', null, 1, nintendoLogo),
+               ('N64', null, 1, nintendoLogo),
+               ('Super Nintendo Entertainment System', 'SNES', 1, nintendoLogo),
+               ('Nintendo Entertainment System', 'NES', 1, nintendoLogo),
+               ('Playstation', 'PS1', 3, nintendoLogo),
+               ('Playstation 2', 'PS2', 3, nintendoLogo),
+               ('Playstation 3', 'PS3', 3, nintendoLogo),
+               ('Playstation 4', 'PS4', 3, nintendoLogo),
+               ('Playstation 5', 'PS5', 3, nintendoLogo),
+               ('XBox', null, 2, nintendoLogo),
+               ('XBox 360', null, 2, nintendoLogo),
+               ('XBox One', null, 2, nintendoLogo),
+               ('XBox Series X', null, 2, nintendoLogo),
+               ('Dreamcast', null, 4, nintendoLogo),
+               ('Genesis', null, 4, nintendoLogo),
+               ('Steam', null, 5, nintendoLogo),
+               ('GOG.com', null, 6, nintendoLogo),
+               ('itch.io', null, 7, nintendoLogo),
+               ('Origin', null, 8, nintendoLogo),
+               ('Battle.net', null, 9, nintendoLogo),
+               ('Epic Games Store', null, 10, nintendoLogo);
+
+        create table Genre
+        (
+            Id int primary key generated always as identity
+        );
+        create table GenreTranslation
+        (
+            Name          varchar(50) not null,
+
+            FKTranslation int         not null references Genre (Id),
+            Language      language    not null,
+            primary key (FKTranslation, Language)
+        );
+
+        INSERT INTO Genre default
+        values;
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Action', 1, 'EN');
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Action', 1, 'DE');
+
+        INSERT INTO Genre default
+        values;
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Romance', 2, 'EN');
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Romanze', 2, 'DE');
+
+        INSERT INTO Genre default
+        values;
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Horror', 3, 'EN');
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Horror', 3, 'DE');
+
+        INSERT INTO Genre default
+        values;
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Comedy', 4, 'EN');
+        INSERT INTO GenreTranslation(Name, FKTranslation, Language)
+        values ('Komödie', 4, 'DE');
+
+        create table Theme
+        (
+            Id int primary key generated always as identity
+        );
+        create table ThemeTranslation
+        (
+            Name          varchar(50) not null,
+
+            FKTranslation int         not null references Theme (Id),
+            Language      language    not null,
+            primary key (FKTranslation, Language)
+        );
+        INSERT INTO Theme default
+        values;
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Psychological', 1, 'EN');
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Psychologisch', 1, 'DE');
+
+
+        INSERT INTO Theme default
+        values;
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Gore', 2, 'EN');
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Blutig', 2, 'DE');
+
+
+        INSERT INTO Theme default
+        values;
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Mythology', 3, 'EN');
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Mythologie', 3, 'DE');
+
+        INSERT INTO Theme default
+        values;
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Military', 4, 'EN');
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Militär', 4, 'DE');
+
+        INSERT INTO Theme default
+        values;
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Sinister', 5, 'EN');
+        INSERT INTO ThemeTranslation(Name, FKTranslation, Language)
+        values ('Finster', 5, 'DE');
+
+        create table Role
+        (
+            Id int primary key generated always as identity
+        );
+        create table RoleTranslation
+        (
+            Name          varchar(50) not null,
+
+            FKTranslation int         not null,
+            Language      language    not null,
+            foreign key (FKTranslation) references Role (Id),
+            primary key (FKTranslation, Language)
+        );
+
+        INSERT INTO Role default
+        values;
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Director', 1, 'EN');
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Regisseur', 1, 'DE');
+
+        INSERT INTO Role default
+        values;
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Artist', 2, 'EN');
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Künstler', 2, 'DE');
+
+        INSERT INTO Role default
+        values;
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Actor', 3, 'EN');
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Schauspieler', 3, 'DE');
+
+        INSERT INTO Role default
+        values;
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Voice actor', 4, 'EN');
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Synchronsprecher', 4, 'DE');
+
+        INSERT INTO Role default
+        values;
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Sound designer', 5, 'EN');
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Sounddesigner', 5, 'DE');
+
+        INSERT INTO Role default
+        values;
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Producer', 6, 'EN');
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Produzent', 6, 'DE');
+
+        INSERT INTO Role default
+        values;
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Writer', 7, 'EN');
+        INSERT INTO RoleTranslation(Name, FKTranslation, Language)
+        values ('Schriftsteller', 7, 'DE');
+
+        create table Character
+        (
+            Id       int primary key generated always as identity,
+            Birthday date,
+            Height   int,
+            FKImage  int references Image (Id)
+        );
+
+        create table CharacterTranslation
+        (
+            Name          varchar(150) not null,
+            FirstName     varchar(50),
+            LastName      varchar(50),
+            Description   varchar(500),
+
+            FKTranslation int          not null,
+            Language      language     not null,
+            foreign key (FKTranslation) references Character (Id),
+            primary key (FKTranslation, Language)
+        );
+
+        create table Person
+        (
+            Id        int primary key generated always as identity,
+            Name      varchar(100) not null,
+            FirstName varchar(50),
+            LastName  varchar(50),
+            Birthday  date,
+            Height    smallint,
+            FKImage   int references Image (Id)
+        );
+
+        create table PersonTranslation
+        (
+            Description   varchar(500),
+
+            FKTranslation int      not null,
+            Language      language not null,
+            foreign key (FKTranslation) references Person (Id),
+            primary key (FKTranslation, Language)
+        );
+        create table PersonXRole
+        (
+            FKPerson int not null,
+            FKRole   int not null,
+            foreign key (FKRole) references Role (Id),
+            foreign key (FKPerson) references Person (Id),
+            primary key (FKPerson, FKRole)
+        );
+
+        create table Movie
+        (
+            Id         int primary key generated always as identity,
+            Airing     date,
+            Length     interval,
+            Score      decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+            FKCover    int  not null references Image (Id),
+            Added      date not null DEFAULT (CURRENT_DATE),
+            Rank       int  not null default 0,
+            Popularity int  not null default 0,
+            Favorites  int  not null default 0,
+            Members    int  not null default 0
+        );
+
+        create table MovieTranslation
+        (
+            Title         varchar(150) not null,
+            Description   varchar(500),
+
+            FKTranslation int          not null references Movie (Id),
+            Language      language     not null,
+            primary key (FKTranslation, Language)
+        );
+
+        create table MovieXGenre
+        (
+            FKMovie int not null references Movie (Id),
+            FKGenre int not null references Genre (Id),
+            primary key (FKMovie, FKGenre)
+        );
+        create table MovieXTheme
+        (
+            FKMovie int not null references Movie (Id),
+            FKTheme int not null references Theme (Id),
+            primary key (FKMovie, FKTheme)
+        );
+        create table MovieXCreator
+        (
+            FKMovie  int not null references Movie (Id),
+            FKPerson int not null references Person (Id),
+            FKRole   int not null references Role (Id),
+            primary key (FKMovie, FKPerson, FKRole)
+        );
+        create table GraphicNovel
+        (
+            Id           int primary key generated always as identity,
+            PublishStart date,
+            PublishEnd   date,
+            Volumes      smallint,
+            Chapters     smallint,
+            Score        decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+            Status       status not null,
+            FKCover      int    not null references Image (Id),
+            Added        date   not null DEFAULT (CURRENT_DATE),
+            Rank         int    not null default 0,
+            Popularity   int    not null default 0,
+            Favorites    int    not null default 0,
+            Members      int    not null default 0
+        );
+        create table GraphicNovelTranslation
+        (
+            Title         varchar(150) not null,
+            Description   varchar(500),
+
+            FKTranslation int          not null references GraphicNovel (Id),
+            Language      language     not null,
+            primary key (FKTranslation, Language)
+        );
+        create table GraphicNovelVolume
+        (
+            Volume         smallint unique not null,
+            FKGraphicNovel int             not null references GraphicNovel (Id),
+            Pages          smallint,
+            Published      date,
+            Score          smallint,
+            primary key (FKGraphicNovel, Volume)
+        );
+        create table GraphicNovelVolumeTranslation
+        (
+            Title         varchar(150) not null,
+            Description   varchar(500),
+
+            FKTranslation int          not null,
+            Language      language     not null,
+            foreign key (FKTranslation) references GraphicNovel (Id),
+            primary key (FKTranslation, Language)
+        );
+        create table GraphicNovelChapter
+        (
+            Chapter              smallint not null,
+            FKGraphicNovel       int      not null,
+            FKGraphicNovelVolume int,
+            Pages                smallint not null,
+            Published            date,
+            Score                smallint,
+            foreign key (FKGraphicNovel) references GraphicNovel (Id),
+            foreign key (FKGraphicNovel, FKGraphicNovelVolume) references GraphicNovelVolume (FKGraphicNovel, Volume),
+            primary key (FKGraphicNovel, Chapter)
+        );
+
+        create table GraphicNovelChapterTranslation
+        (
+            Title                 varchar(150) not null,
+            Description           varchar(500),
+
+            FKGraphicNovel        int          not null,
+            FKGraphicNovelChapter int          not null,
+            Language              language     not null,
+            foreign key (FKGraphicNovel, FKGraphicNovelChapter) references GraphicNovelChapter (FKGraphicNovel, Chapter),
+            primary key (FKGraphicNovel, FKGraphicNovelChapter, Language)
+        );
+        create table GraphicNovelXPublisher
+        (
+            FKGraphicNovel int not null references GraphicNovel (Id),
+            FKPublisher    int not null references Company (Id),
+            primary key (FKGraphicNovel, FKPublisher)
+        );
+        create table GraphicNovelXCharacter
+        (
+            FKGraphicNovel int not null,
+            FKCharacter    int not null,
+            foreign key (FKGraphicNovel) references GraphicNovel (Id),
+            foreign key (FKCharacter) references Character (Id),
+            primary key (FKGraphicNovel, FKCharacter)
+        );
+        create table GraphicNovelXGenre
+        (
+            FKGraphicNovel int not null,
+            FKGenre        int not null,
+            foreign key (FKGraphicNovel) references GraphicNovel (Id),
+            foreign key (FKGenre) references Genre (Id),
+            primary key (FKGraphicNovel, FKGenre)
+        );
+        create table GraphicNovelXTheme
+        (
+            FKGraphicNovel int not null,
+            FKTheme        int not null,
+            foreign key (FKGraphicNovel) references GraphicNovel (Id),
+            foreign key (FKTheme) references Theme (Id),
+            primary key (FKGraphicNovel, FkTheme)
+        );
+        create table GraphicNovelXCreator
+        (
+            FKGraphicNovel int not null,
+            FKPerson       int not null,
+            FKRole         int not null,
+            foreign key (FKGraphicNovel) references GraphicNovel (Id),
+            foreign key (FKPerson) references Person (Id),
+            foreign key (FKRole) references Role (Id),
+            primary key (FKGraphicNovel, FKPerson, FKRole)
+        );
+        create table Book
+        (
+            Id          int primary key generated always as identity,
+            Chapters    smallint,
+            Pages       smallint,
+            Words       int,
+            Published   date,
+            Score       decimal(5, 2) not null DEFAULT 0,
+            FKCover     int           not null references Image (Id),
+            Added       date          not null DEFAULT (CURRENT_DATE),
+            Rank        int           not null default 0,
+            Popularity  int           not null default 0,
+            Favorites   int           not null default 0,
+            Members     int           not null default 0,
+            FKFranchise int references Franchise (Id)
+        );
+        create table BookTranslation
+        (
+            Title         varchar(150) not null,
+            Description   varchar(500),
+
+            FKTranslation int          not null,
+            Language      language     not null,
+            foreign key (FKTranslation) references Book (Id),
+            primary key (FKTranslation, Language)
+        );
+        create table BookXCharacter
+        (
+            FKBook      int not null,
+            FKCharacter int not null,
+            foreign key (FKBook) references Book (Id),
+            foreign key (FKCharacter) references Character (Id),
+            primary key (FKBook, FKCharacter)
+        );
+        create table BookXGenre
+        (
+            FKBook  int not null,
+            FKGenre int not null,
+            foreign key (FKBook) references Book (Id),
+            foreign key (FKGenre) references Genre (Id),
+            primary key (FKBook, FKGenre)
+        );
+        create table BookXTheme
+        (
+            FKBook  int not null,
+            FKTheme int not null,
+            foreign key (FKBook) references Book (Id),
+            foreign key (FKTheme) references Theme (Id),
+            primary key (FKBook, FKTheme)
+        );
+        create table BookXCreator
+        (
+            FKBook   int not null,
+            FKRole   int not null,
+            FKPerson int not null,
+            foreign key (FKBook) references Book (Id),
+            foreign key (FKRole) references Role (Id),
+            foreign key (FKPerson) references Person (Id),
+            primary key (FKBook, FKRole, FKPerson)
+        );
+        create table Show
+        (
+            Id          int primary key generated always as identity,
+            AiringStart date,
+            AiringEnd   date,
+            Score       decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+            Seasons     smallint,
+            Status      status not null,
+            FKCover     int    not null references Image (Id),
+            Added       date   not null DEFAULT (CURRENT_DATE),
+            Rank        int    not null default 0,
+            Popularity  int    not null default 0,
+            Favorites   int    not null default 0,
+            Members     int    not null default 0,
+            FKFranchise int references Franchise (Id)
+        );
+        create table ShowTranslation
+        (
+            Title         varchar(150) not null,
+            Description   varchar(500),
+
+            FKTranslation int          not null,
+            Language      language     not null,
+            foreign key (FKTranslation) references Show (Id),
+            primary key (FKTranslation, Language)
+        );
+        create table ShowSeason
+        (
+            Season      smallint unique not null,
+            FKShow      int             not null,
+            Episodes    smallint,
+            AiringStart date,
+            AiringEnd   date,
+            Score       smallint,
+            foreign key (FKShow) references Show (Id),
+            primary key (FKShow, Season)
+        );
+        create table ShowSeasonTranslation
+        (
+            Title        varchar(150) not null,
+            Description  varchar(500),
+
+            FKShow       int          not null,
+            FKShowSeason int          not null,
+            Language     language     not null,
+            foreign key (FKShow, FKShowSeason) references ShowSeason (FKShow, Season),
+            primary key (FKShow, FKShowSeason, Language)
+        );
+        create table ShowEpisode
+        (
+            Episode  smallint unique not null,
+            FKShow   int             not null references Show (Id),
+            FKSeason int, -- Null, since not every episode is part of a season
+            Length   smallint,
+            Airing   date,
+            Score    smallint,
+            FKCover  int references Image (Id),
+            foreign key (FKShow, FKSeason) references ShowSeason (FKShow, Season),
+            primary key (FKShow, Episode)
+        );
+        create table ShowEpisodeTranslation
+        (
+            Title         varchar(150) not null,
+            Description   varchar(500),
+
+            FKShow        int          not null,
+            FKShowEpisode int          not null,
+            Language      language     not null,
+            foreign key (FKShow, FKShowEpisode) references ShowEpisode (FKShow, Episode),
+            primary key (FKShow, FKShowEpisode, Language)
+        );
+        create table ShowXCharacter
+        (
+            FKShow      int not null references Show (Id),
+            FKCharacter int not null references Character (Id),
+            primary key (FKShow, FKCharacter)
+        );
+        create table ShowXGenre
+        (
+            FKShow  int not null references Show (Id),
+            FKGenre int not null references Genre (Id),
+            primary key (FKShow, FKGenre)
+        );
+        create table ShowXTheme
+        (
+            FKShow  int not null references Show (Id),
+            FKTheme int not null references Theme (Id),
+            primary key (FKShow, FKTheme)
+        );
+        create table ShowXCreator
+        (
+            FKShow   int not null references Show (Id),
+            FKRole   int not null references Role (Id),
+            FKPerson int not null references Person (Id),
+            primary key (FKShow, FKRole, FKPerson)
+        );
+        create table Game
+        (
+            Id          int primary key generated always as identity,
+            Published   date,
+            Score       decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+            FKCover     int  not null references Image (Id),
+            Added       date not null DEFAULT (CURRENT_DATE),
+            Rank        int  not null default 0, -- Values should not be null,
+            Popularity  int  not null default 0, -- because they will only not have a value right after creation
+            Favorites   int  not null default 0,
+            Members     int  not null default 0,
+            FKFranchise int references Franchise (Id)
+        );
+        create table GameTranslation
+        (
+            Title         varchar(150) not null,
+            Description   varchar(500),
+            FKTranslation int          not null,
+            Language      language     not null,
+            foreign key (FKTranslation) references Game (Id),
+            primary key (FKTranslation, Language)
+        );
+        create table GameXPlatform
+        (
+            FKGame     int not null,
+            FKPlatform int not null,
+            foreign key (FKGame) references Game (Id),
+            foreign key (FKPlatform) references Platform (Id),
+            primary key (FKGame, FKPlatform)
+        );
+        create table GameXCharacter
+        (
+            FKGame      int not null references Game (Id),
+            FKCharacter int not null references Character (Id),
+            primary key (FKGame, FKCharacter)
+        );
+        create table GameXGenre
+        (
+            FKGame  int not null references Game (Id),
+            FKGenre int not null references Genre (Id),
+            primary key (FKGame, FKGenre)
+        );
+        create table GameXTheme
+        (
+            FKGame  int not null references Game (Id),
+            FKTheme int not null references Theme (Id),
+            primary key (FKGame, FKTheme)
+        );
+        create table GameXCreator
+        (
+            FKGame   int not null references Game (Id),
+            FKRole   int not null references Role (Id),
+            FKPerson int not null references Person (Id),
+            primary key (FKGame, FKRole, FKPerson)
+        );
+        create table "User"
+        (
+            Id               int primary key generated always as identity,
+            Name             varchar(50) not null,
+            Joined           date        not null DEFAULT (CURRENT_DATE),
+            Description      varchar(500),
+            FKProfilePicture int references Image (Id),
+            Deleted          boolean     not null
+        );
+        create table UserAverage
+        (
+            Id                  int primary key generated always as identity,
+            FKUser              int,
+            GraphicNovelAverage decimal(5, 2) CHECK (GraphicNovelAverage BETWEEN 0.99 AND 10.01),
+            ShowAverage         decimal(5, 2) CHECK (ShowAverage BETWEEN 0.99 AND 10.01),
+            MovieAverage        decimal(5, 2) CHECK (MovieAverage BETWEEN 0.99 AND 10.01),
+            BookAverage         decimal(5, 2) CHECK (BookAverage BETWEEN 0.99 AND 10.01),
+            GameAverage         decimal(5, 2) CHECK (GameAverage BETWEEN 0.99 AND 10.01),
+            foreign key (FKUser) references "User" (Id)
+        );
+        create table UserXGraphicNovel
+        (
+            FKUser         int        not null,
+            FKGraphicNovel int        not null,
+            UserStatus     userstatus not null,
+            Favorite       boolean    not null,
+            Score          smallint,
+            Review         varchar(255),
+            Start          date,
+            Finished       date,
+            Chapters       smallint,
+            Added          date       not null DEFAULT (CURRENT_DATE),
+            foreign key (FKUser) references "User" (Id),
+            foreign key (FKGraphicNovel) references GraphicNovel (Id),
+            primary key (FKUser, FKGraphicNovel)
+        );
+        create table UserXBook
+        (
+            FKUser     int        not null,
+            FKBook     int        not null,
+            UserStatus userstatus not null,
+            Favorite   boolean    not null,
+            Score      smallint,
+            Review     varchar(255),
+            Start      date,
+            Finished   date,
+            Chapters   smallint,
+            Pages      smallint,
+            Added      date       not null DEFAULT (CURRENT_DATE),
+            foreign key (FKUser) references "User" (Id),
+            foreign key (FKBook) references Book (Id),
+            primary key (FKUser, FKBook)
+        );
+        create table UserXShow
+        (
+            FKUser     int        not null,
+            FKShow     int        not null,
+            UserStatus userstatus not null,
+            Favorite   boolean    not null,
+            Score      smallint,
+            Review     varchar(255),
+            Start      date,
+            Finished   date,
+            Episodes   smallint,
+            Added      date       not null DEFAULT (CURRENT_DATE),
+            foreign key (FKUser) references "User" (Id),
+            foreign key (FKShow) references Show (Id),
+            primary key (FKUser, FKShow)
+        );
+        create table UserXMovie
+        (
+            FKUser     int        not null,
+            FKMovie    int        not null,
+            UserStatus userstatus not null,
+            Favorite   boolean    not null,
+            Score      smallint,
+            Review     varchar(255),
+            Watched    date,
+            Added      date       not null DEFAULT (CURRENT_DATE),
+            foreign key (FKUser) references "User" (Id),
+            foreign key (FKMovie) references Movie (Id),
+            primary key (FKUser, FKMovie)
+        );
+        create table UserXGame
+        (
+            FKUser     int        not null references "User" (Id),
+            FKGame     int        not null references Game (Id),
+            UserStatus userstatus not null,
+            Favorite   boolean    not null,
+            Score      smallint,
+            Review     varchar(255),
+            Start      date,
+            Finished   date,
+            PlayTime   int,
+            Added      date       not null DEFAULT (CURRENT_DATE),
+            primary key (FKUser, FKGame)
+        );
+        create table Friendship
+        (
+            FKUser       int  not null,
+            FKSecondUser int  not null,
+            Added        date not null DEFAULT (CURRENT_DATE),
+            foreign key (FKUser) references "User" (Id),
+            foreign key (FKSecondUser) references "User" (Id),
+            primary key (FKUser, FKSecondUser)
+        );
+        create table Account
+        (
+            FKUser   int                 not null primary key references "User" (Id),
+            EMail    varchar(255) unique not null,
+            Password varchar(255)        not null
+        );
+        create index AccountEmailIndex on Account using HASH (EMail);
+
+    END
+$$;

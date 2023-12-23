@@ -1,38 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Application\Application.csproj" />
-      <ProjectReference Include="..\Domain\Domain.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="obj\**" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="obj\**" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <Compile Remove="obj\**" />
-    </ItemGroup>
+  <ItemGroup>
+    <None Remove="obj\**" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Remove="obj\**" />
-    </ItemGroup>
+  <ItemGroup>
+    <Folder Include="obj" />
+    <Folder Include="obj\Debug\net6.0" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <None Remove="obj\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="obj\Debug\net6.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="obj\project.assets.json" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <Content Include="obj\project.assets.json" />
+  </ItemGroup>
 </Project>

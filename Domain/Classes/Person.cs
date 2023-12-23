@@ -1,21 +1,15 @@
-﻿using Domain.Attributes;
-using Domain.Schemas;
+﻿using Domain.Interfaces;
 
 namespace Domain.Classes;
 
-[DBTable<Person>(PersonSchema.Table)]
-public class Person
+public class Person: IEntity
 {
-  [DBColumn(PersonSchema.Id)] public uint PK { get; set; }
-  [DBColumn(PersonSchema.Name)] public string Name { get; set; } = null!;
-  [DBColumn(PersonSchema.FirstName)] public string FirstName { get; set; } = null!;
-  [DBColumn(PersonSchema.LastName)] public string LastName { get; set; } = null!;
-
-  [DBColumn(PersonSchema.Description, TranslationSchema.Table)]
+  public int Id { get; set; }
+  public string Name { get; set; } = null!;
+  public string? FirstName { get; set; }
+  public string? LastName { get; set; }
   public string? Description { get; set; }
-
-  [DBColumn(PersonSchema.Birthday)] public DateOnly? Birthday { get; set; }
-  [DBColumn(PersonSchema.Height)] public byte? Height { get; set; }
-
-  [DBColumn(PersonSchema.ImageSource)] public string? ImageSource { get; set; }
+  public DateOnly? Birthday { get; set; }
+  public short? Height { get; set; }
+  public Image? Image { get; set; }
 }

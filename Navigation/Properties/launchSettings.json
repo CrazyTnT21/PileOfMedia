@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "MyCollection": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "IP": "192.168.178.77",
+        "USER": "server",
+        "PASSWORD": "server",
+        "DB": "collectiondb"
+      },
+      "dotnetRunMessages": false,
+      "applicationUrl": "https://localhost:8000"
+    }
+  }
+}
