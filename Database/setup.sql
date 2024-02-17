@@ -15,6 +15,16 @@ create table Image
 (
   Id int primary key generated always as identity
 );
+create table ImageTranslation
+(
+  Uri           varchar(2047) not null,
+  Width         smallint      not null,
+  Height        smallint      not null,
+  Extension     imageextenstion,
+  FKTranslation int           not null references Image (Id),
+  Language      language      not null,
+  primary key (FKTranslation, Language)
+);
 create table Tag
 (
   Id   int primary key generated always as identity,
@@ -77,9 +87,8 @@ create table RoleTranslation
 (
   Name          varchar(50) not null,
 
-  FKTranslation int         not null,
+  FKTranslation int         not null references Role (Id),
   Language      language    not null,
-  foreign key (FKTranslation) references Role (Id),
   primary key (FKTranslation, Language)
 );
 
@@ -98,9 +107,8 @@ create table CharacterTranslation
   LastName      varchar(50),
   Description   varchar(500),
 
-  FKTranslation int          not null,
+  FKTranslation int          not null references Character (Id),
   Language      language     not null,
-  foreign key (FKTranslation) references Character (Id),
   primary key (FKTranslation, Language)
 );
 
@@ -119,17 +127,14 @@ create table PersonTranslation
 (
   Description   varchar(500),
 
-  FKTranslation int      not null,
+  FKTranslation int      not null references Person (Id),
   Language      language not null,
-  foreign key (FKTranslation) references Person (Id),
   primary key (FKTranslation, Language)
 );
 create table PersonXRole
 (
-  FKPerson int not null,
-  FKRole   int not null,
-  foreign key (FKRole) references Role (Id),
-  foreign key (FKPerson) references Person (Id),
+  FKPerson int not null references Person (Id),
+  FKRole   int not null references Role (Id),
   primary key (FKPerson, FKRole)
 );
 
@@ -215,20 +220,18 @@ create table GraphicNovelVolumeTranslation
   Title         varchar(150) not null,
   Description   varchar(500),
 
-  FKTranslation int          not null,
+  FKTranslation int          not null references GraphicNovel (Id),
   Language      language     not null,
-  foreign key (FKTranslation) references GraphicNovel (Id),
   primary key (FKTranslation, Language)
 );
 create table GraphicNovelChapter
 (
   Chapter              smallint not null,
-  FKGraphicNovel       int      not null,
+  FKGraphicNovel       int      not null references GraphicNovel (Id),
   FKGraphicNovelVolume int,
   Pages                smallint not null,
   Published            date,
   Score                smallint,
-  foreign key (FKGraphicNovel) references GraphicNovel (Id),
   foreign key (FKGraphicNovel, FKGraphicNovelVolume) references GraphicNovelVolume (FKGraphicNovel, Volume),
   primary key (FKGraphicNovel, Chapter)
 );
@@ -238,7 +241,7 @@ create table GraphicNovelChapterTranslation
   Title                 varchar(150) not null,
   Description           varchar(500),
 
-  FKGraphicNovel        int          not null,
+  FKGraphicNovel        int          not null references GraphicNovel (Id),
   FKGraphicNovelChapter int          not null,
   Language              language     not null,
   foreign key (FKGraphicNovel, FKGraphicNovelChapter) references GraphicNovelChapter (FKGraphicNovel, Chapter),
@@ -252,36 +255,27 @@ create table GraphicNovelXPublisher
 );
 create table GraphicNovelXCharacter
 (
-  FKGraphicNovel int not null,
-  FKCharacter    int not null,
-  foreign key (FKGraphicNovel) references GraphicNovel (Id),
-  foreign key (FKCharacter) references Character (Id),
+  FKGraphicNovel int not null references GraphicNovel (Id),
+  FKCharacter    int not null references Character (Id),
   primary key (FKGraphicNovel, FKCharacter)
 );
 create table GraphicNovelXGenre
 (
-  FKGraphicNovel int not null,
-  FKGenre        int not null,
-  foreign key (FKGraphicNovel) references GraphicNovel (Id),
-  foreign key (FKGenre) references Genre (Id),
+  FKGraphicNovel int not null references GraphicNovel (Id),
+  FKGenre        int not null references Genre (Id),
   primary key (FKGraphicNovel, FKGenre)
 );
 create table GraphicNovelXTheme
 (
-  FKGraphicNovel int not null,
-  FKTheme        int not null,
-  foreign key (FKGraphicNovel) references GraphicNovel (Id),
-  foreign key (FKTheme) references Theme (Id),
+  FKGraphicNovel int not null references GraphicNovel (Id),
+  FKTheme        int not null references Theme (Id),
   primary key (FKGraphicNovel, FkTheme)
 );
 create table GraphicNovelXCreator
 (
-  FKGraphicNovel int not null,
-  FKPerson       int not null,
-  FKRole         int not null,
-  foreign key (FKGraphicNovel) references GraphicNovel (Id),
-  foreign key (FKPerson) references Person (Id),
-  foreign key (FKRole) references Role (Id),
+  FKGraphicNovel int not null references GraphicNovel (Id),
+  FKPerson       int not null references Person (Id),
+  FKRole         int not null references Role (Id),
   primary key (FKGraphicNovel, FKPerson, FKRole)
 );
 create table Book
@@ -305,43 +299,33 @@ create table BookTranslation
   Title         varchar(150) not null,
   Description   varchar(500),
 
-  FKTranslation int          not null,
+  FKTranslation int          not null references Book (Id),
   Language      language     not null,
-  foreign key (FKTranslation) references Book (Id),
   primary key (FKTranslation, Language)
 );
 create table BookXCharacter
 (
-  FKBook      int not null,
-  FKCharacter int not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKCharacter) references Character (Id),
+  FKBook      int not null references Book (Id),
+  FKCharacter int not null references Character (Id),
   primary key (FKBook, FKCharacter)
 );
 create table BookXGenre
 (
-  FKBook  int not null,
-  FKGenre int not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKGenre) references Genre (Id),
+  FKBook  int not null references Book (Id),
+  FKGenre int not null references Genre (Id),
   primary key (FKBook, FKGenre)
 );
 create table BookXTheme
 (
-  FKBook  int not null,
-  FKTheme int not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKTheme) references Theme (Id),
+  FKBook  int not null references Book (Id),
+  FKTheme int not null references Theme (Id),
   primary key (FKBook, FKTheme)
 );
 create table BookXCreator
 (
-  FKBook   int not null,
-  FKRole   int not null,
-  FKPerson int not null,
-  foreign key (FKBook) references Book (Id),
-  foreign key (FKRole) references Role (Id),
-  foreign key (FKPerson) references Person (Id),
+  FKBook   int not null references Book (Id),
+  FKRole   int not null references Role (Id),
+  FKPerson int not null references Person (Id),
   primary key (FKBook, FKRole, FKPerson)
 );
 create table Show
@@ -365,20 +349,18 @@ create table ShowTranslation
   Title         varchar(150) not null,
   Description   varchar(500),
 
-  FKTranslation int          not null,
+  FKTranslation int          not null references Show (Id),
   Language      language     not null,
-  foreign key (FKTranslation) references Show (Id),
   primary key (FKTranslation, Language)
 );
 create table ShowSeason
 (
   Season      smallint unique not null,
-  FKShow      int             not null,
+  FKShow      int             not null references Show (Id),
   Episodes    smallint,
   AiringStart date,
   AiringEnd   date,
   Score       smallint,
-  foreign key (FKShow) references Show (Id),
   primary key (FKShow, Season)
 );
 create table ShowSeasonTranslation
@@ -386,7 +368,7 @@ create table ShowSeasonTranslation
   Title        varchar(150) not null,
   Description  varchar(500),
 
-  FKShow       int          not null,
+  FKShow       int          not null references Show (Id),
   FKShowSeason int          not null,
   Language     language     not null,
   foreign key (FKShow, FKShowSeason) references ShowSeason (FKShow, Season),
@@ -394,8 +376,8 @@ create table ShowSeasonTranslation
 );
 create table ShowEpisode
 (
-  Episode  smallint unique not null,
-  FKShow   int             not null references Show (Id),
+  Episode  smallint not null,
+  FKShow   int      not null references Show (Id),
   FKSeason int, -- Null, since not every episode is part of a season
   Length   smallint,
   Airing   date,
@@ -409,7 +391,7 @@ create table ShowEpisodeTranslation
   Title         varchar(150) not null,
   Description   varchar(500),
 
-  FKShow        int          not null,
+  FKShow        int          not null references Show (Id),
   FKShowEpisode int          not null,
   Language      language     not null,
   foreign key (FKShow, FKShowEpisode) references ShowEpisode (FKShow, Episode),
@@ -457,17 +439,14 @@ create table GameTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
-  FKTranslation int          not null,
+  FKTranslation int          not null references Game (Id),
   Language      language     not null,
-  foreign key (FKTranslation) references Game (Id),
   primary key (FKTranslation, Language)
 );
 create table GameXPlatform
 (
-  FKGame     int not null,
-  FKPlatform int not null,
-  foreign key (FKGame) references Game (Id),
-  foreign key (FKPlatform) references Platform (Id),
+  FKGame     int not null references Game (Id),
+  FKPlatform int not null references Platform (Id),
   primary key (FKGame, FKPlatform)
 );
 create table GameXCharacter
@@ -515,8 +494,8 @@ create table UserAverage
 );
 create table UserXGraphicNovel
 (
-  FKUser         int        not null,
-  FKGraphicNovel int        not null,
+  FKUser         int        not null references "User" (Id),
+  FKGraphicNovel int        not null references GraphicNovel (Id),
   UserStatus     userstatus not null,
   Favorite       boolean    not null,
   Score          smallint,
@@ -525,14 +504,12 @@ create table UserXGraphicNovel
   Finished       date,
   Chapters       smallint,
   Added          date       not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references "User" (Id),
-  foreign key (FKGraphicNovel) references GraphicNovel (Id),
   primary key (FKUser, FKGraphicNovel)
 );
 create table UserXBook
 (
-  FKUser     int        not null,
-  FKBook     int        not null,
+  FKUser     int        not null references "User" (Id),
+  FKBook     int        not null references Book (Id),
   UserStatus userstatus not null,
   Favorite   boolean    not null,
   Score      smallint,
@@ -542,14 +519,12 @@ create table UserXBook
   Chapters   smallint,
   Pages      smallint,
   Added      date       not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references "User" (Id),
-  foreign key (FKBook) references Book (Id),
   primary key (FKUser, FKBook)
 );
 create table UserXShow
 (
-  FKUser     int        not null,
-  FKShow     int        not null,
+  FKUser     int        not null references "User" (Id),
+  FKShow     int        not null references Show (Id),
   UserStatus userstatus not null,
   Favorite   boolean    not null,
   Score      smallint,
@@ -558,22 +533,18 @@ create table UserXShow
   Finished   date,
   Episodes   smallint,
   Added      date       not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references "User" (Id),
-  foreign key (FKShow) references Show (Id),
   primary key (FKUser, FKShow)
 );
 create table UserXMovie
 (
-  FKUser     int        not null,
-  FKMovie    int        not null,
+  FKUser     int        not null references "User" (Id),
+  FKMovie    int        not null references Movie (Id),
   UserStatus userstatus not null,
   Favorite   boolean    not null,
   Score      smallint,
   Review     varchar(255),
   Watched    date,
   Added      date       not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references "User" (Id),
-  foreign key (FKMovie) references Movie (Id),
   primary key (FKUser, FKMovie)
 );
 create table UserXGame
@@ -592,11 +563,9 @@ create table UserXGame
 );
 create table Friendship
 (
-  FKUser       int  not null,
-  FKSecondUser int  not null,
+  FKUser       int  not null references "User" (Id),
+  FKSecondUser int  not null references "User" (Id),
   Added        date not null DEFAULT (CURRENT_DATE),
-  foreign key (FKUser) references "User" (Id),
-  foreign key (FKSecondUser) references "User" (Id),
   primary key (FKUser, FKSecondUser)
 );
 create table Account
