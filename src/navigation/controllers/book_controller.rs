@@ -1,13 +1,13 @@
-use std::fmt::Display;
-use std::io::Error;
+use std::error::Error;
 
 use actix_web::{get, Responder, web};
+use actix_web::http::header::AcceptLanguage;
 use chrono::NaiveDate;
 
 use crate::domain::entities::book::book::Book;
 use crate::domain::entities::franchise::franchise::Franchise;
 use crate::domain::entities::image::image::{Image, ImageExtension};
-use crate::domain::enums::language::Language;
+use crate::navigation::controllers::{DEFAULT_LANGUAGE, format_content_language, get_language_and_fallback};
 
 pub fn add_routes(config: &mut web::ServiceConfig) {
   config.service(
@@ -15,24 +15,30 @@ pub fn add_routes(config: &mut web::ServiceConfig) {
   );
 }
 
-#[get("{language}")]
-async fn get(path: web::Path<Language>) -> Result<impl Responder, Error> {
-  let language = path.into_inner();
-  println!("Route for books in {}", language);
-  Ok(web::Json(vec![fake_book()]))
+#[get("")]
+async fn get(mut accept_language: web::Header<AcceptLanguage>) -> Result<impl Responder, Box<dyn Error>> {
+  let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
+  println!("Route for books in {} and fallback {:?}", language, fallback_language);
+
+  Ok(web::Json(vec![fake_book()])
+    .customize()
+    .insert_header(("content-language", format_content_language(language, fallback_language))))
 }
 
-#[get("{language}/{id:\\d+}")]
-async fn get_by_id(path: web::Path<(Language, u32)>) -> Result<impl Responder, Error> {
-  let (language, id) = path.into_inner();
-  println!("Route for a book with id {} in {}", id, language);
+#[get("{id:\\d+}")]
+async fn get_by_id(path: web::Path<u32>, mut accept_language: web::Header<AcceptLanguage>) -> Result<impl Responder, Box<dyn Error>> {
+  let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
+  let id = path.into_inner();
+  println!("Route for a book with id {} in {} and fallback {:?}", id, language, fallback_language);
   Ok(web::Json(fake_book()))
 }
 
-#[get("{language}/{title}")]
-async fn get_by_title(path: web::Path<(Language, String)>) -> Result<impl Responder, Error> {
-  let (language, title) = path.into_inner();
-  println!("Route for books with the title {} in {}", title, language);
+#[get("{title}")]
+async fn get_by_title(path: web::Path<String>, mut accept_language: web::Header<AcceptLanguage>) -> Result<impl Responder, Box<dyn Error>> {
+  let title = path.into_inner();
+
+  let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
+  println!("Route for books with the title {} in {} and fallback {:?}", title, language, fallback_language);
   Ok(web::Json(vec![fake_book(), fake_book(), fake_book()]))
 }
 
