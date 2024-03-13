@@ -1,6 +1,7 @@
 use actix_web::http::header::{AcceptLanguage, LanguageTag, Preference, QualityItem};
 use actix_web::web;
-use crate::domain::enums::language::{Language};
+
+use crate::domain::enums::language::Language;
 use crate::domain::enums::language::Language::EN;
 
 mod book_controller;
