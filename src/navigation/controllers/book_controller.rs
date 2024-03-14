@@ -3,6 +3,7 @@ use std::error::Error;
 use actix_web::{get, Responder, web};
 use actix_web::http::header::AcceptLanguage;
 use web::{Data, Header, Path};
+use crate::application::page_count::PageCount;
 
 use crate::navigation::controllers::{DEFAULT_LANGUAGE, format_content_language, get_language_and_fallback};
 use crate::traits::book_service::BookService;
@@ -17,7 +18,7 @@ pub fn add_routes(config: &mut web::ServiceConfig) {
 async fn get(mut accept_language: Header<AcceptLanguage>, book_service: Data<dyn BookService>) -> Result<impl Responder, Box<dyn Error>> {
   let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
   println!("Route for books in {} and fallback {:?}", language, fallback_language);
-  Ok(web::Json(book_service.get(language, fallback_language, 0, 50)?)
+  Ok(web::Json(book_service.get(language, fallback_language, PageCount::default())?)
     .customize()
     .insert_header(("content-language", format_content_language(language, fallback_language))))
 }
@@ -40,7 +41,7 @@ async fn get_by_title(path: Path<String>, mut accept_language: Header<AcceptLang
   let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
   println!("Route for books with the title {} in {} and fallback {:?}", title, language, fallback_language);
 
-  Ok(web::Json(book_service.get_by_title(&title, language, fallback_language, 0, 50)?)
+  Ok(web::Json(book_service.get_by_title(&title, language, fallback_language, PageCount::default())?)
     .customize()
     .insert_header(("content-language", format_content_language(language, fallback_language))))
 }
