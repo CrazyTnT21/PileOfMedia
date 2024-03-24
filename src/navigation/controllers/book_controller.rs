@@ -1,48 +1,62 @@
-use std::error::Error;
+use std::sync::Arc;
 
-use actix_web::{get, Responder, web};
-use actix_web::http::header::AcceptLanguage;
-use web::{Data, Header, Path};
-use crate::application::page_count::PageCount;
+use axum::{Json, Router};
+use axum::debug_handler;
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::routing::get;
 
-use crate::navigation::controllers::{DEFAULT_LANGUAGE, format_content_language, get_language_and_fallback};
+use crate::application::pagination::Pagination;
+use crate::get_book_service;
+use crate::navigation::controllers::{content_language_header, DEFAULT_LANGUAGE, get_language_and_fallback};
+use crate::navigation::headers::accept_language::AcceptLanguageHeader;
 use crate::traits::book_service::BookService;
 
-pub fn add_routes(config: &mut web::ServiceConfig) {
-  config.service(
-    web::scope("/books").service((get_by_id, get_by_title, get))
-  );
+pub fn add_routes(router: Router) -> Router {
+  router
+    .nest("/books",
+          Router::new()
+            .route("/", get(get_items)).with_state(get_book_service())
+            .route("/:id", get(get_by_id).with_state(get_book_service()))
+            .route("/title/:title", get(get_by_title).with_state(get_book_service())),
+    )
 }
 
-#[get("")]
-async fn get(mut accept_language: Header<AcceptLanguage>, book_service: Data<dyn BookService>) -> Result<impl Responder, Box<dyn Error>> {
-  let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
+#[debug_handler]
+async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, State(book_service): State<Arc<dyn BookService>>) -> impl IntoResponse {
+  let (language, fallback_language) = get_language_and_fallback(languages, DEFAULT_LANGUAGE);
+
   println!("Route for books in {} and fallback {:?}", language, fallback_language);
-  Ok(web::Json(book_service.get(language, fallback_language, PageCount::default())?)
-    .customize()
-    .insert_header(("content-language", format_content_language(language, fallback_language))))
+
+  let content_language = content_language_header(language, fallback_language);
+
+  match book_service.get(language, fallback_language, Pagination::default()) {
+    Ok(books) => Ok((StatusCode::OK, content_language, Json(books))),
+    Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR)
+  }
 }
 
-#[get("{id:\\d+}")]
-async fn get_by_id(path: Path<u32>, mut accept_language: Header<AcceptLanguage>, book_service: Data<dyn BookService>) -> Result<impl Responder, Box<dyn Error>> {
-  let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
-  let id = path.into_inner();
+async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(book_service): State<Arc<dyn BookService>>) -> impl IntoResponse {
+  let (language, fallback_language) = get_language_and_fallback(languages, DEFAULT_LANGUAGE);
+
   println!("Route for a book with id {} in {} and fallback {:?}", id, language, fallback_language);
 
-  Ok(web::Json(book_service.get_by_id(id, language, fallback_language)?)
-    .customize()
-    .insert_header(("content-language", format_content_language(language, fallback_language))))
+  let content_language = content_language_header(language, fallback_language);
+  match book_service.get_by_id(id, language, fallback_language) {
+    Ok(item) => Ok((StatusCode::OK, content_language, Json(item))),
+    Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR)
+  }
 }
 
-#[get("{title}")]
-async fn get_by_title(path: Path<String>, mut accept_language: Header<AcceptLanguage>, book_service: Data<dyn BookService>) -> Result<impl Responder, Box<dyn Error>> {
-  let title = path.into_inner();
+async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(book_service): State<Arc<dyn BookService>>) -> impl IntoResponse {
+  let (language, fallback_language) = get_language_and_fallback(languages, DEFAULT_LANGUAGE);
 
-  let (language, fallback_language) = get_language_and_fallback(&mut accept_language, DEFAULT_LANGUAGE);
   println!("Route for books with the title {} in {} and fallback {:?}", title, language, fallback_language);
 
-  Ok(web::Json(book_service.get_by_title(&title, language, fallback_language, PageCount::default())?)
-    .customize()
-    .insert_header(("content-language", format_content_language(language, fallback_language))))
+  let content_language = content_language_header(language, fallback_language);
+  match book_service.get_by_title(&title, language, fallback_language, Pagination::default()) {
+    Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
+    Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR)
+  }
 }
-

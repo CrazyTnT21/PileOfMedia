@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use chrono::NaiveDate;
-use crate::application::page_count::PageCount;
+use crate::application::pagination::Pagination;
 
 use crate::domain::entities::book::book::Book;
 use crate::domain::entities::franchise::franchise::Franchise;
@@ -12,7 +12,7 @@ use crate::traits::book_repository::BookRepository;
 pub struct DefaultBookRepository;
 
 impl BookRepository for DefaultBookRepository {
-  fn get(&self, language: Language, fallback_language: Option<Language>, page_count: PageCount) -> Result<Vec<Book>, Box<dyn Error>> {
+  fn get(&self, language: Language, fallback_language: Option<Language>, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
     Ok(vec![fake_book()])
   }
 
@@ -20,7 +20,7 @@ impl BookRepository for DefaultBookRepository {
     Ok(Some(fake_book()))
   }
 
-  fn get_by_title(&self, title: &str, language: Language, fallback_language: Option<Language>, page_count: PageCount) -> Result<Vec<Book>, Box<dyn Error>> {
+  fn get_by_title(&self, title: &str, language: Language, fallback_language: Option<Language>, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
     Ok(vec![fake_book(), fake_book()])
   }
 }
