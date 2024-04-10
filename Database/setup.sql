@@ -5,7 +5,7 @@ create database collectiondb with ENCODING 'UTF8';
 CREATE TYPE language AS ENUM ( 'EN','DE','ES','DA','NL','JA','KO');
 CREATE TYPE status AS ENUM ('NotStarted','Ongoing','Finished','Paused');
 CREATE TYPE userstatus AS ENUM ('NotStarted','Ongoing','Finished','Paused');
-CREATE TYPE imageextenstion as ENUM ('JPEG','JPG','PNG','GIF');
+CREATE TYPE imageextension as ENUM ('JPEG','JPG','PNG','GIF');
 create table Franchise
 (
   Id   int primary key generated always as identity,
@@ -20,7 +20,7 @@ create table ImageTranslation
   Uri           varchar(2047) not null,
   Width         smallint      not null,
   Height        smallint      not null,
-  Extension     imageextenstion,
+  Extension     imageextension,
   FKTranslation int           not null references Image (Id),
   Language      language      not null,
   primary key (FKTranslation, Language)
@@ -143,7 +143,7 @@ create table Movie
   Id         int primary key generated always as identity,
   Airing     date,
   Length     interval,
-  Score      decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+  Score      real CHECK (Score BETWEEN 0.99 AND 10.01),
   FKCover    int  not null references Image (Id),
   Added      date not null DEFAULT (CURRENT_DATE),
   Rank       int  not null default 0,
@@ -188,7 +188,7 @@ create table GraphicNovel
   PublishEnd   date,
   Volumes      smallint,
   Chapters     smallint,
-  Score        decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+  Score        real CHECK (Score BETWEEN 0.99 AND 10.01),
   Status       status not null,
   FKCover      int    not null references Image (Id),
   Added        date   not null DEFAULT (CURRENT_DATE),
@@ -285,7 +285,7 @@ create table Book
   Pages       smallint,
   Words       int,
   Published   date,
-  Score       decimal(5, 2) not null DEFAULT 0,
+  Score       real not null DEFAULT 0,
   FKCover     int           not null references Image (Id),
   Added       date          not null DEFAULT (CURRENT_DATE),
   Rank        int           not null default 0,
@@ -333,7 +333,7 @@ create table Show
   Id          int primary key generated always as identity,
   AiringStart date,
   AiringEnd   date,
-  Score       decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+  Score       real CHECK (Score BETWEEN 0.99 AND 10.01),
   Seasons     smallint,
   Status      status not null,
   FKCover     int    not null references Image (Id),
@@ -426,7 +426,7 @@ create table Game
 (
   Id          int primary key generated always as identity,
   Published   date,
-  Score       decimal(5, 2) CHECK (Score BETWEEN 0.99 AND 10.01),
+  Score       real CHECK (Score BETWEEN 0.99 AND 10.01),
   FKCover     int  not null references Image (Id),
   Added       date not null DEFAULT (CURRENT_DATE),
   Rank        int  not null default 0, -- Values should not be null,
@@ -486,11 +486,11 @@ create table "User"
 create table UserAverage
 (
   FKUser              int not null primary key references "User" (Id),
-  GraphicNovelAverage decimal(5, 2) CHECK (GraphicNovelAverage BETWEEN 0.99 AND 10.01),
-  ShowAverage         decimal(5, 2) CHECK (ShowAverage BETWEEN 0.99 AND 10.01),
-  MovieAverage        decimal(5, 2) CHECK (MovieAverage BETWEEN 0.99 AND 10.01),
-  BookAverage         decimal(5, 2) CHECK (BookAverage BETWEEN 0.99 AND 10.01),
-  GameAverage         decimal(5, 2) CHECK (GameAverage BETWEEN 0.99 AND 10.01)
+  GraphicNovelAverage real CHECK (GraphicNovelAverage BETWEEN 0.99 AND 10.01),
+  ShowAverage         real CHECK (ShowAverage BETWEEN 0.99 AND 10.01),
+  MovieAverage        real CHECK (MovieAverage BETWEEN 0.99 AND 10.01),
+  BookAverage         real CHECK (BookAverage BETWEEN 0.99 AND 10.01),
+  GameAverage         real CHECK (GameAverage BETWEEN 0.99 AND 10.01)
 );
 create table UserXGraphicNovel
 (
