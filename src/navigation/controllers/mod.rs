@@ -1,10 +1,11 @@
 use std::str::FromStr;
-use axum::http::HeaderMap;
+use axum::http::{HeaderMap, StatusCode};
 use axum::Router;
 
 use crate::domain::enums::language::Language;
 use crate::domain::enums::language::Language::EN;
 use crate::navigation::headers::accept_language::{AcceptLanguage};
+use crate::services::traits::service_error::ServiceError;
 
 mod book_controller;
 
@@ -44,3 +45,11 @@ fn insert_content_language_header(headers: &mut HeaderMap, language: Language, f
 
 //TODO: Make configurable
 const DEFAULT_LANGUAGE: Language = EN;
+
+pub fn convert_service_error(service_error: ServiceError) -> StatusCode {
+  match service_error {
+    ServiceError::ClientError(_) => StatusCode::BAD_REQUEST,
+    ServiceError::ServerError(_) => StatusCode::INTERNAL_SERVER_ERROR
+  }
+}
+

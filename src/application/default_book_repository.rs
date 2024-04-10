@@ -1,13 +1,13 @@
 use std::error::Error;
 
 use chrono::NaiveDate;
-use crate::application::pagination::Pagination;
 
+use crate::application::pagination::Pagination;
 use crate::domain::entities::book::book::Book;
 use crate::domain::entities::franchise::franchise::Franchise;
 use crate::domain::entities::image::image::{Image, ImageExtension};
 use crate::domain::enums::language::Language;
-use crate::traits::book_repository::BookRepository;
+use crate::repositories::book_repository::BookRepository;
 
 pub struct DefaultBookRepository;
 

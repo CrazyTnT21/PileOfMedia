@@ -4,12 +4,13 @@ use axum::Router;
 use crate::application::default_book_repository::DefaultBookRepository;
 use crate::infrastructure::default_book_service::DefaultBookService;
 use crate::navigation::controllers::add_controllers;
-use crate::traits::book_repository::BookRepository;
-use crate::traits::book_service::BookService;
+use crate::repositories::book_repository::BookRepository;
+use crate::services::book_service::BookService;
 
 mod navigation;
 mod domain;
-mod traits;
+mod repositories;
+mod services;
 mod application;
 mod infrastructure;
 
