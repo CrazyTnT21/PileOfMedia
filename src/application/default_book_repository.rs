@@ -12,15 +12,15 @@ use crate::repositories::book_repository::BookRepository;
 pub struct DefaultBookRepository;
 
 impl BookRepository for DefaultBookRepository {
-  fn get(&self, language: Language, fallback_language: Option<Language>, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
+  fn get(&self, language: Language, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
     Ok(vec![fake_book()])
   }
 
-  fn get_by_id(&self, id: u32, language: Language, fallback_language: Option<Language>) -> Result<Option<Book>, Box<dyn Error>> {
+  fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, Box<dyn Error>> {
     Ok(Some(fake_book()))
   }
 
-  fn get_by_title(&self, title: &str, language: Language, fallback_language: Option<Language>, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
+  fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
     Ok(vec![fake_book(), fake_book()])
   }
 }

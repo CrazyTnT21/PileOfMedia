@@ -13,33 +13,29 @@ pub fn add_controllers(router: Router) -> Router {
   book_controller::add_routes(router)
 }
 
-fn format_content_language(language: Language, fallback_language: Option<Language>) -> String {
-  match fallback_language {
-    None => language.language_code().to_string(),
-    Some(fallback) => format!("{},{}", language.language_code(), fallback.language_code()),
-  }
+fn format_content_language(language: Language) -> String {
+  language.language_code().to_string()
 }
 
 fn convert_to_language(value: Option<&AcceptLanguage>) -> Option<Language> {
   Language::from_str(&value?.value).ok()
 }
 
-fn get_language_and_fallback(mut languages: Vec<AcceptLanguage>, default_language: Language) -> (Language, Option<Language>) {
+fn get_language(mut languages: Vec<AcceptLanguage>, default_language: Language) -> Language {
   languages.sort_by(|x, y| x.cmp(&y));
   let language = convert_to_language(languages.get(0)).unwrap_or(default_language);
-  let fallback_language = convert_to_language(languages.get(1));
 
-  (language, fallback_language)
+  language
 }
 
-fn content_language_header(language: Language, fallback_language: Option<Language>) -> HeaderMap {
+fn content_language_header(language: Language) -> HeaderMap {
   let mut headers = HeaderMap::new();
-  insert_content_language_header(&mut headers, language, fallback_language);
+  insert_content_language_header(&mut headers, language);
   headers
 }
 
-fn insert_content_language_header(headers: &mut HeaderMap, language: Language, fallback_language: Option<Language>) -> &HeaderMap {
-  headers.insert("content-language", format_content_language(language, fallback_language).parse().unwrap());
+fn insert_content_language_header(headers: &mut HeaderMap, language: Language) -> &HeaderMap {
+  headers.insert("content-language", format_content_language(language).parse().unwrap());
   headers
 }
 

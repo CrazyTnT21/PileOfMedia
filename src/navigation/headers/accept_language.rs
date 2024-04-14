@@ -98,7 +98,7 @@ impl<S> FromRequestParts<S> for AcceptLanguageHeader
 {
   type Rejection = Infallible;
 
-  async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+  async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
     Ok(parts.headers.get(ACCEPT_LANGUAGE)
       .and_then(|x| x.to_str().ok())
       .and_then(|x| AcceptLanguageHeader::from_str(x).ok())

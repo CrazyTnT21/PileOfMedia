@@ -19,16 +19,16 @@ impl DefaultBookService {
 }
 
 impl BookService for DefaultBookService {
-  fn get(&self, language: Language, fallback_language: Option<Language>, pagination: Pagination) -> Result<Vec<Book>, ServiceError> {
-    self.book_repository.get(language, fallback_language, pagination).map_err(map_server_error)
+  fn get(&self, language: Language, pagination: Pagination) -> Result<Vec<Book>, ServiceError> {
+    self.book_repository.get(language, pagination).map_err(map_server_error)
   }
 
-  fn get_by_id(&self, id: u32, language: Language, fallback_language: Option<Language>) -> Result<Option<Book>, ServiceError> {
-    self.book_repository.get_by_id(id, language, fallback_language).map_err(map_server_error)
+  fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, ServiceError> {
+    self.book_repository.get_by_id(id, language).map_err(map_server_error)
   }
 
-  fn get_by_title(&self, title: &str, language: Language, fallback_language: Option<Language>, pagination: Pagination) -> Result<Vec<Book>, ServiceError> {
-    self.book_repository.get_by_title(title, language, fallback_language, pagination).map_err(map_server_error)
+  fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<Vec<Book>, ServiceError> {
+    self.book_repository.get_by_title(title, language, pagination).map_err(map_server_error)
   }
 }
 
