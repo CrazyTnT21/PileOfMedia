@@ -30,7 +30,7 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, State(
 
   let content_language = content_language_header(language);
 
-  match book_service.get(language, Pagination::default()) {
+  match book_service.get(language, Pagination::default()).await {
     Ok(books) => Ok((StatusCode::OK, content_language, Json(books))),
     Err(error) => Err(convert_service_error(error))
   }
@@ -42,7 +42,7 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
   println!("Route for a book with id {} in {}", id, language);
 
   let content_language = content_language_header(language);
-  match book_service.get_by_id(id, language) {
+  match book_service.get_by_id(id, language).await {
     Ok(item) => Ok((StatusCode::OK, content_language, Json(item))),
     Err(error) => Err(convert_service_error(error))
   }
@@ -54,7 +54,7 @@ async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages)
   println!("Route for books with the title {} in {}", title, language);
 
   let content_language = content_language_header(language);
-  match book_service.get_by_title(&title, language, Pagination::default()) {
+  match book_service.get_by_title(&title, language, Pagination::default()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }

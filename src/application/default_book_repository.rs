@@ -1,4 +1,5 @@
 use std::error::Error;
+use async_trait::async_trait;
 
 use chrono::NaiveDate;
 
@@ -11,16 +12,17 @@ use crate::repositories::book_repository::BookRepository;
 
 pub struct DefaultBookRepository;
 
+#[async_trait]
 impl BookRepository for DefaultBookRepository {
-  fn get(&self, language: Language, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
+  async fn get(&self, language: Language, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
     Ok(vec![fake_book()])
   }
 
-  fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, Box<dyn Error>> {
+  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, Box<dyn Error>> {
     Ok(Some(fake_book()))
   }
 
-  fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
+  async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<Vec<Book>, Box<dyn Error>> {
     Ok(vec![fake_book(), fake_book()])
   }
 }
