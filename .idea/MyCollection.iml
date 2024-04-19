@@ -6,6 +6,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/domain/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/navigation/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/application/from_row/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/application/from_row_macro/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src/navigation/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

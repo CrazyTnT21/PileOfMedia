@@ -1,16 +1,34 @@
 use std::str::FromStr;
+use std::sync::Arc;
 use axum::http::{HeaderMap, StatusCode};
 use axum::Router;
+use bb8_postgres::bb8::Pool;
+use bb8_postgres::PostgresConnectionManager;
+use tokio_postgres::NoTls;
+use crate::application::default_book_repository::DefaultBookRepository;
+use crate::database_connection::DatabaseConnection;
 
 use crate::domain::enums::language::Language;
 use crate::domain::enums::language::Language::EN;
+use crate::infrastructure::default_book_service::DefaultBookService;
 use crate::navigation::headers::accept_language::{AcceptLanguage};
+use crate::repositories::book_repository::BookRepository;
+use crate::services::book_service::BookService;
 use crate::services::traits::service_error::ServiceError;
 
 mod book_controller;
 
-pub fn add_controllers(router: Router) -> Router {
-  book_controller::add_routes(router)
+pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
+  router
+    .nest("/books", book_controller::routes(pool))
+}
+
+fn get_book_service(pool: DatabaseConnection) -> Arc<dyn BookService> {
+  Arc::new(DefaultBookService::new(get_book_repository(pool)))
+}
+
+fn get_book_repository(pool: DatabaseConnection) -> Arc<dyn BookRepository> {
+  Arc::new(DefaultBookRepository::new(pool.0, DEFAULT_LANGUAGE))
 }
 
 fn format_content_language(language: Language) -> String {
@@ -40,7 +58,7 @@ fn insert_content_language_header(headers: &mut HeaderMap, language: Language) -
 }
 
 //TODO: Make configurable
-const DEFAULT_LANGUAGE: Language = EN;
+pub const DEFAULT_LANGUAGE: Language = EN;
 
 pub fn convert_service_error(service_error: ServiceError) -> StatusCode {
   match service_error {

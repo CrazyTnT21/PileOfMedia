@@ -1,7 +1,10 @@
 use std::error::Error;
-use async_trait::async_trait;
 
+use async_trait::async_trait;
+use bb8_postgres::bb8::PooledConnection;
+use bb8_postgres::PostgresConnectionManager;
 use chrono::NaiveDate;
+use tokio_postgres::{NoTls};
 
 use crate::application::pagination::Pagination;
 use crate::domain::entities::book::book::Book;
@@ -10,7 +13,16 @@ use crate::domain::entities::image::image::{Image, ImageExtension};
 use crate::domain::enums::language::Language;
 use crate::repositories::book_repository::BookRepository;
 
-pub struct DefaultBookRepository;
+pub struct DefaultBookRepository {
+  pool: PooledConnection<'static, PostgresConnectionManager<NoTls>>,
+  default_language: Language,
+}
+
+impl DefaultBookRepository {
+  pub fn new(pool: PooledConnection<'static, PostgresConnectionManager<NoTls>>, default_language: Language) -> DefaultBookRepository {
+    DefaultBookRepository { pool, default_language }
+  }
+}
 
 #[async_trait]
 impl BookRepository for DefaultBookRepository {

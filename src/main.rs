@@ -1,11 +1,13 @@
-use std::sync::Arc;
-use axum::Router;
+use std::env;
 
-use crate::application::default_book_repository::DefaultBookRepository;
-use crate::infrastructure::default_book_service::DefaultBookService;
-use crate::navigation::controllers::add_controllers;
-use crate::repositories::book_repository::BookRepository;
-use crate::services::book_service::BookService;
+use axum::Router;
+use bb8_postgres::bb8::{ManageConnection, Pool};
+use bb8_postgres::PostgresConnectionManager;
+use dotenvy::dotenv;
+use tokio_postgres::NoTls;
+
+use crate::database_connection::DatabaseConnection;
+use crate::navigation::controllers::route_controllers;
 
 mod navigation;
 mod domain;
@@ -13,19 +15,22 @@ mod repositories;
 mod services;
 mod application;
 mod infrastructure;
+mod database_connection;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-  let app = add_controllers(Router::new());
+  dotenv().ok();
+  let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+  let pool = connection_pool(&database_url).await.unwrap();
+
+  let app = route_controllers(pool, Router::new());
 
   let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
   axum::serve(listener, app).await
 }
 
-fn get_book_service() -> Arc<dyn BookService> {
-  Arc::new(DefaultBookService::new(get_book_repository()))
-}
-
-fn get_book_repository() -> Arc<dyn BookRepository> {
-  Arc::new(DefaultBookRepository)
+async fn connection_pool(database_url: &str) -> Result<Pool<PostgresConnectionManager<NoTls>>, <PostgresConnectionManager<NoTls> as ManageConnection>::Error> {
+  let manager =
+    PostgresConnectionManager::new_from_stringlike(&database_url, NoTls)?;
+  Ok(Pool::builder().build(manager).await?)
 }
