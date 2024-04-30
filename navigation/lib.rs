@@ -11,8 +11,8 @@ use tower_http::cors::{Any, CorsLayer};
 use crate::controllers::route_controllers;
 
 pub mod controllers;
-pub mod headers;
 mod database_connection;
+mod extractors;
 
 pub async fn main() -> std::io::Result<()> {
   dotenv().ok();
@@ -27,6 +27,7 @@ pub async fn main() -> std::io::Result<()> {
     .layer(cors);
 
   let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+  println!("Server listening on port 3000!");
   axum::serve(listener, app).await
 }
 

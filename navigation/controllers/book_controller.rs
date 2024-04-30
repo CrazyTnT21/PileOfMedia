@@ -1,5 +1,5 @@
 use axum::{Json, Router};
-use axum::extract::Path;
+use axum::extract::{Path, Query};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
@@ -9,7 +9,8 @@ use tokio_postgres::NoTls;
 use domain::pagination::Pagination;
 use crate::controllers::{content_language_header, convert_service_error, DEFAULT_LANGUAGE, get_book_service, get_language};
 use crate::database_connection::DatabaseConnection;
-use crate::headers::accept_language::AcceptLanguageHeader;
+use crate::extractors::headers::accept_language::AcceptLanguageHeader;
+use crate::extractors::query_pagination::QueryPagination;
 
 pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
   Router::new()
@@ -19,7 +20,7 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
     .with_state(pool)
 }
 
-async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection) -> impl IntoResponse {
+async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(pagination): Query<QueryPagination>) -> impl IntoResponse {
   let service = get_book_service(connection);
   let language = get_language(languages, DEFAULT_LANGUAGE);
 
@@ -27,7 +28,7 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connec
 
   let content_language = content_language_header(language);
 
-  match service.get(language, Pagination::default()).await {
+  match service.get(language, pagination.into()).await {
     Ok(books) => Ok((StatusCode::OK, content_language, Json(books))),
     Err(error) => Err(convert_service_error(error))
   }
