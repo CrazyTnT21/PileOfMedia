@@ -6,9 +6,9 @@ use axum::Router;
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
+use application::repositories::default_book_repository::DefaultBookRepository;
 use repositories::book_repository::BookRepository;
 use crate::database_connection::DatabaseConnection;
-use application::default_book_repository::DefaultBookRepository;
 use domain::enums::language::Language;
 use domain::enums::language::Language::EN;
 use infrastructure::default_book_service::DefaultBookService;
@@ -62,7 +62,10 @@ pub const DEFAULT_LANGUAGE: Language = EN;
 pub fn convert_service_error(service_error: ServiceError) -> StatusCode {
   match service_error {
     ServiceError::ClientError(_) => StatusCode::BAD_REQUEST,
-    ServiceError::ServerError(_) => StatusCode::INTERNAL_SERVER_ERROR
+    ServiceError::ServerError(e) => {
+      eprintln!("{}", e);
+      StatusCode::INTERNAL_SERVER_ERROR
+    }
   }
 }
 

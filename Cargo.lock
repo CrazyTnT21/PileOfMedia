@@ -42,6 +42,7 @@ dependencies = [
  "domain",
  "from-row",
  "repositories",
+ "serde",
  "tokio-postgres",
 ]
 

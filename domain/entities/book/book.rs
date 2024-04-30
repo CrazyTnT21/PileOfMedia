@@ -3,7 +3,7 @@ use chrono::NaiveDate;
 use crate::entities::franchise::franchise::Franchise;
 use crate::entities::image::image::Image;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Book {
   pub id: i32,
   pub title: String,

@@ -41,7 +41,7 @@ impl BookRepository for DefaultBookRepository {
 fn fake_book() -> Book {
   Book {
     cover: Image {
-      extension: ImageExtension::JPG,
+      extension: Some(ImageExtension::JPG),
       height: 1002,
       id: 1,
       uri: String::from("https://Test"),
