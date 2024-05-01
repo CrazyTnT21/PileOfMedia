@@ -3,6 +3,7 @@ use domain::entities::franchise::franchise::Franchise;
 use from_row::FromRow;
 
 #[derive(FromRow, Debug)]
+#[rename = "franchise"]
 pub struct DbFranchise {
   pub id: i32,
   pub name: String,

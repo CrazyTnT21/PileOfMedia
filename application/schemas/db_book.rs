@@ -10,6 +10,7 @@ use crate::schemas::db_image_translation::DbImageTranslation;
 
 
 #[derive(FromRow, Debug)]
+#[rename = "book"]
 pub struct DbBook {
   pub id: i32,
   pub chapters: Option<i16>,

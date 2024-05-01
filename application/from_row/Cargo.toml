@@ -8,3 +8,7 @@ edition = "2021"
 [dependencies]
 tokio-postgres = "0.7.10"
 from-row-macros = { path = "../from_row_macro", optional = true }
+
+[features]
+macros = ["from-row-macros"]
+macros-validation = ["from-row-macros/validate"]

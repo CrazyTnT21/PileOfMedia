@@ -335,9 +335,12 @@ dependencies = [
 name = "from-row-macros"
 version = "0.1.0"
 dependencies = [
+ "dotenvy",
  "proc-macro2",
  "quote",
  "syn",
+ "tokio",
+ "tokio-postgres",
 ]
 
 [[package]]

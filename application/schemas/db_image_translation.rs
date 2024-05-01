@@ -4,6 +4,7 @@ use crate::enums::image_extension::DbImageExtension;
 use crate::enums::language::DbLanguage;
 
 #[derive(FromRow, Debug)]
+#[rename = "imagetranslation"]
 pub struct DbImageTranslation {
   #[rename = "fktranslation"]
   pub fk_translation: i32,

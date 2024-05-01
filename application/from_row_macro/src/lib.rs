@@ -98,6 +98,34 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
     #from_row_impl
     #columns_impl
   };
+  #[cfg(feature = "validate")]
+  #[cfg(debug_assertions)]
+  {
+    let table_name = renamed_field(&ast.attrs).unwrap_or(ast.ident.to_string());
+    let query = format!("SELECT {} FROM {} LIMIT 0", columns.join(","), table_name);
+
+    dotenvy::dotenv().ok();
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+      .worker_threads(1)
+      .enable_all()
+      .build()
+      .unwrap();
+
+    runtime.block_on(runtime.spawn(async move {
+      let (client, connection) =
+        tokio_postgres::connect(&database_url, tokio_postgres::NoTls).await.unwrap();
+
+      tokio::spawn(async move {
+        if let Err(e) = connection.await {
+          eprintln!("connection error: {}", e);
+        }
+      });
+
+      let _ = client.query(&query, &[]).await.unwrap();
+    })).unwrap();
+  }
 
   gen.into()
 }

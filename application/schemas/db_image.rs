@@ -4,6 +4,7 @@ use from_row::FromRow;
 use crate::schemas::db_image_translation::DbImageTranslation;
 
 #[derive(Debug, FromRow)]
+#[rename = "image"]
 pub struct DbImage {
   pub id: i32,
 }

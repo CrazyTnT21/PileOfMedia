@@ -3,6 +3,7 @@ use tokio_postgres::Row;
 use crate::enums::language::DbLanguage;
 
 #[derive(FromRow, Debug)]
+#[rename = "booktranslation"]
 pub struct DbBookTranslation {
   pub title: String,
   pub description: Option<String>,
