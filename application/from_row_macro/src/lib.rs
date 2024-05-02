@@ -55,10 +55,12 @@ fn from_row_impl(name: &Ident, db_mapping: &Vec<DbColumnIdent>) -> proc_macro2::
         false => quote! { #field: row.try_get(#index + from).ok()? }
       }
     });
+  let column_count = fields.len();
 
   quote!(
     impl from_row::FromRow for #name{
        type DbType = #name;
+       const COLUMN_COUNT: usize = #column_count;
        fn from_row(row: &Row, from: usize) -> Self::DbType {
         #name {
           #(#fields),*
@@ -168,8 +170,8 @@ pub fn query_row(item: TokenStream) -> TokenStream {
       //convert from proc_macro::Ident to proc_macro2::Ident
       let x = Ident::new(&x.to_string(), Span::call_site());
       match *optional {
-        true => quote!(<#x as from_row::FromRow>::from_row_optional(&#row_ident, start(<#x as from_row::RowColumns>::columns().len()))),
-        false => quote!(<#x as from_row::FromRow>::from_row(&#row_ident, start(<#x as from_row::RowColumns>::columns().len())))
+        true => quote!(<#x as from_row::FromRow>::from_row_optional(&#row_ident, start(<#x as from_row::FromRow>::COLUMN_COUNT))),
+        false => quote!(<#x as from_row::FromRow>::from_row(&#row_ident, start(<#x as from_row::FromRow>::COLUMN_COUNT)))
       }
     });
 
