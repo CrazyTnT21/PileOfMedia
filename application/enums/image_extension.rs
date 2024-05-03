@@ -1,9 +1,12 @@
+use from_row::FromRowOption;
+use from_row::FromRow;
 use std::error::Error;
 use std::str::FromStr;
 
 use tokio_postgres::types::{FromSql, Kind, Type};
 
 use domain::entities::image::image::ImageExtension;
+use from_row::from_row_impl;
 
 use crate::convert;
 
@@ -14,6 +17,7 @@ pub enum DbImageExtension {
   PNG,
   GIF,
 }
+from_row_impl!(DbImageExtension);
 convert!(DbImageExtension,ImageExtension, JPG,JPEG,PNG,GIF);
 
 impl<'a> FromSql<'a> for DbImageExtension {

@@ -66,7 +66,9 @@ fn from_row_impl(name: &Ident, db_mapping: &Vec<DbColumnIdent>) -> proc_macro2::
           #(#fields),*
         }
       }
-      fn from_row_optional(row: &Row, from: usize) -> Option<Self::DbType> {
+    }
+    impl from_row::FromRowOption for #name{
+      fn from_row_optional(row: &Row, from: usize) -> Option<<Self as FromRow>::DbType> {
         Some(#name {
           #(#optionals),*
         })
@@ -170,7 +172,7 @@ pub fn query_row(item: TokenStream) -> TokenStream {
       //convert from proc_macro::Ident to proc_macro2::Ident
       let x = Ident::new(&x.to_string(), Span::call_site());
       match *optional {
-        true => quote!(<#x as from_row::FromRow>::from_row_optional(&#row_ident, start(<#x as from_row::FromRow>::COLUMN_COUNT))),
+        true => quote!(<#x as from_row::FromRowOption>::from_row_optional(&#row_ident, start(<#x as from_row::FromRow>::COLUMN_COUNT))),
         false => quote!(<#x as from_row::FromRow>::from_row(&#row_ident, start(<#x as from_row::FromRow>::COLUMN_COUNT)))
       }
     });

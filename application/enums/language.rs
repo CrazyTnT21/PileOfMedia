@@ -1,3 +1,5 @@
+use from_row::FromRowOption;
+use from_row::FromRow;
 use std::error::Error;
 use std::str::FromStr;
 
@@ -5,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use tokio_postgres::types::{FromSql, Kind, Type};
 
 use domain::enums::language::Language;
+use from_row::from_row_impl;
 
 use crate::convert;
 
@@ -18,13 +21,14 @@ pub enum DbLanguage {
   NL,
   KO,
 }
+from_row_impl!(DbLanguage);
+convert!(DbLanguage,Language,EN,DE,JA,ES,DA,NL,KO);
 
 impl DbLanguage {
   pub fn code(&self) -> String {
     Into::<Language>::into(*self).language_code().to_uppercase()
   }
 }
-convert!(DbLanguage,Language,EN,DE,JA,ES,DA,NL,KO);
 
 impl<'a> FromSql<'a> for DbLanguage {
   fn from_sql(_ty: &Type, raw: &'a [u8]) -> Result<Self, Box<dyn Error + Sync + Send>> {
