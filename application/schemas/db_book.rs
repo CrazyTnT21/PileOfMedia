@@ -6,7 +6,6 @@ use from_row::FromRow;
 use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::schemas::db_franchise::DbFranchise;
 use crate::schemas::db_image::DbImage;
-use crate::schemas::db_image_translation::DbImageTranslation;
 
 
 #[derive(FromRow, Debug)]
@@ -18,8 +17,6 @@ pub struct DbBook {
   pub words: Option<i32>,
   pub published: Option<NaiveDate>,
   pub score: f32,
-  #[rename = "fkcover"]
-  pub fk_cover: i32,
   pub added: NaiveDate,
   pub rank: i32,
   pub popularity: i32,
@@ -30,7 +27,7 @@ pub struct DbBook {
 }
 
 impl DbBook {
-  pub fn to_entity(self, book_translation: DbBookTranslation, cover: DbImage, cover_translation: DbImageTranslation, franchise: Option<DbFranchise>) -> Book {
+  pub fn to_entity(self, book_translation: DbBookTranslation, cover: DbImage, franchise: Option<DbFranchise>) -> Book {
     Book {
       id: self.id,
       title: book_translation.title,
@@ -39,7 +36,7 @@ impl DbBook {
       pages: self.pages,
       words: self.words,
       published: self.published,
-      cover: cover.to_entity(cover_translation),
+      cover: cover.to_entity(),
       score: self.score,
       rank: self.rank,
       popularity: self.popularity,

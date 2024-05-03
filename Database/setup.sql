@@ -13,17 +13,11 @@ create table Franchise
 );
 create table Image
 (
-  Id int primary key generated always as identity
-);
-create table ImageTranslation
-(
-  Uri           varchar(2047) not null,
-  Width         smallint      not null,
-  Height        smallint      not null,
-  Extension     imageextension,
-  FKTranslation int           not null references Image (Id),
-  Language      language      not null,
-  primary key (FKTranslation, Language)
+  Id        int primary key generated always as identity,
+  Uri       varchar(2047) not null,
+  Width     smallint      not null,
+  Height    smallint      not null,
+  Extension imageextension
 );
 create table Tag
 (
@@ -144,7 +138,6 @@ create table Movie
   Airing     date,
   Length     interval,
   Score      real CHECK (Score BETWEEN 0.99 AND 10.01),
-  FKCover    int  not null references Image (Id),
   Added      date not null DEFAULT (CURRENT_DATE),
   Rank       int  not null default 0,
   Popularity int  not null default 0,
@@ -156,6 +149,7 @@ create table MovieTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
+  FKCover    int  not null references Image (Id),
 
   FKTranslation int          not null references Movie (Id),
   Language      language     not null,
@@ -190,7 +184,6 @@ create table GraphicNovel
   Chapters     smallint,
   Score        real CHECK (Score BETWEEN 0.99 AND 10.01),
   Status       status not null,
-  FKCover      int    not null references Image (Id),
   Added        date   not null DEFAULT (CURRENT_DATE),
   Rank         int    not null default 0,
   Popularity   int    not null default 0,
@@ -201,6 +194,7 @@ create table GraphicNovelTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
+  FKCover      int    not null references Image (Id),
 
   FKTranslation int          not null references GraphicNovel (Id),
   Language      language     not null,
@@ -286,18 +280,18 @@ create table Book
   Words       int,
   Published   date,
   Score       real not null DEFAULT 0,
-  FKCover     int           not null references Image (Id),
-  Added       date          not null DEFAULT (CURRENT_DATE),
-  Rank        int           not null default 0,
-  Popularity  int           not null default 0,
-  Favorites   int           not null default 0,
-  Members     int           not null default 0,
+  Added       date not null DEFAULT (CURRENT_DATE),
+  Rank        int  not null default 0,
+  Popularity  int  not null default 0,
+  Favorites   int  not null default 0,
+  Members     int  not null default 0,
   FKFranchise int references Franchise (Id)
 );
 create table BookTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
+  FKCover       int          not null references Image (Id),
 
   FKTranslation int          not null references Book (Id),
   Language      language     not null,
@@ -336,7 +330,6 @@ create table Show
   Score       real CHECK (Score BETWEEN 0.99 AND 10.01),
   Seasons     smallint,
   Status      status not null,
-  FKCover     int    not null references Image (Id),
   Added       date   not null DEFAULT (CURRENT_DATE),
   Rank        int    not null default 0,
   Popularity  int    not null default 0,
@@ -348,6 +341,7 @@ create table ShowTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
+  FKCover       int          not null references Image (Id),
 
   FKTranslation int          not null references Show (Id),
   Language      language     not null,
@@ -382,7 +376,6 @@ create table ShowEpisode
   Length   smallint,
   Airing   date,
   Score    smallint,
-  FKCover  int references Image (Id),
   foreign key (FKShow, FKSeason) references ShowSeason (FKShow, Season),
   primary key (FKShow, Episode)
 );
@@ -390,6 +383,7 @@ create table ShowEpisodeTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
+  FKCover       int references Image (Id),
 
   FKShow        int          not null references Show (Id),
   FKShowEpisode int          not null,
@@ -427,7 +421,6 @@ create table Game
   Id          int primary key generated always as identity,
   Published   date,
   Score       real CHECK (Score BETWEEN 0.99 AND 10.01),
-  FKCover     int  not null references Image (Id),
   Added       date not null DEFAULT (CURRENT_DATE),
   Rank        int  not null default 0, -- Values should not be null,
   Popularity  int  not null default 0, -- because they will only not have a value right after creation
@@ -439,6 +432,8 @@ create table GameTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
+  FKCover     int  not null references Image (Id),
+
   FKTranslation int          not null references Game (Id),
   Language      language     not null,
   primary key (FKTranslation, Language)

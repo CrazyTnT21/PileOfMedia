@@ -1,22 +1,26 @@
-use tokio_postgres::Row;
 use domain::entities::image::image::Image;
 use from_row::FromRow;
-use crate::schemas::db_image_translation::DbImageTranslation;
+use crate::enums::image_extension::DbImageExtension;
+use tokio_postgres::Row;
 
 #[derive(Debug, FromRow)]
 #[rename = "image"]
 pub struct DbImage {
   pub id: i32,
+  pub uri: String,
+  pub width: i16,
+  pub height: i16,
+  pub extension: Option<DbImageExtension>,
 }
 
 impl DbImage {
-  pub fn to_entity(self, image_translation: DbImageTranslation) -> Image {
+  pub fn to_entity(self) -> Image {
     Image {
       id: self.id,
-      uri: image_translation.uri,
-      width: image_translation.width,
-      height: image_translation.height,
-      extension: image_translation.extension.and_then(|x| Some(x.into())),
+      uri: self.uri,
+      width: self.width,
+      height: self.height,
+      extension: self.extension.and_then(|x| Some(x.into())),
     }
   }
 }
