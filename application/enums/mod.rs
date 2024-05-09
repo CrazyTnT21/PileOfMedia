@@ -1,2 +1,2 @@
-pub mod language;
-pub mod image_extension;
+pub mod db_language;
+pub mod db_image_extension;

@@ -1,6 +1,6 @@
 use domain::entities::image::image::Image;
 use from_row::FromRow;
-use crate::enums::image_extension::DbImageExtension;
+use crate::enums::db_image_extension::DbImageExtension;
 use tokio_postgres::Row;
 
 #[derive(Debug, FromRow)]
