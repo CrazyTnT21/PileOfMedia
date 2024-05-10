@@ -47,6 +47,20 @@ macro_rules! from_row_tuple {
 
     }
 }
+impl FromRow for () {
+  type DbType = ();
+
+  const COLUMN_COUNT: usize = 0;
+  fn from_row(_: &Row, _: usize) -> Self::DbType {
+    ()
+  }
+}
+
+impl<T: FromRow<DbType=T> + RowColumns + FromRowOption> RowColumns for Option<T> {
+  fn columns() -> Vec<&'static str> {
+    T::columns()
+  }
+}
 from_row_tuple!(T,);
 from_row_tuple!(T,T1);
 from_row_tuple!(T,T1,T2);
