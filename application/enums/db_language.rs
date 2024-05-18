@@ -1,7 +1,6 @@
 use from_row::FromRowOption;
 use from_row::FromRow;
 use std::error::Error;
-use std::fmt::Write;
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};

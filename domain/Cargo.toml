@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0.198", features = ["derive"] }
+serde = { version = "1.0.202", features = ["derive"], optional = true }
 chrono = { version = "0.4.38", features = ["serde"] }
+utoipa = { git = "https://github.com/juhaku/utoipa.git", optional = true }
 
 [lib]
 name = "domain"

@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use serde::Serialize;
 use chrono::NaiveDate;
 use crate::entities::franchise::franchise::Franchise;
 use crate::enums::language::Language;
 
-#[derive(Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct InsertBook {
   pub chapters: Option<i16>,
   pub pages: Option<i16>,
@@ -14,7 +14,8 @@ pub struct InsertBook {
   pub translations: HashMap<Language, TitleDescription>,
 }
 
-#[derive(Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct TitleDescription {
   title: String,
   description: Option<String>,

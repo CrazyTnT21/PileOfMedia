@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::fmt::Display;
 use std::marker::PhantomData;
 use std::string::ToString;
 

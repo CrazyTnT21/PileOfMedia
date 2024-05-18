@@ -1,25 +1,39 @@
-use services::book_service::BookService;
 use std::str::FromStr;
 use std::sync::Arc;
+
 use axum::http::{HeaderMap, StatusCode};
 use axum::Router;
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
+
 use application::repositories::default_book_repository::DefaultBookRepository;
-use repositories::book_repository::BookRepository;
-use crate::database_connection::DatabaseConnection;
 use domain::enums::language::Language;
 use domain::enums::language::Language::EN;
 use infrastructure::default_book_service::DefaultBookService;
+use repositories::book_repository::BookRepository;
+use services::book_service::BookService;
 use services::traits::service_error::ServiceError;
+use crate::controllers::book_controller::BookDoc;
+
+use crate::database_connection::DatabaseConnection;
 use crate::extractors::headers::accept_language::AcceptLanguage;
+use crate::extractors::query_pagination::QueryPagination;
 
 mod book_controller;
 
+#[derive(utoipa::OpenApi)]
+#[openapi(info(title = "mycollection"), nest(("/books", BookDoc)))]
+pub(crate) struct ApiDoc;
+
 pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
+  let doc = ApiDoc::openapi();
   router
     .nest("/books", book_controller::routes(pool))
+    .merge(SwaggerUi::new("/swagger-ui")
+      .url("/api-docs/openapi.json", doc))
 }
 
 fn get_book_service(pool: DatabaseConnection) -> Arc<dyn BookService> {
@@ -66,6 +80,12 @@ pub fn convert_service_error(service_error: ServiceError) -> StatusCode {
       eprintln!("{}", e);
       StatusCode::INTERNAL_SERVER_ERROR
     }
+  }
+}
+
+fn set_pagination_limit(pagination: &mut QueryPagination) {
+  if pagination.count > 50 {
+    pagination.count = 50;
   }
 }
 

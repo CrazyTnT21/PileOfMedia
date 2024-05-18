@@ -1,11 +1,12 @@
 use std::error::Error;
 use std::str::FromStr;
 
-use serde::Serialize;
 use crate::entities::image::image::ImageExtension::{GIF, JPEG, JPG, PNG};
 
 
-#[derive(Serialize, Debug)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Image {
   pub id: i32,
   pub uri: String,
@@ -14,7 +15,9 @@ pub struct Image {
   pub extension: Option<ImageExtension>,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum ImageExtension {
   JPG,
   JPEG,

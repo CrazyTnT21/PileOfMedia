@@ -13,6 +13,7 @@ use crate::controllers::route_controllers;
 pub mod controllers;
 mod database_connection;
 mod extractors;
+mod openapi;
 
 pub async fn main() -> std::io::Result<()> {
   dotenv().ok();
