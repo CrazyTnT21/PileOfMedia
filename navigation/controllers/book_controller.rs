@@ -1,3 +1,4 @@
+use domain::items_total::BooksTotal;
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::server_error::ServerError;
 use axum::{Json, Router};
@@ -29,7 +30,7 @@ use crate::openapi::responses::not_found::NotFound;
 #[derive(utoipa::OpenApi)]
 #[openapi(tags((name = "Books", description = "Endpoints related to books")),
 paths(get_items, get_by_id, get_by_title),
-components(schemas(Book, Image, ImageExtension, Franchise)))]
+components(schemas(Book, Image, ImageExtension, Franchise,BooksTotal)))]
 pub(crate) struct BookDoc;
 
 pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
@@ -42,7 +43,7 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
 
 #[utoipa::path(get, path = "",
 responses(
-(status = 200, description = "Returned books", body = [Book]), ServerError, BadRequest),
+(status = 200, description = "Returned books", body = BooksTotal), ServerError, BadRequest),
 params(AcceptLanguageParam, PageParam, CountParam),
 tag = "Books"
 )]
@@ -82,7 +83,7 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
 
 #[utoipa::path(get, path = "/title/{title}",
 responses(
-(status = 200, description = "Returned books based on the title", body = [Book]), ServerError, BadRequest),
+(status = 200, description = "Returned books based on the title", body = BooksTotal), ServerError, BadRequest),
 params(TitleParam, AcceptLanguageParam, PageParam, CountParam),
 tag = "Books"
 )]
