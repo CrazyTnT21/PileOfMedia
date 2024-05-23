@@ -1,3 +1,7 @@
+use domain::entities::theme::theme::Theme;
+use domain::entities::person::person::Person;
+use domain::entities::character::character::Character;
+use domain::entities::genre::genre::Genre;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -25,7 +29,9 @@ use crate::extractors::query_pagination::QueryPagination;
 mod book_controller;
 
 #[derive(utoipa::OpenApi)]
-#[openapi(info(title = "mycollection"), nest(("/books", BookDoc)))]
+#[openapi(info(title = "mycollection"),
+nest(("/books", BookDoc)),
+components(schemas(Genre,Character,Person,Theme)))]
 pub(crate) struct ApiDoc;
 
 pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {

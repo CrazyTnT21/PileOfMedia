@@ -1626,7 +1626,7 @@ dependencies = [
 [[package]]
 name = "utoipa"
 version = "4.2.3"
-source = "git+https://github.com/juhaku/utoipa.git#97bc507474bca4b91440428e44958c4ed37be601"
+source = "git+https://github.com/juhaku/utoipa.git?rev=97bc507#97bc507474bca4b91440428e44958c4ed37be601"
 dependencies = [
  "indexmap",
  "serde",
@@ -1637,7 +1637,7 @@ dependencies = [
 [[package]]
 name = "utoipa-gen"
 version = "4.3.0"
-source = "git+https://github.com/juhaku/utoipa.git#97bc507474bca4b91440428e44958c4ed37be601"
+source = "git+https://github.com/juhaku/utoipa.git?rev=97bc507#97bc507474bca4b91440428e44958c4ed37be601"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1647,7 +1647,7 @@ dependencies = [
 [[package]]
 name = "utoipa-swagger-ui"
 version = "7.0.1"
-source = "git+https://github.com/juhaku/utoipa.git#97bc507474bca4b91440428e44958c4ed37be601"
+source = "git+https://github.com/juhaku/utoipa.git?rev=97bc507#97bc507474bca4b91440428e44958c4ed37be601"
 dependencies = [
  "axum",
  "mime_guess",
