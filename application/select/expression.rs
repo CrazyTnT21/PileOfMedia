@@ -33,6 +33,7 @@ impl<'a> Expression<'a> {
         Comparison::IsNotNull => format!("{}.{} IS NOT NULL", a.0, a.1),
         Comparison::NotEqual(_) => format!("{}.{} != ${}", a.0, a.1, add_one(count)),
         Comparison::ILike(_) => format!("{}.{} ILIKE ${}", a.0, a.1, add_one(count)),
+        Comparison::In(value) => format!("{}.{} in ({})", a.0, a.1, value.iter().map(|_| format!("${}",add_one(count))).collect::<Vec<String>>().join(",")),
         Comparison::Bigger(_) => format!("{}.{} > ${}", a.0, a.1, add_one(count)),
         Comparison::BiggerEqual(_) => format!("{}.{} >= ${}", a.0, a.1, add_one(count)),
         Comparison::Less(_) => format!("{}.{} < ${}", a.0, a.1, add_one(count)),

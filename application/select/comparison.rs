@@ -7,7 +7,7 @@ pub enum Comparison<'a> {
   IsNull,
   IsNotNull,
   ILike(&'a String),
-  // In(In<'a, T>),
+  In(&'a [&'a (dyn ToSql + Sync)]),
   Bigger(&'a (dyn ToSql + Sync)),
   BiggerEqual(&'a (dyn ToSql + Sync)),
   Less(&'a (dyn ToSql + Sync)),

@@ -18,7 +18,6 @@ use crate::select::join::{Join, JoinType};
 
 //TODO: Prepared version
 //TODO: Group By
-//TODO: In
 #[derive(Debug)]
 pub struct Select<'a, T: FromRow<DbType=T> + CombinedType>
 {
@@ -213,6 +212,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
         Comparison::IsNull => {}
         Comparison::IsNotNull => {}
         Comparison::ILike(value) => current.push(*value),
+        Comparison::In(value) => value.iter().for_each(|x| current.push(*x)),
         Comparison::Bigger(value) => current.push(*value),
         Comparison::BiggerEqual(value) => current.push(*value),
         Comparison::Less(value) => current.push(*value),
