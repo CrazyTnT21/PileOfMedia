@@ -1,6 +1,6 @@
 /*
 drop database if exists collectiondb with (FORCE);
-create database collectiondb with ENCODING 'UTF8';
+create database collectiondb;
 */
 CREATE TYPE language AS ENUM ( 'EN','DE','ES','DA','NL','JA','KO');
 CREATE TYPE status AS ENUM ('NotStarted','Ongoing','Finished','Paused');
@@ -125,7 +125,7 @@ create table PersonTranslation
   Language      language not null,
   primary key (FKTranslation, Language)
 );
-create table PersonXRole
+create table PersonRole
 (
   FKPerson int not null references Person (Id),
   FKRole   int not null references Role (Id),
@@ -156,19 +156,19 @@ create table MovieTranslation
   primary key (FKTranslation, Language)
 );
 
-create table MovieXGenre
+create table MovieGenre
 (
   FKMovie int not null references Movie (Id),
   FKGenre int not null references Genre (Id),
   primary key (FKMovie, FKGenre)
 );
-create table MovieXTheme
+create table MovieTheme
 (
   FKMovie int not null references Movie (Id),
   FKTheme int not null references Theme (Id),
   primary key (FKMovie, FKTheme)
 );
-create table MovieXCreator
+create table MovieCreator
 (
   FKMovie  int not null references Movie (Id),
   FKPerson int not null references Person (Id),
@@ -241,31 +241,31 @@ create table GraphicNovelChapterTranslation
   foreign key (FKGraphicNovel, FKGraphicNovelChapter) references GraphicNovelChapter (FKGraphicNovel, Chapter),
   primary key (FKGraphicNovel, FKGraphicNovelChapter, Language)
 );
-create table GraphicNovelXPublisher
+create table GraphicNovelPublisher
 (
   FKGraphicNovel int not null references GraphicNovel (Id),
   FKPublisher    int not null references Company (Id),
   primary key (FKGraphicNovel, FKPublisher)
 );
-create table GraphicNovelXCharacter
+create table GraphicNovelCharacter
 (
   FKGraphicNovel int not null references GraphicNovel (Id),
   FKCharacter    int not null references Character (Id),
   primary key (FKGraphicNovel, FKCharacter)
 );
-create table GraphicNovelXGenre
+create table GraphicNovelGenre
 (
   FKGraphicNovel int not null references GraphicNovel (Id),
   FKGenre        int not null references Genre (Id),
   primary key (FKGraphicNovel, FKGenre)
 );
-create table GraphicNovelXTheme
+create table GraphicNovelTheme
 (
   FKGraphicNovel int not null references GraphicNovel (Id),
   FKTheme        int not null references Theme (Id),
   primary key (FKGraphicNovel, FkTheme)
 );
-create table GraphicNovelXCreator
+create table GraphicNovelCreator
 (
   FKGraphicNovel int not null references GraphicNovel (Id),
   FKPerson       int not null references Person (Id),
@@ -297,25 +297,25 @@ create table BookTranslation
   Language      language     not null,
   primary key (FKTranslation, Language)
 );
-create table BookXCharacter
+create table BookCharacter
 (
   FKBook      int not null references Book (Id),
   FKCharacter int not null references Character (Id),
   primary key (FKBook, FKCharacter)
 );
-create table BookXGenre
+create table BookGenre
 (
   FKBook  int not null references Book (Id),
   FKGenre int not null references Genre (Id),
   primary key (FKBook, FKGenre)
 );
-create table BookXTheme
+create table BookTheme
 (
   FKBook  int not null references Book (Id),
   FKTheme int not null references Theme (Id),
   primary key (FKBook, FKTheme)
 );
-create table BookXCreator
+create table BookCreator
 (
   FKBook   int not null references Book (Id),
   FKRole   int not null references Role (Id),
@@ -391,25 +391,25 @@ create table ShowEpisodeTranslation
   foreign key (FKShow, FKShowEpisode) references ShowEpisode (FKShow, Episode),
   primary key (FKShow, FKShowEpisode, Language)
 );
-create table ShowXCharacter
+create table ShowCharacter
 (
   FKShow      int not null references Show (Id),
   FKCharacter int not null references Character (Id),
   primary key (FKShow, FKCharacter)
 );
-create table ShowXGenre
+create table ShowGenre
 (
   FKShow  int not null references Show (Id),
   FKGenre int not null references Genre (Id),
   primary key (FKShow, FKGenre)
 );
-create table ShowXTheme
+create table ShowTheme
 (
   FKShow  int not null references Show (Id),
   FKTheme int not null references Theme (Id),
   primary key (FKShow, FKTheme)
 );
-create table ShowXCreator
+create table ShowCreator
 (
   FKShow   int not null references Show (Id),
   FKRole   int not null references Role (Id),
@@ -438,31 +438,31 @@ create table GameTranslation
   Language      language     not null,
   primary key (FKTranslation, Language)
 );
-create table GameXPlatform
+create table GamePlatform
 (
   FKGame     int not null references Game (Id),
   FKPlatform int not null references Platform (Id),
   primary key (FKGame, FKPlatform)
 );
-create table GameXCharacter
+create table GameCharacter
 (
   FKGame      int not null references Game (Id),
   FKCharacter int not null references Character (Id),
   primary key (FKGame, FKCharacter)
 );
-create table GameXGenre
+create table GameGenre
 (
   FKGame  int not null references Game (Id),
   FKGenre int not null references Genre (Id),
   primary key (FKGame, FKGenre)
 );
-create table GameXTheme
+create table GameTheme
 (
   FKGame  int not null references Game (Id),
   FKTheme int not null references Theme (Id),
   primary key (FKGame, FKTheme)
 );
-create table GameXCreator
+create table GameCreator
 (
   FKGame   int not null references Game (Id),
   FKRole   int not null references Role (Id),
@@ -487,7 +487,7 @@ create table UserAverage
   BookAverage         real CHECK (BookAverage BETWEEN 0.99 AND 10.01),
   GameAverage         real CHECK (GameAverage BETWEEN 0.99 AND 10.01)
 );
-create table UserXGraphicNovel
+create table UserGraphicNovel
 (
   FKUser         int        not null references "User" (Id),
   FKGraphicNovel int        not null references GraphicNovel (Id),
@@ -501,7 +501,7 @@ create table UserXGraphicNovel
   Added          date       not null DEFAULT (CURRENT_DATE),
   primary key (FKUser, FKGraphicNovel)
 );
-create table UserXBook
+create table UserBook
 (
   FKUser     int        not null references "User" (Id),
   FKBook     int        not null references Book (Id),
@@ -516,7 +516,7 @@ create table UserXBook
   Added      date       not null DEFAULT (CURRENT_DATE),
   primary key (FKUser, FKBook)
 );
-create table UserXShow
+create table UserShow
 (
   FKUser     int        not null references "User" (Id),
   FKShow     int        not null references Show (Id),
@@ -530,7 +530,7 @@ create table UserXShow
   Added      date       not null DEFAULT (CURRENT_DATE),
   primary key (FKUser, FKShow)
 );
-create table UserXMovie
+create table UserMovie
 (
   FKUser     int        not null references "User" (Id),
   FKMovie    int        not null references Movie (Id),
@@ -542,7 +542,7 @@ create table UserXMovie
   Added      date       not null DEFAULT (CURRENT_DATE),
   primary key (FKUser, FKMovie)
 );
-create table UserXGame
+create table UserGame
 (
   FKUser     int        not null references "User" (Id),
   FKGame     int        not null references Game (Id),
