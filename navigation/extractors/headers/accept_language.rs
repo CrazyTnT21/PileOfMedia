@@ -33,7 +33,7 @@ impl FromStr for AcceptLanguage {
       return Err(AcceptLanguageError::MissingValue);
     }
 
-    if let Some(_) = split_value.next() {
+    if split_value.next().is_some() {
       return Err(AcceptLanguageError::MoreThanOneValue);
     }
     match quality.and_then(|q| q.strip_prefix("q=")) {
@@ -78,15 +78,14 @@ impl Ord for AcceptLanguage {
 impl FromStr for AcceptLanguageHeader {
   type Err = Infallible;
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    let mut value = s.trim().split(',');
+    let split = s.trim().split(',');
 
     let mut values = Vec::new();
-    while let Some(value) = value.next() {
+    for value in split {
       if let Ok(value) = AcceptLanguage::from_str(value) {
         values.push(value);
       }
     }
-
     Ok(AcceptLanguageHeader(values))
   }
 }

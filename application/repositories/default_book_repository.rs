@@ -5,7 +5,7 @@ use bb8_postgres::bb8::PooledConnection;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
 
-use domain::entities::book::book::Book;
+use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
@@ -19,7 +19,7 @@ use crate::schemas::db_image::DbImage;
 use crate::select::comparison::Comparison::{Equal, ILike, IsNull};
 use crate::select::condition::Condition::{Column, Value};
 use crate::select::expression::Expression;
-use crate::select::select::Select;
+use crate::select::Select;
 
 pub struct DefaultBookRepository {
   pool: PooledConnection<'static, PostgresConnectionManager<NoTls>>,
@@ -62,7 +62,7 @@ impl BookRepository for DefaultBookRepository {
 
     Ok(select.get_single(&self.pool)
       .await?
-      .and_then(|x| Some(book_from_tuple(x))))
+      .map(book_from_tuple))
   }
 
   async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
@@ -88,7 +88,7 @@ impl BookRepository for DefaultBookRepository {
   }
 }
 
-fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, (DbBook, Option<DbBookTranslation>, Option<DbBookTranslation>, Option<DbImage>, Option<DbImage>, Option<DbFranchise>)> {
+fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, BookColumns> {
   book_select_columns()
     .left_join("booktranslation", Some("book_translation"),
                Expression::new(Column(("book_translation", "fktranslation"), ("book", "id")))
@@ -101,14 +101,14 @@ fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) 
     .left_join("image", Some("cover_fallback"), Expression::new(Column(("cover_fallback", "id"), ("book_translation_fallback", "fkcover"))))
     .left_join("franchise", None, Expression::new(Column(("book", "fkfranchise"), ("franchise", "id"))))
 }
-fn book_from_tuple(query_result: (DbBook, Option<DbBookTranslation>, Option<DbBookTranslation>, Option<DbImage>, Option<DbImage>, Option<DbFranchise>)) -> Book {
+fn book_from_tuple(query_result: BookColumns) -> Book {
   query_result.0.to_entity(
     query_result.1.unwrap_or_else(|| query_result.2.expect("Fallback for book translation should exist")),
     query_result.3.unwrap_or_else(|| query_result.4.expect("Fallback for book cover translation should exist")),
     query_result.5)
 }
 
-fn book_select_columns<'a>() -> Select<'a, (DbBook, Option<DbBookTranslation>, Option<DbBookTranslation>, Option<DbImage>, Option<DbImage>, Option<DbFranchise>)> {
+fn book_select_columns<'a>() -> Select<'a, BookColumns> {
   Select::new("book")
     .columns::<DbBook>("book")
     .columns::<Option<DbBookTranslation>>("book_translation")
@@ -117,3 +117,4 @@ fn book_select_columns<'a>() -> Select<'a, (DbBook, Option<DbBookTranslation>, O
     .columns::<Option<DbImage>>("cover_fallback")
     .columns::<Option<DbFranchise>>("franchise")
 }
+type BookColumns = (DbBook, Option<DbBookTranslation>, Option<DbBookTranslation>, Option<DbImage>, Option<DbImage>, Option<DbFranchise>);

@@ -35,7 +35,7 @@ impl FromStr for DbLanguage{
   type Err = <Language as FromStr>::Err;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    Language::from_str(s).and_then(|x| Ok(DbLanguage::from(x)))
+    Language::from_str(s).map(DbLanguage::from)
   }
 }
 impl ToSql for DbLanguage {

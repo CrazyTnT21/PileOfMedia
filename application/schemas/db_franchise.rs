@@ -1,5 +1,5 @@
 use tokio_postgres::Row;
-use domain::entities::franchise::franchise::Franchise;
+use domain::entities::franchise::Franchise;
 use from_row::FromRow;
 
 #[derive(FromRow, Debug)]

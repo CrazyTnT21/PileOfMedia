@@ -1,4 +1,4 @@
-use domain::entities::image::image::Image;
+use domain::entities::image::Image;
 use from_row::FromRow;
 use crate::enums::db_image_extension::DbImageExtension;
 use tokio_postgres::Row;
@@ -20,7 +20,7 @@ impl DbImage {
       uri: self.uri,
       width: self.width,
       height: self.height,
-      extension: self.extension.and_then(|x| Some(x.into())),
+      extension: self.extension.map(|x|x.into()),
     }
   }
 }

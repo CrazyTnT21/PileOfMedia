@@ -20,27 +20,25 @@ fn is_optional(ty: &Type) -> bool {
   let Type::Path(path) = ty else {
     return false;
   };
-  path.path.segments[0].ident.to_string() == "Option"
+  path.path.segments[0].ident == "Option"
 }
 
-fn renamed_field(attributes: &Vec<Attribute>) -> Option<String> {
-  for attribute in attributes {
-    let Meta::NameValue(name_value) = &attribute.meta else {
-      panic!("Invalid symbol. Rename only allows \"=\"")
-    };
-    let Expr::Lit(lit) = &name_value.value else {
-      panic!("Invalid Expression. Rename only allows strings using \"=\"")
-    };
-    let Lit::Str(value) = &lit.lit else {
-      panic!("Invalid value. Rename only allows strings")
-    };
-    return Some(value.value());
-  }
+fn renamed_field(attributes: &[Attribute]) -> Option<String> {
+  let attribute = attributes.first()?;
 
-  None
+  let Meta::NameValue(name_value) = &attribute.meta else {
+    panic!("Invalid symbol. Rename only allows \"=\"")
+  };
+  let Expr::Lit(lit) = &name_value.value else {
+    panic!("Invalid Expression. Rename only allows strings using \"=\"")
+  };
+  let Lit::Str(value) = &lit.lit else {
+    panic!("Invalid value. Rename only allows strings")
+  };
+   Some(value.value())
 }
 
-fn from_row_impl(name: &Ident, db_mapping: &Vec<DbColumnIdent>) -> proc_macro2::TokenStream {
+fn from_row_impl(name: &Ident, db_mapping: &[DbColumnIdent]) -> proc_macro2::TokenStream {
   let fields = db_mapping.iter().clone().enumerate().map(|(index, mapping)|
     {
       let field = &mapping.field;

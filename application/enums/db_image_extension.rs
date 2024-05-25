@@ -4,7 +4,7 @@ use std::str::FromStr;
 use tokio_postgres::types::{FromSql, IsNull, Kind, to_sql_checked, ToSql, Type};
 use tokio_postgres::types::private::BytesMut;
 
-use domain::entities::image::image::ImageExtension;
+use domain::entities::image::ImageExtension;
 use from_row::from_row_impl;
 use from_row::FromRow;
 use from_row::FromRowOption;
@@ -37,7 +37,7 @@ impl FromStr for DbImageExtension{
   type Err = <ImageExtension as FromStr>::Err;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    ImageExtension::from_str(s).and_then(|x| Ok(DbImageExtension::from(x)))
+    ImageExtension::from_str(s).map(DbImageExtension::from)
   }
 }
 

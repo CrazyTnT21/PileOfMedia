@@ -1,4 +1,4 @@
-use crate::entities::book::book::Book;
+use crate::entities::book::Book;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]

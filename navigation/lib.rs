@@ -34,7 +34,7 @@ pub async fn main() -> std::io::Result<()> {
 
 async fn connection_pool(database_url: &str) -> Result<Pool<PostgresConnectionManager<NoTls>>, <PostgresConnectionManager<NoTls> as ManageConnection>::Error> {
   let manager =
-    PostgresConnectionManager::new_from_stringlike(&database_url, NoTls)?;
-  Ok(Pool::builder().build(manager).await?)
+    PostgresConnectionManager::new_from_stringlike(database_url, NoTls)?;
+  Pool::builder().build(manager).await
 }
 

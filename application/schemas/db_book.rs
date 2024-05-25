@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 use tokio_postgres::Row;
-use domain::entities::book::book::Book;
+use domain::entities::book::Book;
 
 use from_row::FromRow;
 use crate::schemas::db_book_translation::DbBookTranslation;
@@ -43,7 +43,7 @@ impl DbBook {
       favorites: self.favorites,
       members: self.members,
       added: self.added,
-      franchise: franchise.and_then(|x| Some(x.to_entity())),
+      franchise: franchise.map(|x| x.to_entity()),
     }
   }
 }

@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use domain::entities::book::book::Book;
+use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;

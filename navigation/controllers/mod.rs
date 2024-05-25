@@ -1,7 +1,7 @@
-use domain::entities::theme::theme::Theme;
-use domain::entities::person::person::Person;
-use domain::entities::character::character::Character;
-use domain::entities::genre::genre::Genre;
+use domain::entities::theme::Theme;
+use domain::entities::person::Person;
+use domain::entities::character::Character;
+use domain::entities::genre::Genre;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -59,8 +59,8 @@ fn convert_to_language(value: Option<&AcceptLanguage>) -> Option<Language> {
 }
 
 fn get_language(mut languages: Vec<AcceptLanguage>, default_language: Language) -> Language {
-  languages.sort_by(|x, y| x.cmp(&y));
-  let language = convert_to_language(languages.get(0)).unwrap_or(default_language);
+  languages.sort();
+  let language = convert_to_language(languages.first()).unwrap_or(default_language);
 
   language
 }

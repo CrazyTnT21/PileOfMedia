@@ -10,10 +10,10 @@ use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
 
-use domain::entities::book::book::Book;
-use domain::entities::franchise::franchise::Franchise;
-use domain::entities::image::image::Image;
-use domain::entities::image::image::ImageExtension;
+use domain::entities::book::Book;
+use domain::entities::franchise::Franchise;
+use domain::entities::image::Image;
+use domain::entities::image::ImageExtension;
 use domain::pagination::Pagination;
 
 use crate::controllers::{content_language_header, convert_service_error, DEFAULT_LANGUAGE, get_book_service, get_language, set_pagination_limit};

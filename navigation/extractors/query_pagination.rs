@@ -19,8 +19,8 @@ impl From<Pagination> for QueryPagination {
   }
 }
 
-impl Into<Pagination> for QueryPagination {
-  fn into(self) -> Pagination {
-    Pagination { count: self.count, page: self.page }
+impl From<QueryPagination> for Pagination {
+  fn from(val: QueryPagination) -> Self {
+    Pagination { count: val.count, page: val.page }
   }
 }

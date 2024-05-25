@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use chrono::NaiveDate;
-use crate::entities::franchise::franchise::Franchise;
+use crate::entities::franchise::Franchise;
 use crate::enums::language::Language;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]

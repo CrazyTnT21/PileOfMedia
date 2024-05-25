@@ -9,9 +9,9 @@ macro_rules! convert {
             }
         }
 
-        impl Into <$to> for  $from {
-            fn into( self ) -> $to {
-                match self {
+        impl From <$from> for  $to {
+            fn from( item: $from ) -> Self {
+                match item {
                     $($from::$variants => $to::$variants),+
                 }
             }
