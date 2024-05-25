@@ -15,7 +15,6 @@ pub struct Book {
   pub chapters: Option<i16>,
   pub pages: Option<i16>,
   pub words: Option<i32>,
-  #[cfg_attr(feature = "utoipa", schema(schema_with = crate::utoipa::utoipa::naive_date_optional))]
   pub published: Option<NaiveDate>,
   pub cover: Image,
   pub score: f32,
@@ -23,7 +22,6 @@ pub struct Book {
   pub popularity: i32,
   pub favorites: i32,
   pub members: i32,
-  #[cfg_attr(feature = "utoipa", schema(schema_with = crate::utoipa::utoipa::naive_date))]
   pub added: NaiveDate,
   pub franchise: Option<Franchise>,
 }

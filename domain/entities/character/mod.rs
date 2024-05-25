@@ -10,7 +10,6 @@ pub struct Character {
   pub first_name: Option<String>,
   pub last_name: Option<String>,
   pub description: Option<String>,
-  #[cfg_attr(feature = "utoipa", schema(schema_with = crate::utoipa::utoipa::naive_date_optional))]
   pub birthday: Option<NaiveDate>,
   pub height: Option<i32>,
   pub image: Option<Image>,

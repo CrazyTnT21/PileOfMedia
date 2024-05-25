@@ -109,6 +109,10 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     self
   }
 
+  pub fn then<A: CombinedType + FromRow<DbType=A>>(self, function: impl FnOnce(Self) -> Select<'a, A>) -> Select<'a, A> {
+    function(self)
+  }
+
   pub fn inner_join(mut self, table: &'a str, alias: Option<&'a str>, expression: Expression<'a>) -> Self {
     self.joins.push(Join::new(table, JoinType::Inner, alias, expression));
     self
