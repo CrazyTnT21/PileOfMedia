@@ -13,11 +13,15 @@ create table Franchise
 );
 create table Image
 (
-  Id        int primary key generated always as identity,
-  Uri       varchar(2047) not null,
-  Width     smallint      not null,
-  Height    smallint      not null,
-  Extension imageextension
+  Id        int primary key generated always as identity
+);
+create table ImageData
+(
+  Id      int primary key generated always as identity,
+  FKImage int           not null references Image (Id),
+  Uri     varchar(2047) not null,
+  Width   smallint      not null,
+  Height  smallint      not null
 );
 create table Tag
 (

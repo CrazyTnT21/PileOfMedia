@@ -2,13 +2,15 @@ use async_trait::async_trait;
 use axum::extract::{FromRef, FromRequestParts};
 use axum::http::request::Parts;
 use axum::http::StatusCode;
-use bb8_postgres::bb8::{Pool, PooledConnection};
+use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
 
+use application::Pooled;
+
 pub type ConnectionPool = Pool<PostgresConnectionManager<NoTls>>;
 
-pub struct DatabaseConnection(pub PooledConnection<'static, PostgresConnectionManager<NoTls>>);
+pub struct DatabaseConnection(pub Pooled<'static>);
 
 #[async_trait]
 impl<S> FromRequestParts<S> for DatabaseConnection

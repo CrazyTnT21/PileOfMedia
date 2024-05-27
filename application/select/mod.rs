@@ -1,15 +1,13 @@
 use std::error::Error;
 use std::marker::PhantomData;
 
-use bb8_postgres::bb8::PooledConnection;
-use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
 use tokio_postgres::types::ToSql;
 
 use domain::pagination::Pagination;
 use from_row::FromRow;
-use crate::select::column_table::ColumnTable;
 
+use crate::Pooled;
+use crate::select::column_table::ColumnTable;
 use crate::select::combined_tuple::CombinedType;
 use crate::select::comparison::Comparison;
 use crate::select::condition::Condition;
@@ -123,7 +121,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     self
   }
 
-  pub async fn count(&self, connection: &'a PooledConnection<'static, PostgresConnectionManager<NoTls>>) -> Result<i64, Box<dyn Error>> {
+  pub async fn count(&self, connection: &'a Pooled<'a>) -> Result<i64, Box<dyn Error>> {
     let mut count = 0;
     let joins = self.join_sql(&mut count);
     let where_sql = self.where_sql(&mut count).unwrap_or_default();
@@ -191,7 +189,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     format!("SELECT {columns} FROM {} {alias_sql} {joins} {where_sql} {limit_sql} {offset_sql}", self.from)
   }
 
-  pub async fn query(self, connection: &'a PooledConnection<'static, PostgresConnectionManager<NoTls>>) -> Result<Vec<T>, Box<dyn Error>> {
+  pub async fn query(self, connection: &'a Pooled<'a>) -> Result<Vec<T>, Box<dyn Error>> {
     Ok(connection
       .query(&self.query_sql(), &self.values())
       .await?
@@ -207,7 +205,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     total
   }
 
-  pub async fn get_single(self, connection: &'a PooledConnection<'static, PostgresConnectionManager<NoTls>>) -> Result<Option<T>, Box<dyn Error>> {
+  pub async fn get_single(self, connection: &'a Pooled<'a>) -> Result<Option<T>, Box<dyn Error>> {
     Ok(connection
       .query_opt(&self.query_sql(), &self.values())
       .await?

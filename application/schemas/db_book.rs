@@ -1,12 +1,12 @@
 use chrono::NaiveDate;
 use tokio_postgres::Row;
+
 use domain::entities::book::Book;
-
+use domain::entities::franchise::Franchise;
+use domain::entities::image::Image;
 use from_row::FromRow;
-use crate::schemas::db_book_translation::DbBookTranslation;
-use crate::schemas::db_franchise::DbFranchise;
-use crate::schemas::db_image::DbImage;
 
+use crate::schemas::db_book_translation::DbBookTranslation;
 
 #[derive(FromRow, Debug)]
 #[rename = "book"]
@@ -27,7 +27,7 @@ pub struct DbBook {
 }
 
 impl DbBook {
-  pub fn to_entity(self, book_translation: DbBookTranslation, cover: DbImage, franchise: Option<DbFranchise>) -> Book {
+  pub fn to_entity(self, book_translation: DbBookTranslation, cover: Image, franchise: Option<Franchise>) -> Book {
     Book {
       id: self.id,
       title: book_translation.title,
@@ -36,14 +36,14 @@ impl DbBook {
       pages: self.pages,
       words: self.words,
       published: self.published,
-      cover: cover.to_entity(),
+      cover,
       score: self.score,
       rank: self.rank,
       popularity: self.popularity,
       favorites: self.favorites,
       members: self.members,
       added: self.added,
-      franchise: franchise.map(|x| x.to_entity()),
+      franchise,
     }
   }
 }

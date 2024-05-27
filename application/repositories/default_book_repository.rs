@@ -1,17 +1,17 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use bb8_postgres::bb8::PooledConnection;
-use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
 
 use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use repositories::book_repository::{BookRepository};
+use repositories::book_repository::BookRepository;
+use repositories::image_repository::ImageRepository;
 
 use crate::enums::db_language::DbLanguage;
+use crate::fallback_unwrap::{fallback_unwrap, fallback_unwrap_ref};
+use crate::Pooled;
 use crate::schemas::db_book::DbBook;
 use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::schemas::db_franchise::DbFranchise;
@@ -21,34 +21,68 @@ use crate::select::condition::Condition::{Column, Value};
 use crate::select::expression::Expression;
 use crate::select::Select;
 
-pub struct DefaultBookRepository {
-  pool: PooledConnection<'static, PostgresConnectionManager<NoTls>>,
+pub struct DefaultBookRepository<'a> {
+  pool: &'a Pooled<'a>,
   default_language: Language,
+  image_repository: &'a dyn ImageRepository,
 }
 
-impl DefaultBookRepository {
-  pub fn new(pool: PooledConnection<'static, PostgresConnectionManager<NoTls>>, default_language: Language) -> DefaultBookRepository {
-    DefaultBookRepository { pool, default_language }
+impl<'a> DefaultBookRepository<'a> {
+  pub fn new(pool: &'a Pooled, default_language: Language, image_repository: &'a dyn ImageRepository) -> DefaultBookRepository<'a> {
+    DefaultBookRepository { pool, default_language, image_repository }
+  }
+
+  async fn books_from_tuple(&self, items: Vec<BookColumns>) -> Result<Vec<Book>, Box<dyn Error>> {
+    if items.is_empty() {
+      return Ok(vec![]);
+    }
+
+    let image_ids = image_ids(&items);
+    let mut images = self.image_repository.get_by_ids(&image_ids).await?;
+
+    items
+      .into_iter()
+      .map(|item| {
+        let book_translation = fallback_unwrap(item.1, item.2);
+        let franchise = item.5.map(|x| x.to_entity());
+        let image_index = images.iter().position(|y| y.id == book_translation.fk_cover).unwrap();
+        let image = images.swap_remove(image_index);
+
+        Ok(item.0.to_entity(book_translation, image, franchise))
+      })
+      .collect()
+  }
+  async fn book_from_tuple(&self, item: BookColumns) -> Result<Book, Box<dyn Error>> {
+    let image_id = fallback_unwrap_ref(item.3.as_ref(), item.4.as_ref()).id as u32;
+    let image = self.image_repository.get_by_id(image_id).await?.unwrap();
+    let book_translation = fallback_unwrap(item.1, item.2);
+    let franchise = item.5.map(|x| x.to_entity());
+    Ok(item.0.to_entity(book_translation, image, franchise))
   }
 }
 
+fn image_ids(items: &[BookColumns]) -> Vec<i32> {
+  items
+    .iter()
+    .map(|x| fallback_unwrap_ref(x.3.as_ref(), x.4.as_ref()).id)
+    .collect::<Vec<i32>>()
+}
+
 #[async_trait]
-impl BookRepository for DefaultBookRepository {
+impl BookRepository for DefaultBookRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let fallback_language = DbLanguage::from(self.default_language);
 
     let select = book_select(&language, &fallback_language);
 
-    let total = select.count(&self.pool).await? as usize;
+    let total = select.count(self.pool).await? as usize;
     let select = select.pagination(pagination);
     let books = select
-      .query(&self.pool)
-      .await?
-      .into_iter()
-      .map(book_from_tuple)
-      .collect();
+      .query(self.pool)
+      .await?;
 
+    let books = self.books_from_tuple(books).await?;
     Ok(ItemsTotal { items: books, total })
   }
 
@@ -60,9 +94,10 @@ impl BookRepository for DefaultBookRepository {
     let select = book_select(&language, &fallback_language)
       .where_expression(Expression::new(Value(("book", "id"), Equal(&id))));
 
-    Ok(select.get_single(&self.pool)
-      .await?
-      .map(book_from_tuple))
+    let Some(value) = select.get_single(self.pool).await? else {
+      return Ok(None);
+    };
+    Ok(Some(self.book_from_tuple(value).await?))
   }
 
   async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
@@ -74,16 +109,14 @@ impl BookRepository for DefaultBookRepository {
       .where_expression(Expression::new(Value(("book_translation", "title"), ILike(&title)))
         .or(Expression::new(Value(("book_translation_fallback", "title"), ILike(&title)))));
 
-    let total = select.count(&self.pool).await? as usize;
+    let total = select.count(self.pool).await? as usize;
 
     let select = select.pagination(pagination);
 
     let books = select
-      .query(&self.pool)
-      .await?
-      .into_iter()
-      .map(book_from_tuple)
-      .collect();
+      .query(self.pool)
+      .await?;
+    let books = self.books_from_tuple(books).await?;
     Ok(ItemsTotal { items: books, total })
   }
 }
@@ -100,12 +133,6 @@ fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) 
     .left_join("image", Some("cover"), Expression::new(Column(("cover", "id"), ("book_translation", "fkcover"))))
     .left_join("image", Some("cover_fallback"), Expression::new(Column(("cover_fallback", "id"), ("book_translation_fallback", "fkcover"))))
     .left_join("franchise", None, Expression::new(Column(("book", "fkfranchise"), ("franchise", "id"))))
-}
-fn book_from_tuple(query_result: BookColumns) -> Book {
-  query_result.0.to_entity(
-    query_result.1.unwrap_or_else(|| query_result.2.expect("Fallback for book translation should exist")),
-    query_result.3.unwrap_or_else(|| query_result.4.expect("Fallback for book cover translation should exist")),
-    query_result.5)
 }
 
 fn book_select_columns<'a>() -> Select<'a, BookColumns> {

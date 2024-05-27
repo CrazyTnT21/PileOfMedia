@@ -1,6 +1,5 @@
-use std::error::Error;
-use std::sync::Arc;
 use async_trait::async_trait;
+
 use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
@@ -9,18 +8,20 @@ use repositories::book_repository::BookRepository;
 use services::book_service::BookService;
 use services::traits::service_error::ServiceError;
 
-pub struct DefaultBookService {
-  book_repository: Arc<dyn BookRepository>,
+use crate::services::map_server_error;
+
+pub struct DefaultBookService<'a> {
+  book_repository: &'a dyn BookRepository,
 }
 
-impl DefaultBookService {
-  pub fn new(book_repository: Arc<dyn BookRepository>) -> DefaultBookService {
+impl<'a> DefaultBookService<'a> {
+  pub fn new(book_repository: &'a dyn BookRepository) -> impl BookService + 'a {
     DefaultBookService { book_repository }
   }
 }
 
 #[async_trait]
-impl BookService for DefaultBookService {
+impl<'a> BookService for DefaultBookService<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, ServiceError> {
     self.book_repository.get(language, pagination).await.map_err(map_server_error)
   }
@@ -32,8 +33,4 @@ impl BookService for DefaultBookService {
   async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, ServiceError> {
     self.book_repository.get_by_title(title, language, pagination).await.map_err(map_server_error)
   }
-}
-
-fn map_server_error(error: Box<dyn Error>) -> ServiceError {
-  ServiceError::ServerError(error)
 }
