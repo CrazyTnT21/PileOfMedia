@@ -15,6 +15,9 @@ bb8-postgres = { version = "0.8.1", features = ["with-chrono-0_4"] }
 async-trait = "0.1.80"
 chrono = { version = "0.4.38", features = ["serde"] }
 serde = { version = "1.0.198", features = ["derive"] }
+base64 = { version = "0.22.1" }
+rand = "0.8.5"
+infer = "0.15.0"
 
 [lib]
 name = "application"

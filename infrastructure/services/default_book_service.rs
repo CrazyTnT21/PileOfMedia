@@ -15,7 +15,7 @@ pub struct DefaultBookService<'a> {
 }
 
 impl<'a> DefaultBookService<'a> {
-  pub fn new(book_repository: &'a dyn BookRepository) -> impl BookService + 'a {
+  pub fn new(book_repository: &'a dyn BookRepository) -> DefaultBookService {
     DefaultBookService { book_repository }
   }
 }

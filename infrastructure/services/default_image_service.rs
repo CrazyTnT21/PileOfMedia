@@ -14,7 +14,7 @@ pub struct DefaultImageService<'a> {
 }
 
 impl<'a> DefaultImageService<'a> {
-  pub fn new(image_repository: &'a dyn ImageRepository) -> impl ImageService + 'a {
+  pub fn new(image_repository: &'a dyn ImageRepository) -> DefaultImageService {
     DefaultImageService { image_repository }
   }
 }
