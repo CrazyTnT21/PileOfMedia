@@ -14,6 +14,7 @@ pub mod controllers;
 mod database_connection;
 mod extractors;
 mod openapi;
+mod implementations;
 
 pub async fn main() -> std::io::Result<()> {
   dotenv().ok();

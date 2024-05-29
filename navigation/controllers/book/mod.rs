@@ -7,15 +7,11 @@ use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
 
-use domain::entities::book::Book;
-use domain::entities::franchise::Franchise;
-use domain::entities::image::Image;
-use domain::entities::image::image_data::ImageData;
-use domain::items_total::BooksTotal;
 use services::book_service::BookService;
 
-use crate::controllers::{content_language_header, convert_service_error, DEFAULT_LANGUAGE, get_book_repository, get_book_service, get_image_repository, get_language, append_content_language_header, set_pagination_limit};
+use crate::controllers::{append_content_language_header, content_language_header, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
 use crate::database_connection::DatabaseConnection;
+use crate::implementations::{get_book_repository, get_book_service, get_image_repository};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
@@ -27,11 +23,7 @@ use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
 
-#[derive(utoipa::OpenApi)]
-#[openapi(tags((name = "Books", description = "Endpoints related to books")),
-paths(get_items, get_by_id, get_by_title),
-components(schemas(Book, Image, ImageData, Franchise, BooksTotal)))]
-pub(crate) struct BookDoc;
+pub mod doc;
 
 pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
   Router::new()
