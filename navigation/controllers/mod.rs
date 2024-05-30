@@ -15,13 +15,13 @@ use services::traits::service_error::ServiceError;
 use crate::extractors::headers::accept_language::AcceptLanguage;
 use crate::extractors::query_pagination::QueryPagination;
 
-mod book;
+mod book_controller;
 mod doc;
 
 pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
   let doc = doc::ApiDoc::openapi();
   router
-    .nest("/books", book::routes(pool))
+    .nest("/books", book_controller::routes(pool))
     .merge(SwaggerUi::new("/swagger-ui")
       .url("/api-docs/openapi.json", doc))
 }

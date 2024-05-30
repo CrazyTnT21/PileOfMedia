@@ -7,7 +7,7 @@ use domain::entities::character::Character;
 use domain::entities::person::Person;
 use domain::entities::theme::Theme;
 use domain::items_total::BooksTotal;
-use crate::controllers::book::doc::BookDoc;
+use crate::controllers::book_controller::book_doc::BookDoc;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(info(title = "mycollection"),

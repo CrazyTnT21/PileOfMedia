@@ -23,7 +23,7 @@ use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
 
-pub mod doc;
+pub mod book_doc;
 
 pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
   Router::new()
