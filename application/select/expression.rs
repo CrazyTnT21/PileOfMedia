@@ -1,5 +1,9 @@
+use tokio_postgres::types::ToSql;
+
 use crate::select::comparison::Comparison;
+use crate::select::comparison::Comparison::{Equal, IsNull};
 use crate::select::condition::Condition;
+use crate::select::condition::Condition::Value;
 
 #[derive(Debug)]
 pub struct Expression<'a> {
@@ -33,7 +37,7 @@ impl<'a> Expression<'a> {
         Comparison::IsNotNull => format!("{}.{} IS NOT NULL", a.0, a.1),
         Comparison::NotEqual(_) => format!("{}.{} != ${}", a.0, a.1, add_one(count)),
         Comparison::ILike(_) => format!("{}.{} ILIKE ${}", a.0, a.1, add_one(count)),
-        Comparison::In(value) => format!("{}.{} in ({})", a.0, a.1, value.iter().map(|_| format!("${}",add_one(count))).collect::<Vec<String>>().join(",")),
+        Comparison::In(value) => format!("{}.{} in ({})", a.0, a.1, value.iter().map(|_| format!("${}", add_one(count))).collect::<Vec<String>>().join(",")),
         Comparison::Bigger(_) => format!("{}.{} > ${}", a.0, a.1, add_one(count)),
         Comparison::BiggerEqual(_) => format!("{}.{} >= ${}", a.0, a.1, add_one(count)),
         Comparison::Less(_) => format!("{}.{} < ${}", a.0, a.1, add_one(count)),
@@ -43,5 +47,11 @@ impl<'a> Expression<'a> {
     let ands = self.ands.iter().map(|x| format!("AND ({})", x.fmt(count))).collect::<Vec<String>>().join(" ");
     let ors = self.ors.iter().map(|x| format!("OR ({})", x.fmt(count))).collect::<Vec<String>>().join(" ");
     format!("{} {} {}", con, ands, ors)
+  }
+  pub fn column_null(table: &'a str, column: &'a str) -> Expression<'a> {
+    Expression::new(Value((table, column), IsNull))
+  }
+  pub fn column_equal(table: &'a str, column: &'a str, value: &'a (dyn ToSql + Sync)) -> Expression<'a> {
+    Expression::new(Value((table, column), Equal(value)))
   }
 }

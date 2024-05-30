@@ -27,8 +27,8 @@ impl FileRepository for DefaultFileRepository {
     let file_name = Path::new(&file_name).with_extension(file_extension);
 
     let file_path = Path::new(file_path).join(&file_name);
-    let mut file = File::create_new(&file_path)?;
-    file.write(data)?;
+    let mut file = File::create_new(file_path)?;
+    file.write_all(data)?;
     Ok(file_name.to_str().ok_or("failed to get file name")?.to_string())
   }
 

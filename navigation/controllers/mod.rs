@@ -15,13 +15,15 @@ use services::traits::service_error::ServiceError;
 use crate::extractors::headers::accept_language::AcceptLanguage;
 use crate::extractors::query_pagination::QueryPagination;
 
-mod book_controller;
 mod doc;
+mod book_controller;
+mod genre_controller;
 
 pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
   let doc = doc::ApiDoc::openapi();
   router
-    .nest("/books", book_controller::routes(pool))
+    .nest("/books", book_controller::routes(pool.clone()))
+    .nest("/genres", genre_controller::routes(pool))
     .merge(SwaggerUi::new("/swagger-ui")
       .url("/api-docs/openapi.json", doc))
 }
@@ -46,7 +48,7 @@ fn content_language_header(language: Language) -> HeaderMap {
 fn append_content_language_header(headers: &mut HeaderMap, language: Language) -> &HeaderMap {
   let mut value = language.language_code().to_string();
   if let Some(header_value) = headers.get("content-language") {
-    value.push_str(",");
+    value.push(',');
     value.push_str(header_value.to_str().unwrap());
   }
 

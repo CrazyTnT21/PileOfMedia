@@ -1,3 +1,4 @@
+use crate::controllers::genre_controller::genre_doc::GenreDoc;
 use domain::entities::franchise::Franchise;
 use domain::entities::image::image_data::ImageData;
 use domain::entities::image::Image;
@@ -12,7 +13,8 @@ use crate::controllers::book_controller::book_doc::BookDoc;
 #[derive(utoipa::OpenApi)]
 #[openapi(info(title = "mycollection"),
 nest(
-("/books", BookDoc)
+("/books", BookDoc),
+("/genres", GenreDoc)
 ),
 components(schemas(
 Genre,
