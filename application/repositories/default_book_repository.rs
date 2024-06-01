@@ -123,16 +123,16 @@ impl BookRepository for DefaultBookRepository<'_> {
 
 fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, BookColumns> {
   book_select_columns()
-    .left_join("booktranslation", Some("book_translation"),
-               Expression::new(Column(("book_translation", "fktranslation"), ("book", "id")))
-                 .and(Expression::new(Value(("book_translation", "language"), Equal(language)))))
-    .left_join("booktranslation", Some("book_translation_fallback"),
-               Expression::new(Column(("book", "id"), ("book_translation_fallback", "fktranslation")))
-                 .and(Expression::new(Value(("book_translation", "fktranslation"), IsNull)))
-                 .and(Expression::new(Value(("book_translation_fallback", "language"), Equal(fallback_language)))))
-    .left_join("image", Some("cover"), Expression::new(Column(("cover", "id"), ("book_translation", "fkcover"))))
-    .left_join("image", Some("cover_fallback"), Expression::new(Column(("cover_fallback", "id"), ("book_translation_fallback", "fkcover"))))
-    .left_join("franchise", None, Expression::new(Column(("book", "fkfranchise"), ("franchise", "id"))))
+    .left_join::<DbBookTranslation>(Some("book_translation"),
+                                    Expression::new(Column(("book_translation", "fktranslation"), ("book", "id")))
+                                      .and(Expression::new(Value(("book_translation", "language"), Equal(language)))))
+    .left_join::<DbBookTranslation>(Some("book_translation_fallback"),
+                                    Expression::new(Column(("book", "id"), ("book_translation_fallback", "fktranslation")))
+                                      .and(Expression::new(Value(("book_translation", "fktranslation"), IsNull)))
+                                      .and(Expression::new(Value(("book_translation_fallback", "language"), Equal(fallback_language)))))
+    .left_join::<DbImage>(Some("cover"), Expression::new(Column(("cover", "id"), ("book_translation", "fkcover"))))
+    .left_join::<DbImage>(Some("cover_fallback"), Expression::new(Column(("cover_fallback", "id"), ("book_translation_fallback", "fkcover"))))
+    .left_join::<DbFranchise>(None, Expression::new(Column(("book", "fkfranchise"), ("franchise", "id"))))
 }
 
 fn book_select_columns<'a>() -> Select<'a, BookColumns> {
@@ -144,4 +144,5 @@ fn book_select_columns<'a>() -> Select<'a, BookColumns> {
     .columns::<Option<DbImage>>("cover_fallback")
     .columns::<Option<DbFranchise>>("franchise")
 }
+
 type BookColumns = (DbBook, Option<DbBookTranslation>, Option<DbBookTranslation>, Option<DbImage>, Option<DbImage>, Option<DbFranchise>);

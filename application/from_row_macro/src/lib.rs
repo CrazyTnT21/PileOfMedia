@@ -96,14 +96,19 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
 
   let from_row_impl = from_row_impl(&ast.ident, &db_mapping);
   let columns_impl = row_columns_impl(&ast.ident, &columns);
+  let name = &ast.ident;
+  let table_name = renamed_field(&ast.attrs).unwrap_or(ast.ident.to_string());
+
   let gen = quote! {
     #from_row_impl
     #columns_impl
+    impl from_row::Table for #name {
+      const TABLE_NAME: &'static str = #table_name;
+    }
   };
   #[cfg(feature = "validate")]
   #[cfg(debug_assertions)]
   {
-    let table_name = renamed_field(&ast.attrs).unwrap_or(ast.ident.to_string());
     let query = format!("SELECT {} FROM {} LIMIT 0", columns.join(","), table_name);
 
     dotenvy::dotenv().ok();

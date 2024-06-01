@@ -13,6 +13,10 @@ pub trait RowColumns<T: FromRow = Self>: FromRow {
   fn columns() -> Vec<&'static str>;
 }
 
+pub trait Table {
+  const TABLE_NAME: &'static str;
+}
+
 pub trait FromRowOption<T: FromRow = Self> {
   fn from_row_optional(row: &Row, from: usize) -> Option<T::DbType>;
 }

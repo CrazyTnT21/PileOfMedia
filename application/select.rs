@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use tokio_postgres::types::ToSql;
 
 use domain::pagination::Pagination;
-use from_row::FromRow;
+use from_row::{FromRow, Table};
 
 use crate::Pooled;
 use crate::select::column_table::ColumnTable;
@@ -102,7 +102,11 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
       .offset((pagination.count * pagination.page) as usize)
   }
 
-  pub fn left_join(mut self, table: &'a str, alias: Option<&'a str>, expression: Expression<'a>) -> Self {
+  pub fn left_join<A: Table>(mut self, alias: Option<&'a str>, expression: Expression<'a>) -> Self {
+    self.joins.push(Join::new(A::TABLE_NAME, JoinType::Left, alias, expression));
+    self
+  }
+  pub fn left_join_raw(mut self, table: &'a str, alias: Option<&'a str>, expression: Expression<'a>) -> Self {
     self.joins.push(Join::new(table, JoinType::Left, alias, expression));
     self
   }
@@ -111,7 +115,11 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     function(self)
   }
 
-  pub fn inner_join(mut self, table: &'a str, alias: Option<&'a str>, expression: Expression<'a>) -> Self {
+  pub fn inner_join<A: Table>(mut self, alias: Option<&'a str>, expression: Expression<'a>) -> Self {
+    self.joins.push(Join::new(A::TABLE_NAME, JoinType::Inner, alias, expression));
+    self
+  }
+  pub fn inner_join_raw(mut self, table: &'a str, alias: Option<&'a str>, expression: Expression<'a>) -> Self {
     self.joins.push(Join::new(table, JoinType::Inner, alias, expression));
     self
   }
