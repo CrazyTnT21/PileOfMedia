@@ -44,9 +44,11 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
     let genres = select
       .pagination(pagination)
       .query(self.pool)
-      .await?;
+      .await?
+      .into_iter()
+      .map(to_entity)
+      .collect();
 
-    let genres = to_entities(genres);
     Ok(ItemsTotal { items: genres, total })
   }
 
@@ -69,9 +71,12 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
       .then(|x| self.genre_joins(x, &language))
       .where_expression(Expression::new(Value(("genre", "id"), In(&ids))))
       .query(self.pool)
-      .await?;
+      .await?
+      .into_iter()
+      .map(to_entity)
+      .collect();
 
-    Ok(to_entities(genres))
+    Ok(genres)
   }
 
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
@@ -110,13 +115,6 @@ impl<'a> DefaultGenreRepository<'a> {
           .and(Expression::column_null("genre_translation", "fktranslation")),
       )
   }
-}
-
-fn to_entities(genres: Vec<(DbGenre, Option<DbGenreTranslation>, Option<DbGenreTranslation>)>) -> Vec<Genre> {
-  genres
-    .into_iter()
-    .map(to_entity)
-    .collect()
 }
 
 fn to_entity(genre: (DbGenre, Option<DbGenreTranslation>, Option<DbGenreTranslation>)) -> Genre {
