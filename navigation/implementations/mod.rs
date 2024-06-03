@@ -1,21 +1,25 @@
 use application::Pooled;
 use application::repositories::default_book_repository::DefaultBookRepository;
+use application::repositories::default_character_repository::DefaultCharacterRepository;
 use application::repositories::default_genre_repository::DefaultGenreRepository;
 use application::repositories::default_image_repository::DefaultImageRepository;
 use application::repositories::default_person_repository::DefaultPersonRepository;
 use application::repositories::default_theme_repository::DefaultThemeRepository;
 use domain::enums::language::Language;
 use infrastructure::services::default_book_service::DefaultBookService;
+use infrastructure::services::default_character_service::DefaultCharacterService;
 use infrastructure::services::default_genre_service::DefaultGenreService;
 use infrastructure::services::default_image_service::DefaultImageService;
 use infrastructure::services::default_person_service::DefaultPersonService;
 use infrastructure::services::default_theme_service::DefaultThemeService;
 use repositories::book_repository::BookRepository;
+use repositories::character_repository::CharacterRepository;
 use repositories::genre_repository::GenreRepository;
 use repositories::image_repository::ImageRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::theme_repository::ThemeRepository;
 use services::book_service::BookService;
+use services::character_service::CharacterService;
 use services::genre_service::GenreService;
 use services::image_service::ImageService;
 use services::person_service::PersonService;
@@ -59,4 +63,12 @@ pub fn get_person_service(person_repository: &impl PersonRepository) -> impl Per
 
 pub fn get_person_repository<'a>(pool: &'a Pooled, language: Language, image_repository: &'a impl ImageRepository) -> impl PersonRepository + 'a {
   DefaultPersonRepository::new(pool, language, image_repository)
+}
+
+pub fn get_character_service(character_repository: &impl CharacterRepository) -> impl CharacterService + '_ {
+  DefaultCharacterService::new(character_repository)
+}
+
+pub fn get_character_repository<'a>(pool: &'a Pooled, language: Language, image_repository: &'a impl ImageRepository) -> impl CharacterRepository + 'a {
+  DefaultCharacterRepository::new(pool, language, image_repository)
 }

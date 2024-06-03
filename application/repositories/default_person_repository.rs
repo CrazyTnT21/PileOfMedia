@@ -159,14 +159,9 @@ fn to_entity(person: (DbPerson, Option<DbPersonTranslation>, Option<DbPersonTran
 }
 
 fn get_image(fk_image: Option<i32>, images: &mut Vec<Image>) -> Option<Image> {
-  let Some(fk_image) = fk_image else {
-    return None;
-  };
+  let fk_image = fk_image?;
   let index = images.iter().position(|x| x.id == fk_image);
-  match index {
-    None => None,
-    Some(index) => Some(images.swap_remove(index))
-  }
+  index.map(|x| images.swap_remove(x))
 }
 
 fn convert(value: &[impl ToSql + Sync]) -> Vec<&(dyn ToSql + Sync)> {
