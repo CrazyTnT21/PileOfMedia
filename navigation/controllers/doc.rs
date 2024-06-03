@@ -7,9 +7,13 @@ use domain::entities::character::Character;
 use domain::entities::person::Person;
 use domain::entities::theme::Theme;
 use domain::items_total::BooksTotal;
+use domain::items_total::GenresTotal;
+use domain::items_total::ThemesTotal;
+use domain::items_total::PeopleTotal;
 use crate::controllers::book_controller::book_doc::BookDoc;
 use crate::controllers::genre_controller::genre_doc::GenreDoc;
 use crate::controllers::theme_controller::theme_doc::ThemeDoc;
+use crate::controllers::person_controller::person_doc::PersonDoc;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(info(title = "mycollection"),
@@ -17,6 +21,7 @@ nest(
 ("/books", BookDoc),
 ("/genres", GenreDoc),
 ("/themes", ThemeDoc),
+("/people", PersonDoc),
 ),
 components(schemas(
 Genre,
@@ -27,6 +32,9 @@ Book,
 Image,
 ImageData,
 Franchise,
-BooksTotal
+BooksTotal,
+GenresTotal,
+ThemesTotal,
+PeopleTotal
 )))]
 pub(crate) struct ApiDoc;

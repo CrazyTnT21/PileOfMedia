@@ -19,13 +19,15 @@ mod doc;
 mod book_controller;
 mod genre_controller;
 mod theme_controller;
+mod person_controller;
 
 pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
   let doc = doc::ApiDoc::openapi();
   router
     .nest("/books", book_controller::routes(pool.clone()))
     .nest("/genres", genre_controller::routes(pool.clone()))
-    .nest("/themes", theme_controller::routes(pool))
+    .nest("/themes", theme_controller::routes(pool.clone()))
+    .nest("/people", person_controller::routes(pool))
     .merge(SwaggerUi::new("/swagger-ui")
       .url("/api-docs/openapi.json", doc))
 }

@@ -3,3 +3,4 @@ pub mod default_image_repository;
 pub mod default_file_repository;
 pub mod default_genre_repository;
 pub mod default_theme_repository;
+pub mod default_person_repository;

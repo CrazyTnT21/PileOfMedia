@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use tokio_postgres::Row;
 
 use domain::entities::image::Image;
-use domain::entities::person::Person;
+use domain::entities::person::{Person};
 use from_row::FromRow;
 
 use crate::schemas::db_person_translation::DbPersonTranslation;
@@ -17,7 +17,7 @@ pub struct DbPerson {
   #[rename = "lastname"]
   pub last_name: Option<String>,
   pub birthday: Option<NaiveDate>,
-  pub height: Option<i32>,
+  pub height: Option<i16>,
   #[rename = "fkimage"]
   pub fk_image: Option<i32>,
 }
