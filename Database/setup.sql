@@ -172,7 +172,7 @@ create table MovieTheme
   FKTheme int not null references Theme (Id),
   primary key (FKMovie, FKTheme)
 );
-create table MovieCreator
+create table MovieInvolved
 (
   FKMovie  int not null references Movie (Id),
   FKPerson int not null references Person (Id),
@@ -269,7 +269,7 @@ create table GraphicNovelTheme
   FKTheme        int not null references Theme (Id),
   primary key (FKGraphicNovel, FkTheme)
 );
-create table GraphicNovelCreator
+create table GraphicNovelInvolved
 (
   FKGraphicNovel int not null references GraphicNovel (Id),
   FKPerson       int not null references Person (Id),
@@ -319,7 +319,7 @@ create table BookTheme
   FKTheme int not null references Theme (Id),
   primary key (FKBook, FKTheme)
 );
-create table BookCreator
+create table BookInvolved
 (
   FKBook   int not null references Book (Id),
   FKRole   int not null references Role (Id),
@@ -413,7 +413,7 @@ create table ShowTheme
   FKTheme int not null references Theme (Id),
   primary key (FKShow, FKTheme)
 );
-create table ShowCreator
+create table ShowInvolved
 (
   FKShow   int not null references Show (Id),
   FKRole   int not null references Role (Id),
@@ -466,7 +466,7 @@ create table GameTheme
   FKTheme int not null references Theme (Id),
   primary key (FKGame, FKTheme)
 );
-create table GameCreator
+create table GameInvolved
 (
   FKGame   int not null references Game (Id),
   FKRole   int not null references Role (Id),

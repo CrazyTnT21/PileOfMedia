@@ -14,4 +14,4 @@ pub mod db_person_translation;
 pub mod db_book_genre;
 pub mod db_book_theme;
 pub mod db_book_character;
-pub mod db_book_creator;
+pub mod db_book_involved;
