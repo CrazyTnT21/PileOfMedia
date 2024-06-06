@@ -8,5 +8,6 @@ pub mod enums;
 pub mod schemas;
 pub mod repositories;
 mod fallback_unwrap;
+mod convert_to_sql;
 
 pub type Pooled<'a> = PooledConnection<'a, PostgresConnectionManager<NoTls>>;

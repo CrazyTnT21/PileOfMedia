@@ -23,13 +23,13 @@ use crate::select::Select;
 
 pub struct DefaultBookRepository<'a> {
   pool: &'a Pooled<'a>,
-  default_language: Language,
+  default_language: DbLanguage,
   image_repository: &'a dyn ImageRepository,
 }
 
 impl<'a> DefaultBookRepository<'a> {
   pub fn new(pool: &'a Pooled, default_language: Language, image_repository: &'a dyn ImageRepository) -> DefaultBookRepository<'a> {
-    DefaultBookRepository { pool, default_language, image_repository }
+    DefaultBookRepository { pool, default_language: default_language.into(), image_repository }
   }
 
   async fn books_from_tuple(&self, items: Vec<BookColumns>) -> Result<Vec<Book>, Box<dyn Error>> {
@@ -72,9 +72,8 @@ fn image_ids(items: &[BookColumns]) -> Vec<i32> {
 impl BookRepository for DefaultBookRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let fallback_language = DbLanguage::from(self.default_language);
 
-    let select = book_select(&language, &fallback_language);
+    let select = book_select(&language, &self.default_language);
 
     let total = select.count(self.pool).await? as usize;
     let select = select.pagination(pagination);
@@ -89,9 +88,8 @@ impl BookRepository for DefaultBookRepository<'_> {
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, Box<dyn Error>> {
     let id = id as i32;
     let language = DbLanguage::from(language);
-    let fallback_language = DbLanguage::from(self.default_language);
 
-    let select = book_select(&language, &fallback_language)
+    let select = book_select(&language, &self.default_language)
       .where_expression(Expression::new(Value(("book", "id"), Equal(&id))));
 
     let Some(value) = select.get_single(self.pool).await? else {
@@ -103,9 +101,8 @@ impl BookRepository for DefaultBookRepository<'_> {
   async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
     let title = format!("%{title}%");
     let language = DbLanguage::from(language);
-    let fallback_language = DbLanguage::from(self.default_language);
 
-    let select = book_select(&language, &fallback_language)
+    let select = book_select(&language, &self.default_language)
       .where_expression(Expression::new(Value(("book_translation", "title"), ILike(&title)))
         .or(Expression::new(Value(("book_translation_fallback", "title"), ILike(&title)))));
 

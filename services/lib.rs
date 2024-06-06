@@ -6,3 +6,4 @@ pub mod genre_service;
 pub mod theme_service;
 pub mod person_service;
 pub mod character_service;
+pub mod role_service;

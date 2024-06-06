@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use tokio_postgres::types::ToSql;
 
 use domain::entities::genre::Genre;
 use domain::enums::language::Language;
@@ -10,6 +9,7 @@ use domain::pagination::Pagination;
 use from_row::FromRow;
 use repositories::genre_repository::GenreRepository;
 
+use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::Pooled;
@@ -37,7 +37,7 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let select = genre_select_columns()
-      .then(|x| self.genre_joins(x, &language));
+      .transform(|x| self.genre_joins(x, &language));
 
     let total = select.count(self.pool).await? as usize;
 
@@ -56,7 +56,7 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
     let id = id as i32;
     let language = DbLanguage::from(language);
     let genre = genre_select_columns()
-      .then(|x| self.genre_joins(x, &language))
+      .transform(|x| self.genre_joins(x, &language))
       .where_expression(Expression::new(Value(("genre", "id"), Equal(&id))))
       .get_single(self.pool)
       .await?;
@@ -66,9 +66,9 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
 
   async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Genre>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let ids = convert(ids);
+    let ids = convert_to_sql(ids);
     let genres = genre_select_columns()
-      .then(|x| self.genre_joins(x, &language))
+      .transform(|x| self.genre_joins(x, &language))
       .where_expression(Expression::new(Value(("genre", "id"), In(&ids))))
       .query(self.pool)
       .await?
@@ -83,7 +83,7 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
     let select = genre_select_columns()
-      .then(|x| self.genre_joins(x, &language))
+      .transform(|x| self.genre_joins(x, &language))
       .where_expression(Expression::new(Value(("genre_translation", "name"), ILike(&name)))
         .or(Expression::new(Value(("genre_translation_fallback", "name"), ILike(&name)))));
 
@@ -119,10 +119,6 @@ impl<'a> DefaultGenreRepository<'a> {
 
 fn to_entity(genre: (DbGenre, Option<DbGenreTranslation>, Option<DbGenreTranslation>)) -> Genre {
   genre.0.to_entity(fallback_unwrap(genre.1, genre.2))
-}
-
-fn convert(value: &[impl ToSql + Sync]) -> Vec<&(dyn ToSql + Sync)> {
-  value.iter().map(|x| x as &(dyn ToSql + Sync)).collect::<Vec<&(dyn ToSql + Sync)>>()
 }
 
 fn genre_select_columns<'a>() -> Select<'a, GenreColumns> {

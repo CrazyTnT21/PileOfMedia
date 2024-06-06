@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use tokio_postgres::types::ToSql;
 
 use domain::entities::character::Character;
 use domain::entities::image::Image;
@@ -12,6 +11,7 @@ use from_row::FromRow;
 use repositories::character_repository::CharacterRepository;
 use repositories::image_repository::ImageRepository;
 
+use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::Pooled;
@@ -40,7 +40,7 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let select = character_select_columns()
-      .then(|x| self.character_joins(x, &language));
+      .transform(|x| self.character_joins(x, &language));
 
     let total = select.count(self.pool).await? as usize;
 
@@ -58,7 +58,7 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     let id = id as i32;
     let language = DbLanguage::from(language);
     let character = character_select_columns()
-      .then(|x| self.character_joins(x, &language))
+      .transform(|x| self.character_joins(x, &language))
       .where_expression(Expression::new(Value(("character", "id"), Equal(&id))))
       .get_single(self.pool)
       .await?;
@@ -77,9 +77,9 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
 
   async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Character>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let ids = convert(ids);
+    let ids = convert_to_sql(ids);
     let characters = character_select_columns()
-      .then(|x| self.character_joins(x, &language))
+      .transform(|x| self.character_joins(x, &language))
       .where_expression(Expression::new(Value(("character", "id"), In(&ids))))
       .query(self.pool)
       .await?;
@@ -93,7 +93,7 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
     let select = character_select_columns()
-      .then(|x| self.character_joins(x, &language))
+      .transform(|x| self.character_joins(x, &language))
       .where_expression(Expression::new(Value(("character_translation", "name"), ILike(&name)))
         .or(Expression::new(Value(("character_translation_fallback", "name"), ILike(&name)))));
 
@@ -144,10 +144,6 @@ impl<'a> DefaultCharacterRepository<'a> {
 
 fn to_entity(character: (DbCharacter, Option<DbCharacterTranslation>, Option<DbCharacterTranslation>), image: Option<Image>) -> Character {
   character.0.to_entity(fallback_unwrap(character.1, character.2), image)
-}
-
-fn convert(value: &[impl ToSql + Sync]) -> Vec<&(dyn ToSql + Sync)> {
-  value.iter().map(|x| x as &(dyn ToSql + Sync)).collect::<Vec<&(dyn ToSql + Sync)>>()
 }
 
 fn character_select_columns<'a>() -> Select<'a, CharacterColumns> {

@@ -15,3 +15,5 @@ pub mod db_book_genre;
 pub mod db_book_theme;
 pub mod db_book_character;
 pub mod db_book_involved;
+pub mod db_role;
+pub mod db_role_translation;

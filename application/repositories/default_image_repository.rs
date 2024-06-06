@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use tokio_postgres::types::ToSql;
 
 use domain::entities::image::Image;
 use domain::entities::image::image_data::ImageData;
@@ -9,6 +8,7 @@ use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::image_repository::ImageRepository;
 
+use crate::convert_to_sql::convert_to_sql;
 use crate::Pooled;
 use crate::schemas::db_image::DbImage;
 use crate::schemas::db_image_data::DbImageData;
@@ -67,7 +67,7 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
   }
 
   async fn get_by_ids(&self, ids: &[i32]) -> Result<Vec<Image>, Box<dyn Error>> {
-    let ids = convert(ids);
+    let ids = convert_to_sql(ids);
     let images = Select::new("image")
       .columns::<DbImage>("image")
       .where_expression(Expression::new(Value(("image", "id"), In(&ids))))
@@ -113,7 +113,7 @@ fn to_entity(image: DbImage, versions: &mut Vec<DbImageData>) -> Image {
 
 impl<'a> DefaultImageRepository<'a> {
   async fn get_image_data(&self, image_ids: &[i32]) -> Result<Vec<DbImageData>, Box<dyn Error>> {
-    let image_ids = convert(image_ids);
+    let image_ids = convert_to_sql(image_ids);
     Ok(Select::new("imagedata")
       .columns::<DbImageData>("imagedata")
       .where_expression(Expression::new(Value(("imagedata", "fkimage"), In(&image_ids))))
@@ -123,10 +123,6 @@ impl<'a> DefaultImageRepository<'a> {
       .map(|x| x.0)
       .collect())
   }
-}
-
-fn convert(value: &[impl ToSql + Sync]) -> Vec<&(dyn ToSql + Sync)> {
-  value.iter().map(|x| x as &(dyn ToSql + Sync)).collect::<Vec<&(dyn ToSql + Sync)>>()
 }
 
 fn image_ids(images: &[DbImage]) -> Vec<i32> {

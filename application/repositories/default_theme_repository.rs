@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use tokio_postgres::types::ToSql;
 
 use domain::entities::theme::Theme;
 use domain::enums::language::Language;
@@ -10,6 +9,7 @@ use domain::pagination::Pagination;
 use from_row::FromRow;
 use repositories::theme_repository::ThemeRepository;
 
+use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::Pooled;
@@ -37,7 +37,7 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let select = theme_select_columns()
-      .then(|x| self.theme_joins(x, &language));
+      .transform(|x| self.theme_joins(x, &language));
 
     let total = select.count(self.pool).await? as usize;
 
@@ -56,7 +56,7 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let id = id as i32;
     let language = DbLanguage::from(language);
     let theme = theme_select_columns()
-      .then(|x| self.theme_joins(x, &language))
+      .transform(|x| self.theme_joins(x, &language))
       .where_expression(Expression::new(Value(("theme", "id"), Equal(&id))))
       .get_single(self.pool)
       .await?;
@@ -66,9 +66,9 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
 
   async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Theme>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let ids = convert(ids);
+    let ids = convert_to_sql(ids);
     let themes = theme_select_columns()
-      .then(|x| self.theme_joins(x, &language))
+      .transform(|x| self.theme_joins(x, &language))
       .where_expression(Expression::new(Value(("theme", "id"), In(&ids))))
       .query(self.pool)
       .await?
@@ -83,7 +83,7 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
     let select = theme_select_columns()
-      .then(|x| self.theme_joins(x, &language))
+      .transform(|x| self.theme_joins(x, &language))
       .where_expression(Expression::new(Value(("theme_translation", "name"), ILike(&name)))
         .or(Expression::new(Value(("theme_translation_fallback", "name"), ILike(&name)))));
 
@@ -120,10 +120,6 @@ impl<'a> DefaultThemeRepository<'a> {
 
 fn to_entity(theme: (DbTheme, Option<DbThemeTranslation>, Option<DbThemeTranslation>)) -> Theme {
   theme.0.to_entity(fallback_unwrap(theme.1, theme.2))
-}
-
-fn convert(value: &[impl ToSql + Sync]) -> Vec<&(dyn ToSql + Sync)> {
-  value.iter().map(|x| x as &(dyn ToSql + Sync)).collect::<Vec<&(dyn ToSql + Sync)>>()
 }
 
 fn theme_select_columns<'a>() -> Select<'a, ThemeColumns> {

@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use tokio_postgres::types::ToSql;
 
 use domain::entities::image::Image;
 use domain::entities::person::Person;
@@ -12,6 +11,7 @@ use from_row::FromRow;
 use repositories::image_repository::ImageRepository;
 use repositories::person_repository::PersonRepository;
 
+use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::Pooled;
@@ -40,7 +40,7 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let select = person_select_columns()
-      .then(|x| self.person_joins(x, &language));
+      .transform(|x| self.person_joins(x, &language));
 
     let total = select.count(self.pool).await? as usize;
 
@@ -68,7 +68,7 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
     let id = id as i32;
     let language = DbLanguage::from(language);
     let person = person_select_columns()
-      .then(|x| self.person_joins(x, &language))
+      .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(Value(("person", "id"), Equal(&id))))
       .get_single(self.pool)
       .await?;
@@ -86,9 +86,9 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
 
   async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Person>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let ids = convert(ids);
+    let ids = convert_to_sql(ids);
     let people = person_select_columns()
-      .then(|x| self.person_joins(x, &language))
+      .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(Value(("person", "id"), In(&ids))))
       .query(self.pool)
       .await?;
@@ -111,7 +111,7 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
     let select = person_select_columns()
-      .then(|x| self.person_joins(x, &language))
+      .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(Value(("person", "name"), ILike(&name))));
 
     let total = select.count(self.pool).await? as usize;
@@ -164,9 +164,6 @@ fn get_image(fk_image: Option<i32>, images: &mut Vec<Image>) -> Option<Image> {
   index.map(|x| images.swap_remove(x))
 }
 
-fn convert(value: &[impl ToSql + Sync]) -> Vec<&(dyn ToSql + Sync)> {
-  value.iter().map(|x| x as &(dyn ToSql + Sync)).collect::<Vec<&(dyn ToSql + Sync)>>()
-}
 
 fn person_select_columns<'a>() -> Select<'a, PersonColumns> {
   Select::new("person")
