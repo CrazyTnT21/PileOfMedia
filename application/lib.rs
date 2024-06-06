@@ -7,6 +7,7 @@ pub mod select;
 pub mod enums;
 pub mod schemas;
 pub mod repositories;
+pub mod insert;
 mod fallback_unwrap;
 mod convert_to_sql;
 

@@ -480,7 +480,7 @@ create table "User"
   Joined           date        not null DEFAULT (CURRENT_DATE),
   Description      varchar(500),
   FKProfilePicture int references Image (Id),
-  Deleted          boolean     not null
+  Deleted          boolean     not null DEFAULT false
 );
 create table UserAverage
 (
