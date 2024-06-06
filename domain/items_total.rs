@@ -1,9 +1,11 @@
 use crate::entities::role::Role;
+use crate::entities::book::book_involved::BookInvolved;
 use crate::entities::character::Character;
 use crate::entities::book::Book;
 use crate::entities::genre::Genre;
 use crate::entities::theme::Theme;
 use crate::entities::person::Person;
+use crate::entities::book::book_character::BookCharacter;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
@@ -13,7 +15,9 @@ GenresTotal = ItemsTotal < Genre >,
 ThemesTotal = ItemsTotal < Theme >,
 PeopleTotal = ItemsTotal < Person >,
 CharactersTotal = ItemsTotal < Character >,
-RolesTotal = ItemsTotal < Role >
+RolesTotal = ItemsTotal < Role >,
+BookInvolvedTotal = ItemsTotal < BookInvolved >,
+BookCharactersTotal = ItemsTotal < BookCharacter >
 ))]
 pub struct ItemsTotal<T> {
   pub items: Vec<T>,

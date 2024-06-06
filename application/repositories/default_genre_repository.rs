@@ -122,7 +122,7 @@ fn to_entity(genre: (DbGenre, Option<DbGenreTranslation>, Option<DbGenreTranslat
 }
 
 fn genre_select_columns<'a>() -> Select<'a, GenreColumns> {
-  Select::new("genre")
+  Select::new::<DbGenre>()
     .columns::<DbGenre>("genre")
     .columns::<Option<DbGenreTranslation>>("genre_translation")
     .columns::<Option<DbGenreTranslation>>("genre_translation_fallback")

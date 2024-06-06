@@ -92,9 +92,11 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
       .where_expression(Expression::new(Value(("person", "id"), In(&ids))))
       .query(self.pool)
       .await?;
-    let mut images = match people.len() {
-      0 => vec![],
-      _ => self.image_repository.get_by_ids(&image_ids(&people)).await?
+
+    let image_ids = image_ids(&people);
+    let mut images = match image_ids.is_empty() {
+      true => vec![],
+      false => self.image_repository.get_by_ids(&image_ids).await?
     };
     let people =
       people.into_iter()
@@ -166,7 +168,7 @@ fn get_image(fk_image: Option<i32>, images: &mut Vec<Image>) -> Option<Image> {
 
 
 fn person_select_columns<'a>() -> Select<'a, PersonColumns> {
-  Select::new("person")
+  Select::new::<DbPerson>()
     .columns::<DbPerson>("person")
     .columns::<Option<DbPersonTranslation>>("person_translation")
     .columns::<Option<DbPersonTranslation>>("person_translation_fallback")

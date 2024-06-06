@@ -123,7 +123,7 @@ fn to_entity(theme: (DbTheme, Option<DbThemeTranslation>, Option<DbThemeTranslat
 }
 
 fn theme_select_columns<'a>() -> Select<'a, ThemeColumns> {
-  Select::new("theme")
+  Select::new::<DbTheme>()
     .columns::<DbTheme>("theme")
     .columns::<Option<DbThemeTranslation>>("theme_translation")
     .columns::<Option<DbThemeTranslation>>("theme_translation_fallback")

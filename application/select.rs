@@ -37,7 +37,10 @@ pub struct Select<'a, T: FromRow<DbType=T> + CombinedType>
 }
 
 impl<'a> Select<'a, ()> {
-  pub fn new(from: &'a str) -> Select<'a, ()> {
+  pub fn new<T: Table>() -> Select<'a, ()> {
+    Select { marker: PhantomData, from: T::TABLE_NAME, alias: None, columns: vec![], joins: vec![], offset: None, limit: None, wheres: vec![] }
+  }
+  pub fn new_raw(from: &'a str) -> Select<'a, ()> {
     Select { marker: PhantomData, from, alias: None, columns: vec![], joins: vec![], offset: None, limit: None, wheres: vec![] }
   }
 }

@@ -1,3 +1,5 @@
+pub mod person_role;
+
 use chrono::NaiveDate;
 use crate::entities::image::Image;
 

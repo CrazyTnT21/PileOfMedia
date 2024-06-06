@@ -4,6 +4,8 @@ use crate::entities::franchise::Franchise;
 use crate::entities::image::Image;
 
 pub mod insert_book;
+pub mod book_character;
+pub mod book_involved;
 
 #[derive(Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]

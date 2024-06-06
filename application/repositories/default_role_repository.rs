@@ -6,7 +6,7 @@ use domain::entities::role::Role;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use from_row::FromRow;
+use from_row::{FromRow, Table};
 use repositories::role_repository::RoleRepository;
 
 use crate::convert_to_sql::convert_to_sql;
@@ -122,8 +122,8 @@ fn to_entity(role: (DbRole, Option<DbRoleTranslation>, Option<DbRoleTranslation>
 }
 
 fn role_select_columns<'a>() -> Select<'a, RoleColumns> {
-  Select::new("role")
-    .columns::<DbRole>("role")
+  Select::new::<DbRole>()
+    .columns::<DbRole>(DbRole::TABLE_NAME)
     .columns::<Option<DbRoleTranslation>>("role_translation")
     .columns::<Option<DbRoleTranslation>>("role_translation_fallback")
 }

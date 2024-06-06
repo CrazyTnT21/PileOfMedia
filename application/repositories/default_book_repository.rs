@@ -1,13 +1,16 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use tokio_postgres::types::ToSql;
 
 use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
+use from_row::Table;
 use repositories::book_repository::BookRepository;
 use repositories::image_repository::ImageRepository;
+use crate::convert_to_sql::convert_to_sql;
 
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::{fallback_unwrap, fallback_unwrap_ref};
@@ -16,7 +19,7 @@ use crate::schemas::db_book::DbBook;
 use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::schemas::db_franchise::DbFranchise;
 use crate::schemas::db_image::DbImage;
-use crate::select::comparison::Comparison::{Equal, ILike, IsNull};
+use crate::select::comparison::Comparison::{Equal, ILike, In, IsNull};
 use crate::select::condition::Condition::{Column, Value};
 use crate::select::expression::Expression;
 use crate::select::Select;
@@ -116,6 +119,19 @@ impl BookRepository for DefaultBookRepository<'_> {
     let books = self.books_from_tuple(books).await?;
     Ok(ItemsTotal { items: books, total })
   }
+
+  async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Book>, Box<dyn Error>> {
+    let language = DbLanguage::from(language);
+    let ids = convert_to_sql(ids);
+    let books = book_select(&language, &self.default_language)
+      .where_expression(Expression::new(Value((DbBook::TABLE_NAME, "id"), In(&ids))))
+      .query(self.pool)
+      .await?;
+
+    let books = self.books_from_tuple(books).await?;
+
+    Ok(books)
+  }
 }
 
 fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, BookColumns> {
@@ -133,7 +149,7 @@ fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) 
 }
 
 fn book_select_columns<'a>() -> Select<'a, BookColumns> {
-  Select::new("book")
+  Select::new::<DbBook>()
     .columns::<DbBook>("book")
     .columns::<Option<DbBookTranslation>>("book_translation")
     .columns::<Option<DbBookTranslation>>("book_translation_fallback")

@@ -7,13 +7,14 @@ use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
 
+use services::book_relations_service::BookRelationsService;
 use services::book_service::BookService;
 
 use crate::controllers::{append_content_language_header, content_language_header, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
 use crate::database_connection::DatabaseConnection;
-use crate::implementations::{get_book_repository, get_book_service, get_image_repository};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
+use crate::implementations::{get_book_relations_repository, get_book_relations_service, get_book_repository, get_book_service, get_character_repository, get_genre_repository, get_image_repository, get_person_repository, get_role_repository, get_theme_repository};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::title::TitleParam;
@@ -30,6 +31,10 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
     .route("/", get(get_items))
     .route("/:id", get(get_by_id))
     .route("/title/:title", get(get_by_title))
+    .route("/:ids/genres", get(get_genres))
+    .route("/:id/themes", get(get_themes))
+    .route("/:id/characters", get(get_characters))
+    .route("/:id/involved", get(get_involved))
     .with_state(pool)
 }
 
@@ -109,3 +114,140 @@ async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages)
     Err(error) => Err(convert_service_error(error))
   }
 }
+
+#[utoipa::path(get, path = "/{id}/genres",
+responses(
+(status = 200, description = "Returned genres based on the book id", body = GenresTotal), ServerError, BadRequest
+),
+params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+tag = "Books"
+)]
+async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = connection.0;
+  let image_repository = get_image_repository(&connection);
+  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
+  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
+  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
+
+  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
+  let service = get_book_relations_service(&repository);
+
+  let language = get_language(languages, DEFAULT_LANGUAGE);
+  set_pagination_limit(&mut pagination);
+
+  println!("Route for genres from a book with the id {} in {}", id, language);
+
+  let mut content_language = content_language_header(language);
+  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
+
+  match service.get_genres(id, language, pagination.into()).await {
+    Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
+    Err(error) => Err(convert_service_error(error))
+  }
+}
+
+#[utoipa::path(get, path = "/{id}/themes",
+responses(
+(status = 200, description = "Returned themes based on the book id", body = ThemesTotal), ServerError, BadRequest
+),
+params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+tag = "Books"
+)]
+async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = connection.0;
+  let image_repository = get_image_repository(&connection);
+  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
+  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
+  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
+
+  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
+  let service = get_book_relations_service(&repository);
+
+  let language = get_language(languages, DEFAULT_LANGUAGE);
+  set_pagination_limit(&mut pagination);
+
+  println!("Route for themes from a book with the id {} in {}", id, language);
+
+  let mut content_language = content_language_header(language);
+  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
+
+  match service.get_themes(id, language, pagination.into()).await {
+    Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
+    Err(error) => Err(convert_service_error(error))
+  }
+}
+
+#[utoipa::path(get, path = "/{id}/characters",
+responses(
+(status = 200, description = "Returned characters based on the book id", body = BookCharactersTotal), ServerError, BadRequest
+),
+params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+tag = "Books"
+)]
+async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = connection.0;
+  let image_repository = get_image_repository(&connection);
+  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
+  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
+  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
+
+  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
+  let service = get_book_relations_service(&repository);
+
+  let language = get_language(languages, DEFAULT_LANGUAGE);
+  set_pagination_limit(&mut pagination);
+
+  println!("Route for characters from a book with the id {} in {}", id, language);
+
+  let mut content_language = content_language_header(language);
+  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
+
+  match service.get_characters(id, language, pagination.into()).await {
+    Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
+    Err(error) => Err(convert_service_error(error))
+  }
+}
+
+#[utoipa::path(get, path = "/{id}/involved",
+responses(
+(status = 200, description = "Returned people involved based on the book id", body = BookInvolvedTotal), ServerError, BadRequest
+),
+params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+tag = "Books"
+)]
+async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = connection.0;
+  let image_repository = get_image_repository(&connection);
+  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
+  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
+  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
+  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
+
+  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
+  let service = get_book_relations_service(&repository);
+
+  let language = get_language(languages, DEFAULT_LANGUAGE);
+  set_pagination_limit(&mut pagination);
+
+  println!("Route for people involved from a book with the id {} in {}", id, language);
+
+  let mut content_language = content_language_header(language);
+  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
+
+  match service.get_involved(id, language, pagination.into()).await {
+    Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
+    Err(error) => Err(convert_service_error(error))
+  }
+}
+//TODO: Refactor dependencies

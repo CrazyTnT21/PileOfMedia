@@ -129,7 +129,13 @@ impl<'a> DefaultCharacterRepository<'a> {
     if items.is_empty() {
       return Ok(vec![]);
     }
-    let mut images = self.image_repository.get_by_ids(&image_ids(&items)).await?;
+
+    let image_ids = image_ids(&items);
+    let mut images = match image_ids.is_empty() {
+      true => vec![],
+      false => self.image_repository.get_by_ids(&image_ids).await?
+    };
+
 
     Ok(items
       .into_iter()
@@ -147,7 +153,7 @@ fn to_entity(character: (DbCharacter, Option<DbCharacterTranslation>, Option<DbC
 }
 
 fn character_select_columns<'a>() -> Select<'a, CharacterColumns> {
-  Select::new("character")
+  Select::new::<DbCharacter>()
     .columns::<DbCharacter>("character")
     .columns::<Option<DbCharacterTranslation>>("character_translation")
     .columns::<Option<DbCharacterTranslation>>("character_translation_fallback")

@@ -18,7 +18,7 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultImageRepository<'a> {
-  pool: &'a Pooled<'a>
+  pool: &'a Pooled<'a>,
 }
 
 impl<'a> DefaultImageRepository<'a> {
@@ -30,7 +30,7 @@ impl<'a> DefaultImageRepository<'a> {
 #[async_trait]
 impl<'a> ImageRepository for DefaultImageRepository<'a> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, Box<dyn Error>> {
-    let select = Select::new("image")
+    let select = Select::new::<DbImage>()
       .columns::<DbImage>("image");
 
     let total = select.count(self.pool).await? as usize;
@@ -51,7 +51,7 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
   }
 
   async fn get_by_id(&self, id: u32) -> Result<Option<Image>, Box<dyn Error>> {
-    let image = Select::new("image")
+    let image = Select::new::<DbImage>()
       .columns::<DbImage>("image")
       .where_expression(Expression::new(Value(("image", "id"), Equal(&(id as i32)))))
       .get_single(self.pool)
@@ -68,7 +68,7 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
 
   async fn get_by_ids(&self, ids: &[i32]) -> Result<Vec<Image>, Box<dyn Error>> {
     let ids = convert_to_sql(ids);
-    let images = Select::new("image")
+    let images = Select::new::<DbImage>()
       .columns::<DbImage>("image")
       .where_expression(Expression::new(Value(("image", "id"), In(&ids))))
       .query(self.pool)
@@ -114,7 +114,7 @@ fn to_entity(image: DbImage, versions: &mut Vec<DbImageData>) -> Image {
 impl<'a> DefaultImageRepository<'a> {
   async fn get_image_data(&self, image_ids: &[i32]) -> Result<Vec<DbImageData>, Box<dyn Error>> {
     let image_ids = convert_to_sql(image_ids);
-    Ok(Select::new("imagedata")
+    Ok(Select::new::<DbImageData>()
       .columns::<DbImageData>("imagedata")
       .where_expression(Expression::new(Value(("imagedata", "fkimage"), In(&image_ids))))
       .query(self.pool)
