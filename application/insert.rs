@@ -97,11 +97,15 @@ impl<'a> Insert<'a> {
   }
 
   fn values_sql(&self) -> String {
+    let mut total = 0;
     self.values.iter().map(|x| {
       let result = (1..x.len() + 1)
         .collect::<Vec<usize>>()
         .iter()
-        .map(|i| format!("${i}"))
+        .map(|i| {
+          total += 1;
+          format!("${}", total)
+        })
         .collect::<Vec<String>>()
         .join(",");
       format!("({result})")
