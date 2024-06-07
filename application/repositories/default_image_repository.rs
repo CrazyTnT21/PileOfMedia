@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use tokio_postgres::Client;
 
 use domain::entities::image::Image;
 use domain::entities::image::image_data::ImageData;
@@ -9,7 +10,6 @@ use domain::pagination::Pagination;
 use repositories::image_repository::ImageRepository;
 
 use crate::convert_to_sql::convert_to_sql;
-use crate::Pooled;
 use crate::schemas::db_image::DbImage;
 use crate::schemas::db_image_data::DbImageData;
 use crate::select::comparison::Comparison::{Equal, In};
@@ -18,12 +18,12 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultImageRepository<'a> {
-  pool: &'a Pooled<'a>,
+  client: &'a Client,
 }
 
 impl<'a> DefaultImageRepository<'a> {
-  pub fn new(pool: &'a Pooled) -> DefaultImageRepository<'a> {
-    DefaultImageRepository { pool }
+  pub fn new(client: &'a Client) -> DefaultImageRepository<'a> {
+    DefaultImageRepository { client }
   }
 }
 
@@ -33,11 +33,11 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
     let select = Select::new::<DbImage>()
       .columns::<DbImage>("image");
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let images = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(|x| x.0)
@@ -54,7 +54,7 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
     let image = Select::new::<DbImage>()
       .columns::<DbImage>("image")
       .where_expression(Expression::new(Value(("image", "id"), Equal(&(id as i32)))))
-      .get_single(self.pool)
+      .get_single(self.client)
       .await?
       .map(|x| x.0);
 
@@ -71,7 +71,7 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
     let images = Select::new::<DbImage>()
       .columns::<DbImage>("image")
       .where_expression(Expression::new(Value(("image", "id"), In(&ids))))
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(|x| x.0)
@@ -117,7 +117,7 @@ impl<'a> DefaultImageRepository<'a> {
     Ok(Select::new::<DbImageData>()
       .columns::<DbImageData>("imagedata")
       .where_expression(Expression::new(Value(("imagedata", "fkimage"), In(&image_ids))))
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(|x| x.0)

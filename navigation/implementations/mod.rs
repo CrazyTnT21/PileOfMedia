@@ -1,4 +1,5 @@
-use application::Pooled;
+use tokio_postgres::Client;
+
 use application::repositories::default_book_relations_repository::DefaultBookRelationsRepository;
 use application::repositories::default_book_repository::DefaultBookRepository;
 use application::repositories::default_character_repository::DefaultCharacterRepository;
@@ -25,7 +26,6 @@ use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::ThemeRepository;
 use services::book_relations_service::BookRelationsService;
-use services::book_service::BookService;
 use services::character_service::CharacterService;
 use services::genre_service::GenreService;
 use services::image_service::ImageService;
@@ -33,16 +33,16 @@ use services::person_service::PersonService;
 use services::role_service::RoleService;
 use services::theme_service::ThemeService;
 
-pub fn get_book_service(book_repository: &impl BookRepository) -> impl BookService + '_ {
+pub fn get_book_service(book_repository: &impl BookRepository) -> DefaultBookService {
   DefaultBookService::new(book_repository)
 }
 
-pub fn get_book_repository<'a>(pool: &'a Pooled, language: Language, image_repository: &'a impl ImageRepository) -> impl BookRepository + 'a {
-  DefaultBookRepository::new(pool, language, image_repository)
+pub fn get_book_repository<'a>(client: &'a Client, language: Language, image_repository: &'a impl ImageRepository) -> impl BookRepository + 'a {
+  DefaultBookRepository::new(client, language, image_repository)
 }
 
-pub fn get_image_repository<'a>(pool: &'a Pooled) -> impl ImageRepository + 'a {
-  DefaultImageRepository::new(pool)
+pub fn get_image_repository<'a>(client: &'a Client) -> impl ImageRepository + 'a {
+  DefaultImageRepository::new(client)
 }
 
 pub fn get_image_service(image_repository: &impl ImageRepository) -> impl ImageService + '_ {
@@ -53,39 +53,39 @@ pub fn get_genre_service(genre_repository: &impl GenreRepository) -> impl GenreS
   DefaultGenreService::new(genre_repository)
 }
 
-pub fn get_genre_repository<'a>(pool: &'a Pooled, language: Language) -> impl GenreRepository + 'a {
-  DefaultGenreRepository::new(pool, language)
+pub fn get_genre_repository<'a>(client: &'a Client, language: Language) -> impl GenreRepository + 'a {
+  DefaultGenreRepository::new(client, language)
 }
 
 pub fn get_theme_service(theme_repository: &impl ThemeRepository) -> impl ThemeService + '_ {
   DefaultThemeService::new(theme_repository)
 }
 
-pub fn get_theme_repository<'a>(pool: &'a Pooled, language: Language) -> impl ThemeRepository + 'a {
-  DefaultThemeRepository::new(pool, language)
+pub fn get_theme_repository<'a>(client: &'a Client, language: Language) -> impl ThemeRepository + 'a {
+  DefaultThemeRepository::new(client, language)
 }
 
 pub fn get_person_service(person_repository: &impl PersonRepository) -> impl PersonService + '_ {
   DefaultPersonService::new(person_repository)
 }
 
-pub fn get_person_repository<'a>(pool: &'a Pooled, language: Language, image_repository: &'a impl ImageRepository) -> impl PersonRepository + 'a {
-  DefaultPersonRepository::new(pool, language, image_repository)
+pub fn get_person_repository<'a>(client: &'a Client, language: Language, image_repository: &'a impl ImageRepository) -> impl PersonRepository + 'a {
+  DefaultPersonRepository::new(client, language, image_repository)
 }
 
 pub fn get_character_service(character_repository: &impl CharacterRepository) -> impl CharacterService + '_ {
   DefaultCharacterService::new(character_repository)
 }
 
-pub fn get_character_repository<'a>(pool: &'a Pooled, language: Language, image_repository: &'a impl ImageRepository) -> impl CharacterRepository + 'a {
-  DefaultCharacterRepository::new(pool, language, image_repository)
+pub fn get_character_repository<'a>(client: &'a Client, language: Language, image_repository: &'a impl ImageRepository) -> impl CharacterRepository + 'a {
+  DefaultCharacterRepository::new(client, language, image_repository)
 }
 
 pub fn get_book_relations_service(book_relations_repository: &impl BookRelationsRepository) -> impl BookRelationsService + '_ {
   DefaultBookRelationsService::new(book_relations_repository)
 }
 
-pub fn get_book_relations_repository<'a>(pool: &'a Pooled<'a>,
+pub fn get_book_relations_repository<'a>(client: &'a Client,
                                          language: Language,
                                          book_repository: &'a impl BookRepository,
                                          genre_repository: &'a impl GenreRepository,
@@ -94,13 +94,13 @@ pub fn get_book_relations_repository<'a>(pool: &'a Pooled<'a>,
                                          person_repository: &'a impl PersonRepository,
                                          role_repository: &'a dyn RoleRepository, ) -> impl BookRelationsRepository + 'a
 {
-  DefaultBookRelationsRepository::new(pool, language, book_repository, genre_repository, theme_repository, character_repository, person_repository, role_repository)
+  DefaultBookRelationsRepository::new(client, language, book_repository, genre_repository, theme_repository, character_repository, person_repository, role_repository)
 }
 
 pub fn get_role_service(role_repository: &impl RoleRepository) -> impl RoleService + '_ {
   DefaultRoleService::new(role_repository)
 }
 
-pub fn get_role_repository<'a>(pool: &'a Pooled, language: Language) -> impl RoleRepository + 'a {
-  DefaultRoleRepository::new(pool, language)
+pub fn get_role_repository<'a>(client: &'a Client, language: Language) -> impl RoleRepository + 'a {
+  DefaultRoleRepository::new(client, language)
 }

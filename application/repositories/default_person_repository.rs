@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use tokio_postgres::Client;
 
 use domain::entities::image::Image;
 use domain::entities::person::Person;
@@ -14,7 +15,6 @@ use repositories::person_repository::PersonRepository;
 use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
-use crate::Pooled;
 use crate::schemas::db_person::DbPerson;
 use crate::schemas::db_person_translation::DbPersonTranslation;
 use crate::select::combined_tuple::CombinedType;
@@ -24,14 +24,14 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultPersonRepository<'a> {
-  pool: &'a Pooled<'a>,
+  client: &'a Client,
   default_language: DbLanguage,
   image_repository: &'a dyn ImageRepository,
 }
 
 impl<'a> DefaultPersonRepository<'a> {
-  pub fn new(pool: &'a Pooled, language: Language, image_repository: &'a dyn ImageRepository) -> DefaultPersonRepository<'a> {
-    DefaultPersonRepository { pool, default_language: language.into(), image_repository }
+  pub fn new(client: &'a Client, language: Language, image_repository: &'a dyn ImageRepository) -> DefaultPersonRepository<'a> {
+    DefaultPersonRepository { client, default_language: language.into(), image_repository }
   }
 }
 
@@ -42,11 +42,11 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
     let select = person_select_columns()
       .transform(|x| self.person_joins(x, &language));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let people = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let mut images = match people.len() {
@@ -70,7 +70,7 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
     let person = person_select_columns()
       .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(Value(("person", "id"), Equal(&id))))
-      .get_single(self.pool)
+      .get_single(self.client)
       .await?;
     let image = match person {
       None => None,
@@ -90,7 +90,7 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
     let people = person_select_columns()
       .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(Value(("person", "id"), In(&ids))))
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let image_ids = image_ids(&people);
@@ -116,11 +116,11 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
       .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(Value(("person", "name"), ILike(&name))));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let people = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let mut images = match people.len() {

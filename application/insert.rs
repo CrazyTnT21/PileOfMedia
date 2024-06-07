@@ -1,11 +1,10 @@
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
-use tokio_postgres::Transaction;
+use tokio_postgres::{Client, Transaction};
 use tokio_postgres::types::ToSql;
 
 use from_row::Table;
 
-use crate::Pooled;
 
 pub struct Insert<'a> {
   into: &'a str,
@@ -29,7 +28,7 @@ impl<'a> Insert<'a> {
     self
   }
 
-  pub async fn execute(&self, connection: &'a Pooled<'a>) -> Result<u64, InsertError> {
+  pub async fn execute(&self, connection: &'a Client) -> Result<u64, InsertError> {
     self.invalid_length()?;
 
     connection.execute(&self.sql(), &self.values()).await.map_err(|x| InsertError::PostgresError(x))
@@ -41,7 +40,7 @@ impl<'a> Insert<'a> {
     transaction.execute(&self.sql(), &self.values()).await.map_err(|x| InsertError::PostgresError(x))
   }
 
-  pub async fn returning(&self, connection: &'a Pooled<'a>) -> Result<i32, InsertError> {
+  pub async fn returning(&self, connection: &'a Client) -> Result<i32, InsertError> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne.into());
     }

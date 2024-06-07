@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use tokio_postgres::Client;
 
 use domain::entities::theme::Theme;
 use domain::enums::language::Language;
@@ -12,7 +13,6 @@ use repositories::theme_repository::ThemeRepository;
 use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
-use crate::Pooled;
 use crate::schemas::db_theme::DbTheme;
 use crate::schemas::db_theme_translation::DbThemeTranslation;
 use crate::select::combined_tuple::CombinedType;
@@ -22,13 +22,13 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultThemeRepository<'a> {
-  pool: &'a Pooled<'a>,
+  client: &'a Client,
   default_language: DbLanguage,
 }
 
 impl<'a> DefaultThemeRepository<'a> {
-  pub fn new(pool: &'a Pooled, language: Language) -> DefaultThemeRepository<'a> {
-    DefaultThemeRepository { pool, default_language: language.into() }
+  pub fn new(client: &'a Client, language: Language) -> DefaultThemeRepository<'a> {
+    DefaultThemeRepository { client, default_language: language.into() }
   }
 }
 
@@ -39,11 +39,11 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let select = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let themes = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(to_entity)
@@ -58,7 +58,7 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let theme = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
       .where_expression(Expression::new(Value(("theme", "id"), Equal(&id))))
-      .get_single(self.pool)
+      .get_single(self.client)
       .await?;
 
     Ok(theme.map(to_entity))
@@ -70,7 +70,7 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let themes = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
       .where_expression(Expression::new(Value(("theme", "id"), In(&ids))))
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(to_entity)
@@ -87,11 +87,11 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
       .where_expression(Expression::new(Value(("theme_translation", "name"), ILike(&name)))
         .or(Expression::new(Value(("theme_translation_fallback", "name"), ILike(&name)))));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let themes = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(to_entity)

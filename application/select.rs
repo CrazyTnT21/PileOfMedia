@@ -1,12 +1,12 @@
 use std::error::Error;
 use std::marker::PhantomData;
 
+use tokio_postgres::Client;
 use tokio_postgres::types::ToSql;
 
 use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
 
-use crate::Pooled;
 use crate::select::column_table::ColumnTable;
 use crate::select::combined_tuple::CombinedType;
 use crate::select::comparison::Comparison;
@@ -132,7 +132,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     self
   }
 
-  pub async fn count(&self, connection: &'a Pooled<'a>) -> Result<i64, Box<dyn Error>> {
+  pub async fn count(&self, connection: &'a Client) -> Result<i64, Box<dyn Error>> {
     let mut count = 0;
     let joins = self.join_sql(&mut count);
     let where_sql = self.where_sql(&mut count).unwrap_or_default();
@@ -200,7 +200,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     format!("SELECT {columns} FROM {} {alias_sql} {joins} {where_sql} {limit_sql} {offset_sql}", self.from)
   }
 
-  pub async fn query(self, connection: &'a Pooled<'a>) -> Result<Vec<T>, Box<dyn Error>> {
+  pub async fn query(self, connection: &'a Client) -> Result<Vec<T>, Box<dyn Error>> {
     Ok(connection
       .query(&self.query_sql(), &self.values())
       .await?
@@ -216,7 +216,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     total
   }
 
-  pub async fn get_single(self, connection: &'a Pooled<'a>) -> Result<Option<T>, Box<dyn Error>> {
+  pub async fn get_single(self, connection: &'a Client) -> Result<Option<T>, Box<dyn Error>> {
     Ok(connection
       .query_opt(&self.query_sql(), &self.values())
       .await?

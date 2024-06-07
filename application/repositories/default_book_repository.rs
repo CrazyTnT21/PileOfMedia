@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use tokio_postgres::types::ToSql;
+use tokio_postgres::Client;
 
 use domain::entities::book::Book;
 use domain::enums::language::Language;
@@ -10,11 +10,10 @@ use domain::pagination::Pagination;
 use from_row::Table;
 use repositories::book_repository::BookRepository;
 use repositories::image_repository::ImageRepository;
-use crate::convert_to_sql::convert_to_sql;
 
+use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::{fallback_unwrap, fallback_unwrap_ref};
-use crate::Pooled;
 use crate::schemas::db_book::DbBook;
 use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::schemas::db_franchise::DbFranchise;
@@ -25,14 +24,14 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultBookRepository<'a> {
-  pool: &'a Pooled<'a>,
+  client: &'a Client,
   default_language: DbLanguage,
   image_repository: &'a dyn ImageRepository,
 }
 
 impl<'a> DefaultBookRepository<'a> {
-  pub fn new(pool: &'a Pooled, default_language: Language, image_repository: &'a dyn ImageRepository) -> DefaultBookRepository<'a> {
-    DefaultBookRepository { pool, default_language: default_language.into(), image_repository }
+  pub fn new(client: &'a Client, default_language: Language, image_repository: &'a dyn ImageRepository) -> DefaultBookRepository<'a> {
+    DefaultBookRepository { client, default_language: default_language.into(), image_repository }
   }
 
   async fn books_from_tuple(&self, items: Vec<BookColumns>) -> Result<Vec<Book>, Box<dyn Error>> {
@@ -78,10 +77,10 @@ impl BookRepository for DefaultBookRepository<'_> {
 
     let select = book_select(&language, &self.default_language);
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
     let select = select.pagination(pagination);
     let books = select
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let books = self.books_from_tuple(books).await?;
@@ -95,7 +94,7 @@ impl BookRepository for DefaultBookRepository<'_> {
     let select = book_select(&language, &self.default_language)
       .where_expression(Expression::new(Value(("book", "id"), Equal(&id))));
 
-    let Some(value) = select.get_single(self.pool).await? else {
+    let Some(value) = select.get_single(self.client).await? else {
       return Ok(None);
     };
     Ok(Some(self.book_from_tuple(value).await?))
@@ -109,12 +108,12 @@ impl BookRepository for DefaultBookRepository<'_> {
       .where_expression(Expression::new(Value(("book_translation", "title"), ILike(&title)))
         .or(Expression::new(Value(("book_translation_fallback", "title"), ILike(&title)))));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let select = select.pagination(pagination);
 
     let books = select
-      .query(self.pool)
+      .query(self.client)
       .await?;
     let books = self.books_from_tuple(books).await?;
     Ok(ItemsTotal { items: books, total })
@@ -125,7 +124,7 @@ impl BookRepository for DefaultBookRepository<'_> {
     let ids = convert_to_sql(ids);
     let books = book_select(&language, &self.default_language)
       .where_expression(Expression::new(Value((DbBook::TABLE_NAME, "id"), In(&ids))))
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let books = self.books_from_tuple(books).await?;

@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use tokio_postgres::Client;
 
 use domain::entities::book::book_character::BookCharacter;
 use domain::entities::book::book_involved::BookInvolved;
@@ -20,7 +21,6 @@ use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::ThemeRepository;
 
 use crate::enums::db_language::DbLanguage;
-use crate::Pooled;
 use crate::schemas::db_book_character::DbBookCharacter;
 use crate::schemas::db_book_genre::DbBookGenre;
 use crate::schemas::db_book_involved::DbBookInvolved;
@@ -33,7 +33,7 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultBookRelationsRepository<'a> {
-  pool: &'a Pooled<'a>,
+  client: &'a Client,
   default_language: DbLanguage,
   book_repository: &'a dyn BookRepository,
   genre_repository: &'a dyn GenreRepository,
@@ -44,7 +44,7 @@ pub struct DefaultBookRelationsRepository<'a> {
 }
 
 impl<'a> DefaultBookRelationsRepository<'a> {
-  pub fn new(pool: &'a Pooled<'a>,
+  pub fn new(client: &'a Client,
              default_language: Language,
              book_repository: &'a dyn BookRepository,
              genre_repository: &'a dyn GenreRepository,
@@ -54,7 +54,7 @@ impl<'a> DefaultBookRelationsRepository<'a> {
              role_repository: &'a dyn RoleRepository,
   ) -> DefaultBookRelationsRepository<'a> {
     DefaultBookRelationsRepository {
-      pool,
+      client,
       default_language: default_language.into(),
       book_repository,
       genre_repository,
@@ -74,11 +74,11 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
       .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
       .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fkbook"), Equal(&book_id))));
 
-    let total = theme_ids.count(self.pool).await? as usize;
+    let total = theme_ids.count(self.client).await? as usize;
 
     let theme_ids: Vec<i32> = theme_ids
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(|x| x.0)
@@ -100,11 +100,11 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
       .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
       .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkbook"), Equal(&book_id))));
 
-    let total = genre_ids.count(self.pool).await? as usize;
+    let total = genre_ids.count(self.client).await? as usize;
 
     let genre_ids: Vec<i32> = genre_ids
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(|x| x.0)
@@ -126,11 +126,11 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
       .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
       .where_expression(Expression::new(Value((DbBookCharacter::TABLE_NAME, "fkbook"), Equal(&book_id))));
 
-    let total = character_books_ids.count(self.pool).await? as usize;
+    let total = character_books_ids.count(self.client).await? as usize;
 
     let character_books_ids = character_books_ids
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     if character_books_ids.is_empty() {
@@ -179,11 +179,11 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
           .and(Expression::column_null("role_translation", "fktranslation")))
       .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkbook"), Equal(&book_id))));
 
-    let total = involved.count(self.pool).await? as usize;
+    let total = involved.count(self.client).await? as usize;
 
     let mut involved = involved
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     if involved.is_empty() {

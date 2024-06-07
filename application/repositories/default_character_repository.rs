@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use tokio_postgres::Client;
 
 use domain::entities::character::Character;
 use domain::entities::image::Image;
@@ -14,7 +15,6 @@ use repositories::image_repository::ImageRepository;
 use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
-use crate::Pooled;
 use crate::schemas::db_character::DbCharacter;
 use crate::schemas::db_character_translation::DbCharacterTranslation;
 use crate::select::combined_tuple::CombinedType;
@@ -24,14 +24,14 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultCharacterRepository<'a> {
-  pool: &'a Pooled<'a>,
+  client: &'a Client,
   default_language: DbLanguage,
   image_repository: &'a dyn ImageRepository,
 }
 
 impl<'a> DefaultCharacterRepository<'a> {
-  pub fn new(pool: &'a Pooled, language: Language, image_repository: &'a dyn ImageRepository) -> DefaultCharacterRepository<'a> {
-    DefaultCharacterRepository { pool, default_language: language.into(), image_repository }
+  pub fn new(client: &'a Client, language: Language, image_repository: &'a dyn ImageRepository) -> DefaultCharacterRepository<'a> {
+    DefaultCharacterRepository { client, default_language: language.into(), image_repository }
   }
 }
 
@@ -42,11 +42,11 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     let select = character_select_columns()
       .transform(|x| self.character_joins(x, &language));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let characters = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let characters = self.to_entities(characters).await?;
@@ -60,7 +60,7 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     let character = character_select_columns()
       .transform(|x| self.character_joins(x, &language))
       .where_expression(Expression::new(Value(("character", "id"), Equal(&id))))
-      .get_single(self.pool)
+      .get_single(self.client)
       .await?;
 
     let fk_image = character
@@ -81,7 +81,7 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     let characters = character_select_columns()
       .transform(|x| self.character_joins(x, &language))
       .where_expression(Expression::new(Value(("character", "id"), In(&ids))))
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let characters = self.to_entities(characters).await?;
@@ -97,11 +97,11 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
       .where_expression(Expression::new(Value(("character_translation", "name"), ILike(&name)))
         .or(Expression::new(Value(("character_translation_fallback", "name"), ILike(&name)))));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let characters = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?;
 
     let characters = self.to_entities(characters).await?;

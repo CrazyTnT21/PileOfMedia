@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use tokio_postgres::Client;
 
 use domain::entities::role::Role;
 use domain::enums::language::Language;
@@ -12,7 +13,6 @@ use repositories::role_repository::RoleRepository;
 use crate::convert_to_sql::convert_to_sql;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
-use crate::Pooled;
 use crate::schemas::db_role::DbRole;
 use crate::schemas::db_role_translation::DbRoleTranslation;
 use crate::select::combined_tuple::CombinedType;
@@ -22,13 +22,13 @@ use crate::select::expression::Expression;
 use crate::select::Select;
 
 pub struct DefaultRoleRepository<'a> {
-  pool: &'a Pooled<'a>,
+  client: &'a Client,
   default_language: DbLanguage,
 }
 
 impl<'a> DefaultRoleRepository<'a> {
-  pub fn new(pool: &'a Pooled, language: Language) -> DefaultRoleRepository<'a> {
-    DefaultRoleRepository { pool, default_language: language.into() }
+  pub fn new(client: &'a Client, language: Language) -> DefaultRoleRepository<'a> {
+    DefaultRoleRepository { client, default_language: language.into() }
   }
 }
 
@@ -39,11 +39,11 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
     let select = role_select_columns()
       .transform(|x| self.role_joins(x, &language));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let roles = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(to_entity)
@@ -58,7 +58,7 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
     let role = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
       .where_expression(Expression::new(Value(("role", "id"), Equal(&id))))
-      .get_single(self.pool)
+      .get_single(self.client)
       .await?;
 
     Ok(role.map(to_entity))
@@ -70,7 +70,7 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
     let roles = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
       .where_expression(Expression::new(Value(("role", "id"), In(&ids))))
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(to_entity)
@@ -87,11 +87,11 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
       .where_expression(Expression::new(Value(("role_translation", "name"), ILike(&name)))
         .or(Expression::new(Value(("role_translation_fallback", "name"), ILike(&name)))));
 
-    let total = select.count(self.pool).await? as usize;
+    let total = select.count(self.client).await? as usize;
 
     let roles = select
       .pagination(pagination)
-      .query(self.pool)
+      .query(self.client)
       .await?
       .into_iter()
       .map(to_entity)
