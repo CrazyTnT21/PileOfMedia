@@ -8,6 +8,8 @@ use application::repositories::default_image_repository::DefaultImageRepository;
 use application::repositories::default_person_repository::DefaultPersonRepository;
 use application::repositories::default_role_repository::DefaultRoleRepository;
 use application::repositories::default_theme_repository::DefaultThemeRepository;
+use application::repositories::file_repository::default_file_repository::DefaultFileRepository;
+use application::repositories::file_repository::default_mut_file_repository::DefaultMutFileRepository;
 use domain::enums::language::Language;
 use infrastructure::services::default_book_relations_service::DefaultBookRelationsService;
 use infrastructure::services::default_book_service::DefaultBookService;
@@ -17,9 +19,13 @@ use infrastructure::services::default_image_service::DefaultImageService;
 use infrastructure::services::default_person_service::DefaultPersonService;
 use infrastructure::services::default_role_service::DefaultRoleService;
 use infrastructure::services::default_theme_service::DefaultThemeService;
+use infrastructure::services::file_service::default_file_service::DefaultFileService;
+use infrastructure::services::file_service::default_mut_file_service::DefaultMutFileService;
 use repositories::book_relations_repository::BookRelationsRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
+use repositories::file_repository::FileRepository;
+use repositories::file_repository::mut_file_repository::MutFileRepository;
 use repositories::genre_repository::GenreRepository;
 use repositories::image_repository::ImageRepository;
 use repositories::person_repository::PersonRepository;
@@ -27,6 +33,8 @@ use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::ThemeRepository;
 use services::book_relations_service::BookRelationsService;
 use services::character_service::CharacterService;
+use services::file_service::FileService;
+use services::file_service::mut_file_service::MutFileService;
 use services::genre_service::GenreService;
 use services::image_service::ImageService;
 use services::person_service::PersonService;
@@ -103,4 +111,20 @@ pub fn get_role_service(role_repository: &impl RoleRepository) -> impl RoleServi
 
 pub fn get_role_repository<'a>(client: &'a Client, language: Language) -> impl RoleRepository + 'a {
   DefaultRoleRepository::new(client, language)
+}
+
+pub fn get_file_service(file_repository: &impl FileRepository) -> impl FileService + '_ {
+  DefaultFileService::new(file_repository)
+}
+
+pub fn get_file_repository<'a>() -> impl FileRepository + 'a {
+  DefaultFileRepository::new()
+}
+
+pub fn get_mut_file_service(mut_file_repository: &impl MutFileRepository) -> impl MutFileService + '_ {
+  DefaultMutFileService::new(mut_file_repository)
+}
+
+pub fn get_mut_file_repository<'a>() -> impl MutFileRepository + 'a {
+  DefaultMutFileRepository::new()
 }

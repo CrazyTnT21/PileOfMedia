@@ -181,7 +181,7 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
 
     let total = involved.count(self.client).await? as usize;
 
-    let mut involved = involved
+    let involved = involved
       .pagination(pagination)
       .query(self.client)
       .await?;
