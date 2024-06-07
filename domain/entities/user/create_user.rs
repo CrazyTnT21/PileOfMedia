@@ -1,0 +1,9 @@
+use crate::entities::image::Image;
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
+pub struct CreateUser {
+  pub name: String,
+  pub description: Option<String>,
+  pub profile_picture: Option<Image>,
+}

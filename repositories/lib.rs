@@ -7,3 +7,4 @@ pub mod person_repository;
 pub mod character_repository;
 pub mod book_relations_repository;
 pub mod role_repository;
+pub mod user_repository;

@@ -1,3 +1,4 @@
+use crate::entities::user::User;
 use crate::entities::role::Role;
 use crate::entities::book::book_involved::BookInvolved;
 use crate::entities::character::Character;
@@ -17,7 +18,8 @@ PeopleTotal = ItemsTotal < Person >,
 CharactersTotal = ItemsTotal < Character >,
 RolesTotal = ItemsTotal < Role >,
 BookInvolvedTotal = ItemsTotal < BookInvolved >,
-BookCharactersTotal = ItemsTotal < BookCharacter >
+BookCharactersTotal = ItemsTotal < BookCharacter >,
+UsersTotal = ItemsTotal < User >
 ))]
 pub struct ItemsTotal<T> {
   pub items: Vec<T>,

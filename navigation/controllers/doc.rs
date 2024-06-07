@@ -1,3 +1,6 @@
+use domain::entities::user::User;
+use crate::controllers::user_controller::user_doc::UserDoc;
+use domain::items_total::UsersTotal;
 use domain::entities::role::Role;
 use crate::controllers::role_controller::role_doc::RoleDoc;
 use domain::entities::book::book_involved::BookInvolved;
@@ -27,34 +30,37 @@ use domain::entities::person::person_role::PersonRole;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(info(title = "mycollection"),
-nest(
-("/books", BookDoc),
-("/genres", GenreDoc),
-("/themes", ThemeDoc),
-("/people", PersonDoc),
-("/characters", CharacterDoc),
-("/roles", RoleDoc),
-),
-components(schemas(
-Genre,
-Character,
-Person,
-Theme,
-Book,
-Image,
-ImageData,
-Franchise,
-Role,
-PersonRole,
-BookInvolved,
-BookCharacter,
-BooksTotal,
-GenresTotal,
-ThemesTotal,
-PeopleTotal,
-CharactersTotal,
-RolesTotal,
-BookInvolvedTotal,
-BookCharactersTotal
-)))]
+  nest(
+    ("/books", BookDoc),
+    ("/genres", GenreDoc),
+    ("/themes", ThemeDoc),
+    ("/people", PersonDoc),
+    ("/characters", CharacterDoc),
+    ("/roles", RoleDoc),
+    ("/users", UserDoc),
+  ),
+  components(schemas(
+    Genre,
+    Character,
+    Person,
+    Theme,
+    Book,
+    Image,
+    ImageData,
+    Franchise,
+    Role,
+    PersonRole,
+    BookInvolved,
+    BookCharacter,
+    User,
+    BooksTotal,
+    GenresTotal,
+    ThemesTotal,
+    PeopleTotal,
+    CharactersTotal,
+    RolesTotal,
+    BookInvolvedTotal,
+    BookCharactersTotal,
+    UsersTotal
+  )))]
 pub(crate) struct ApiDoc;

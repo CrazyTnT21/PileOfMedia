@@ -1,0 +1,114 @@
+use std::error::Error;
+
+use async_trait::async_trait;
+use tokio_postgres::Client;
+
+use domain::entities::image::Image;
+use domain::entities::user::User;
+use domain::items_total::ItemsTotal;
+use domain::pagination::Pagination;
+use from_row::Table;
+use repositories::image_repository::ImageRepository;
+use repositories::user_repository::UserRepository;
+
+use crate::convert_to_sql::convert_to_sql;
+use crate::schemas::db_user::DbUser;
+use crate::select::comparison::Comparison::{Equal, ILike, In};
+use crate::select::condition::Condition::Value;
+use crate::select::expression::Expression;
+use crate::select::Select;
+
+pub struct DefaultUserRepository<'a> {
+  client: &'a Client,
+  image_repository: &'a dyn ImageRepository,
+}
+
+impl<'a> DefaultUserRepository<'a> {
+  pub fn new(client: &'a Client, image_repository: &'a dyn ImageRepository) -> DefaultUserRepository<'a> {
+    DefaultUserRepository { client, image_repository }
+  }
+}
+
+#[async_trait]
+impl<'a> UserRepository for DefaultUserRepository<'a> {
+  async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
+    let select = Select::new::<DbUser>()
+      .columns::<DbUser>(DbUser::TABLE_NAME);
+
+    let total = select.count(self.client).await? as usize;
+
+    let users = select
+      .pagination(pagination)
+      .query(self.client)
+      .await?;
+
+    Ok(ItemsTotal { items: self.to_entities(users).await?, total })
+  }
+
+  async fn get_by_id(&self, id: u32) -> Result<Option<User>, Box<dyn Error>> {
+    let id = id as i32;
+    let user = Select::new::<DbUser>()
+      .columns::<DbUser>(DbUser::TABLE_NAME)
+      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), Equal(&id))))
+      .get_single(self.client)
+      .await?;
+    let image_id = user.as_ref().map(|x| x.0.fk_profile_picture).flatten();
+    let image = match image_id {
+      None => None,
+      Some(id) => self.image_repository.get_by_id(id as u32).await?
+    };
+    Ok(user.map(|x| to_entity(x, image)))
+  }
+
+  async fn get_by_ids(&self, ids: &[i32]) -> Result<Vec<User>, Box<dyn Error>> {
+    let ids = convert_to_sql(ids);
+    let users = Select::new::<DbUser>()
+      .columns::<DbUser>(DbUser::TABLE_NAME)
+      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), In(&ids))))
+      .query(self.client)
+      .await?;
+
+    Ok(self.to_entities(users).await?)
+  }
+
+  async fn get_by_name(&self, name: &str, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
+    let name = format!("%{name}%");
+    let select = Select::new::<DbUser>()
+      .columns::<DbUser>(DbUser::TABLE_NAME)
+      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "name"), ILike(&name))));
+
+    let total = select.count(self.client).await? as usize;
+
+    let users = select
+      .pagination(pagination)
+      .query(self.client)
+      .await?;
+
+    Ok(ItemsTotal { items: self.to_entities(users).await?, total })
+  }
+}
+
+fn to_entity(user: (DbUser, ), image: Option<Image>) -> User {
+  user.0.to_entity(image)
+}
+
+impl<'a> DefaultUserRepository<'a> {
+  async fn to_entities(&self, items: Vec<(DbUser, )>) -> Result<Vec<User>, Box<dyn Error>> {
+    let image_ids: Vec<i32> = items.iter()
+      .filter_map(|x| x.0.fk_profile_picture)
+      .collect();
+
+    let mut images = match image_ids.is_empty() {
+      true => vec![],
+      false => self.image_repository.get_by_ids(&image_ids).await?
+    };
+    Ok(items.into_iter().map(|x| {
+      let image_index = x.0.fk_profile_picture
+        .map(|x| images.iter().position(|y| y.id == x))
+        .flatten();
+      let image = image_index.map(|x| images.swap_remove(x));
+      x.0.to_entity(image)
+    })
+      .collect())
+  }
+}

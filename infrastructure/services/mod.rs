@@ -10,6 +10,7 @@ pub mod default_role_service;
 pub mod default_book_relations_service;
 pub mod file_service;
 pub mod image_service;
+pub mod user_service;
 
 fn map_server_error(error: Box<dyn Error>) -> ServiceError {
   ServiceError::ServerError(error)

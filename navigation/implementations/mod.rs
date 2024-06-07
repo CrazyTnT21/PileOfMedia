@@ -11,6 +11,8 @@ use application::repositories::file_repository::default_file_repository::Default
 use application::repositories::file_repository::default_mut_file_repository::DefaultMutFileRepository;
 use application::repositories::image_repository::default_image_repository::DefaultImageRepository;
 use application::repositories::image_repository::default_mut_image_repository::DefaultMutImageRepository;
+use application::repositories::user_repository::default_mut_user_repository::DefaultMutUserRepository;
+use application::repositories::user_repository::default_user_repository::DefaultUserRepository;
 use domain::enums::language::Language;
 use infrastructure::services::default_book_relations_service::DefaultBookRelationsService;
 use infrastructure::services::default_book_service::DefaultBookService;
@@ -23,6 +25,8 @@ use infrastructure::services::file_service::default_file_service::DefaultFileSer
 use infrastructure::services::file_service::default_mut_file_service::DefaultMutFileService;
 use infrastructure::services::image_service::default_image_service::DefaultImageService;
 use infrastructure::services::image_service::default_mut_image_service::DefaultMutImageService;
+use infrastructure::services::user_service::default_mut_user_service::DefaultMutUserService;
+use infrastructure::services::user_service::default_user_service::DefaultUserService;
 use repositories::book_relations_repository::BookRelationsRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
@@ -34,6 +38,8 @@ use repositories::image_repository::mut_image_repository::MutImageRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::ThemeRepository;
+use repositories::user_repository::mut_user_repository::MutUserRepository;
+use repositories::user_repository::UserRepository;
 use services::book_relations_service::BookRelationsService;
 use services::character_service::CharacterService;
 use services::file_service::FileService;
@@ -44,6 +50,8 @@ use services::image_service::mut_image_service::MutImageService;
 use services::person_service::PersonService;
 use services::role_service::RoleService;
 use services::theme_service::ThemeService;
+use services::user_service::mut_user_service::MutUserService;
+use services::user_service::UserService;
 
 pub fn get_book_service(book_repository: &impl BookRepository) -> DefaultBookService {
   DefaultBookService::new(book_repository)
@@ -134,9 +142,25 @@ pub fn get_mut_file_repository<'a>() -> impl MutFileRepository + 'a {
 }
 
 pub fn get_mut_image_service<'a>(mut_image_repository: &'a impl MutImageRepository, mut_file_service: &'a impl MutFileService, display_path: &'a str, path: &'a str) -> impl MutImageService + 'a {
-  DefaultMutImageService::new(mut_image_repository, mut_file_service, display_path,path)
+  DefaultMutImageService::new(mut_image_repository, mut_file_service, display_path, path)
 }
 
 pub fn get_mut_image_repository<'a>(transaction: &'a Transaction<'a>, image_repository: &'a impl ImageRepository, mut_file_repository: &'a impl MutFileRepository, file_repository: &'a impl FileRepository) -> impl MutImageRepository + 'a {
   DefaultMutImageRepository::new(transaction, image_repository, mut_file_repository, file_repository)
+}
+
+pub fn get_user_service(user_repository: &impl UserRepository) -> impl UserService + '_ {
+  DefaultUserService::new(user_repository)
+}
+
+pub fn get_user_repository<'a>(connection: &'a Client, image_repository: &'a impl ImageRepository) -> impl UserRepository + 'a {
+  DefaultUserRepository::new(connection, image_repository)
+}
+
+pub fn get_mut_user_service<'a>(mut_user_repository: &'a impl MutUserRepository, mut_image_service: &'a impl MutImageService) -> impl MutUserService + 'a {
+  DefaultMutUserService::new(mut_user_repository, mut_image_service)
+}
+
+pub fn get_mut_user_repository<'a>(connection: &'a Transaction<'a>, user_repository: &'a impl UserRepository, image_repository: &'a impl ImageRepository) -> impl MutUserRepository + 'a {
+  DefaultMutUserRepository::new(connection, user_repository, image_repository)
 }

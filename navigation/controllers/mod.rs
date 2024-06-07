@@ -22,6 +22,7 @@ mod theme_controller;
 mod person_controller;
 mod character_controller;
 mod role_controller;
+mod user_controller;
 
 pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
   let doc = doc::ApiDoc::openapi();
@@ -31,7 +32,8 @@ pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: R
     .nest("/themes", theme_controller::routes(pool.clone()))
     .nest("/people", person_controller::routes(pool.clone()))
     .nest("/characters", character_controller::routes(pool.clone()))
-    .nest("/roles", role_controller::routes(pool))
+    .nest("/roles", role_controller::routes(pool.clone()))
+    .nest("/users", user_controller::routes(pool))
     .merge(SwaggerUi::new("/swagger-ui")
       .url("/api-docs/openapi.json", doc))
 }

@@ -8,15 +8,15 @@ use from_row::Table;
 
 pub struct Insert<'a, const U: usize> {
   into: &'a str,
-  columns: &'a [&'a str; U],
+  columns: [&'a str; U],
   values: Vec<[&'a (dyn ToSql + Sync); U]>,
 }
 
 impl<'a, const U: usize> Insert<'a, U> {
-  pub fn new<T: Table>(columns: &'a [&'a str; U]) -> Insert<'a, U> {
+  pub fn new<T: Table>(columns: [&'a str; U]) -> Insert<'a, U> {
     Self::new_raw(T::TABLE_NAME, columns)
   }
-  pub fn new_raw(into: &'a str, columns: &'a [&'a str; U]) -> Insert<'a, U> {
+  pub fn new_raw(into: &'a str, columns: [&'a str; U]) -> Insert<'a, U> {
     Insert {
       into,
       columns,

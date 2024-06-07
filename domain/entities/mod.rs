@@ -6,3 +6,4 @@ pub mod character;
 pub mod theme;
 pub mod person;
 pub mod role;
+pub mod user;

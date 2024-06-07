@@ -7,3 +7,4 @@ pub mod default_book_relations_repository;
 pub mod default_role_repository;
 pub mod file_repository;
 pub mod image_repository;
+pub mod user_repository;
