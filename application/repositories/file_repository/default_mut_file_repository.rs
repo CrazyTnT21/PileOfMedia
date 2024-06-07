@@ -8,8 +8,8 @@ use async_trait::async_trait;
 use base64::Engine;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
-use domain::file_name::FileName;
 
+use domain::file_name::FileName;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
 
 pub struct DefaultMutFileRepository {}
@@ -25,8 +25,12 @@ impl MutFileRepository for DefaultMutFileRepository {
   async fn create(&self, data: &[u8], file_path: &str, file_name: Option<&str>) -> Result<FileName, Box<dyn Error>> {
     let file_name: String = file_name.map(|x| x.to_string())
       .unwrap_or_else(|| random_string(8));
-    let file_extension = infer::get(data).ok_or("failed to get file extension")?.extension();
-    let file_name = Path::new(&file_name).with_extension(file_extension);
+
+    let file_extension = infer::get(data);
+    let file_name = match file_extension {
+      Some(value) => Path::new(&file_name).with_extension(value.extension()),
+      None => Path::new(&file_name).to_path_buf()
+    };
     let file_path = Path::new(file_path).join(&file_name);
     let uri = file_path.to_str().ok_or("failed to get file path")?.to_string();
     let mut file = File::create_new(file_path)?;

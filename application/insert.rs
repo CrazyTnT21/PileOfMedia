@@ -6,24 +6,24 @@ use tokio_postgres::types::ToSql;
 use from_row::Table;
 
 
-pub struct Insert<'a> {
+pub struct Insert<'a, const U: usize> {
   into: &'a str,
-  columns: &'a [&'a str],
-  values: Vec<&'a [&'a (dyn ToSql + Sync)]>,
+  columns: &'a [&'a str; U],
+  values: Vec<[&'a (dyn ToSql + Sync); U]>,
 }
 
-impl<'a> Insert<'a> {
-  pub fn new<T: Table>(columns: &'a [&'a str]) -> Insert<'a> {
+impl<'a, const U: usize> Insert<'a, U> {
+  pub fn new<T: Table>(columns: &'a [&'a str; U]) -> Insert<'a, U> {
     Self::new_raw(T::TABLE_NAME, columns)
   }
-  pub fn new_raw(into: &'a str, columns: &'a [&'a str]) -> Insert<'a> {
+  pub fn new_raw(into: &'a str, columns: &'a [&'a str; U]) -> Insert<'a, U> {
     Insert {
       into,
       columns,
       values: vec![],
     }
   }
-  pub fn push(mut self, values: &'a [&'a (dyn ToSql + Sync)]) -> Self {
+  pub fn push(mut self, values: [&'a (dyn ToSql + Sync); U]) -> Self {
     self.values.push(values);
     self
   }
@@ -31,22 +31,22 @@ impl<'a> Insert<'a> {
   pub async fn execute(&self, connection: &'a Client) -> Result<u64, InsertError> {
     self.invalid_length()?;
 
-    connection.execute(&self.sql(), &self.values()).await.map_err(|x| InsertError::PostgresError(x))
+    connection.execute(&self.sql(), &self.values()).await.map_err(InsertError::PostgresError)
   }
 
   pub async fn execute_transaction(&self, transaction: &'a Transaction<'a>) -> Result<u64, InsertError> {
     self.invalid_length()?;
 
-    transaction.execute(&self.sql(), &self.values()).await.map_err(|x| InsertError::PostgresError(x))
+    transaction.execute(&self.sql(), &self.values()).await.map_err(InsertError::PostgresError)
   }
 
   pub async fn returning(&self, connection: &'a Client) -> Result<i32, InsertError> {
     if self.values.len() > 1 {
-      return Err(InsertError::ReturningMoreThanOne.into());
+      return Err(InsertError::ReturningMoreThanOne);
     }
     self.invalid_length()?;
 
-    let result = connection.query_one(&self.returning_sql(), &self.values()).await.map_err(|x| InsertError::PostgresError(x))?;
+    let result = connection.query_one(&self.returning_sql(), &self.values()).await.map_err(InsertError::PostgresError)?;
 
     Ok(result.get(0))
   }
@@ -62,10 +62,10 @@ impl<'a> Insert<'a> {
   }
   pub async fn returning_transaction(&self, transaction: &'a Transaction<'a>) -> Result<i32, InsertError> {
     if self.values.len() > 1 {
-      return Err(InsertError::ReturningMoreThanOne.into());
+      return Err(InsertError::ReturningMoreThanOne);
     }
     self.invalid_length()?;
-    let result = transaction.query_one(&self.returning_sql(), &self.values()).await.map_err(|x| InsertError::PostgresError(x))?;
+    let result = transaction.query_one(&self.returning_sql(), &self.values()).await.map_err(InsertError::PostgresError)?;
     Ok(result.get(0))
   }
 
@@ -101,7 +101,7 @@ impl<'a> Insert<'a> {
       let result = (1..x.len() + 1)
         .collect::<Vec<usize>>()
         .iter()
-        .map(|i| {
+        .map(|_| {
           total += 1;
           format!("${}", total)
         })

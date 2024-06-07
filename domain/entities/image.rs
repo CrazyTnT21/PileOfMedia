@@ -8,4 +8,6 @@ pub struct Image {
   pub versions: Vec<ImageData>,
 }
 pub mod image_data;
+pub mod partial_create_image;
+pub mod create_image;
 

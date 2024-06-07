@@ -1,26 +1,28 @@
-use tokio_postgres::Client;
+use tokio_postgres::{Client, Transaction};
 
 use application::repositories::default_book_relations_repository::DefaultBookRelationsRepository;
 use application::repositories::default_book_repository::DefaultBookRepository;
 use application::repositories::default_character_repository::DefaultCharacterRepository;
 use application::repositories::default_genre_repository::DefaultGenreRepository;
-use application::repositories::default_image_repository::DefaultImageRepository;
 use application::repositories::default_person_repository::DefaultPersonRepository;
 use application::repositories::default_role_repository::DefaultRoleRepository;
 use application::repositories::default_theme_repository::DefaultThemeRepository;
 use application::repositories::file_repository::default_file_repository::DefaultFileRepository;
 use application::repositories::file_repository::default_mut_file_repository::DefaultMutFileRepository;
+use application::repositories::image_repository::default_image_repository::DefaultImageRepository;
+use application::repositories::image_repository::default_mut_image_repository::DefaultMutImageRepository;
 use domain::enums::language::Language;
 use infrastructure::services::default_book_relations_service::DefaultBookRelationsService;
 use infrastructure::services::default_book_service::DefaultBookService;
 use infrastructure::services::default_character_service::DefaultCharacterService;
 use infrastructure::services::default_genre_service::DefaultGenreService;
-use infrastructure::services::default_image_service::DefaultImageService;
 use infrastructure::services::default_person_service::DefaultPersonService;
 use infrastructure::services::default_role_service::DefaultRoleService;
 use infrastructure::services::default_theme_service::DefaultThemeService;
 use infrastructure::services::file_service::default_file_service::DefaultFileService;
 use infrastructure::services::file_service::default_mut_file_service::DefaultMutFileService;
+use infrastructure::services::image_service::default_image_service::DefaultImageService;
+use infrastructure::services::image_service::default_mut_image_service::DefaultMutImageService;
 use repositories::book_relations_repository::BookRelationsRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
@@ -28,6 +30,7 @@ use repositories::file_repository::FileRepository;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
 use repositories::genre_repository::GenreRepository;
 use repositories::image_repository::ImageRepository;
+use repositories::image_repository::mut_image_repository::MutImageRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::ThemeRepository;
@@ -37,6 +40,7 @@ use services::file_service::FileService;
 use services::file_service::mut_file_service::MutFileService;
 use services::genre_service::GenreService;
 use services::image_service::ImageService;
+use services::image_service::mut_image_service::MutImageService;
 use services::person_service::PersonService;
 use services::role_service::RoleService;
 use services::theme_service::ThemeService;
@@ -49,7 +53,7 @@ pub fn get_book_repository<'a>(client: &'a Client, language: Language, image_rep
   DefaultBookRepository::new(client, language, image_repository)
 }
 
-pub fn get_image_repository<'a>(client: &'a Client) -> impl ImageRepository + 'a {
+pub fn get_image_repository(client: &Client) -> impl ImageRepository + '_ {
   DefaultImageRepository::new(client)
 }
 
@@ -61,7 +65,7 @@ pub fn get_genre_service(genre_repository: &impl GenreRepository) -> impl GenreS
   DefaultGenreService::new(genre_repository)
 }
 
-pub fn get_genre_repository<'a>(client: &'a Client, language: Language) -> impl GenreRepository + 'a {
+pub fn get_genre_repository(client: &Client, language: Language) -> impl GenreRepository + '_ {
   DefaultGenreRepository::new(client, language)
 }
 
@@ -69,7 +73,7 @@ pub fn get_theme_service(theme_repository: &impl ThemeRepository) -> impl ThemeS
   DefaultThemeService::new(theme_repository)
 }
 
-pub fn get_theme_repository<'a>(client: &'a Client, language: Language) -> impl ThemeRepository + 'a {
+pub fn get_theme_repository(client: &Client, language: Language) -> impl ThemeRepository + '_ {
   DefaultThemeRepository::new(client, language)
 }
 
@@ -109,7 +113,7 @@ pub fn get_role_service(role_repository: &impl RoleRepository) -> impl RoleServi
   DefaultRoleService::new(role_repository)
 }
 
-pub fn get_role_repository<'a>(client: &'a Client, language: Language) -> impl RoleRepository + 'a {
+pub fn get_role_repository(client: &Client, language: Language) -> impl RoleRepository + '_ {
   DefaultRoleRepository::new(client, language)
 }
 
@@ -127,4 +131,12 @@ pub fn get_mut_file_service(mut_file_repository: &impl MutFileRepository) -> imp
 
 pub fn get_mut_file_repository<'a>() -> impl MutFileRepository + 'a {
   DefaultMutFileRepository::new()
+}
+
+pub fn get_mut_image_service<'a>(mut_image_repository: &'a impl MutImageRepository, mut_file_service: &'a impl MutFileService, display_path: &'a str, path: &'a str) -> impl MutImageService + 'a {
+  DefaultMutImageService::new(mut_image_repository, mut_file_service, display_path,path)
+}
+
+pub fn get_mut_image_repository<'a>(transaction: &'a Transaction<'a>, image_repository: &'a impl ImageRepository, mut_file_repository: &'a impl MutFileRepository, file_repository: &'a impl FileRepository) -> impl MutImageRepository + 'a {
+  DefaultMutImageRepository::new(transaction, image_repository, mut_file_repository, file_repository)
 }

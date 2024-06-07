@@ -1,3 +1,5 @@
+pub mod mut_image_service;
+
 use async_trait::async_trait;
 
 use domain::entities::image::Image;
