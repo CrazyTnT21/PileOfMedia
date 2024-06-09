@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 use repositories::file_repository::FileRepository;
 use services::file_service::FileService;
@@ -6,11 +7,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultFileService<'a> {
-  repository: &'a dyn FileRepository,
+  repository: Arc<dyn FileRepository + 'a>,
 }
 
 impl<'a> DefaultFileService<'a> {
-  pub fn new(repository: &'a impl FileRepository) -> DefaultFileService {
+  pub fn new(repository: Arc<dyn FileRepository + 'a>) -> DefaultFileService<'a> {
     DefaultFileService { repository }
   }
 }

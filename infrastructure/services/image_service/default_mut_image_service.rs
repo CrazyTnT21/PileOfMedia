@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::image::create_image::CreateImage;
@@ -11,15 +12,15 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultMutImageService<'a> {
-  mut_image_repository: &'a dyn MutImageRepository,
-  mut_file_service: &'a dyn MutFileService,
+  mut_image_repository: Arc<dyn MutImageRepository + 'a>,
+  mut_file_service: Arc<dyn MutFileService + 'a>,
   display_path: &'a str,
   path: &'a str,
 }
 
 impl<'a> DefaultMutImageService<'a> {
-  pub fn new(mut_image_repository: &'a dyn MutImageRepository,
-             mut_file_service: &'a dyn MutFileService,
+  pub fn new(mut_image_repository: Arc<dyn MutImageRepository + 'a>,
+             mut_file_service: Arc<dyn MutFileService + 'a>,
              display_path: &'a str,
              path: &'a str, ) -> DefaultMutImageService<'a> {
     DefaultMutImageService { mut_image_repository, mut_file_service, display_path, path }

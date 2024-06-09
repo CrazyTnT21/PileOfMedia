@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{Json, Router};
 use axum::extract::{Path, Query};
 use axum::http::StatusCode;
@@ -5,7 +7,7 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
+use tokio_postgres::{Client, NoTls};
 
 use services::role_service::RoleService;
 
@@ -34,15 +36,14 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
 }
 
 #[utoipa::path(get, path = "",
-responses(
-(status = 200, description = "Returned roles", body = RolesTotal), ServerError, BadRequest),
-params(AcceptLanguageParam, PageParam, CountParam),
-tag = "Roles"
+  responses(
+    (status = 200, description = "Returned roles", body = RolesTotal), ServerError, BadRequest),
+  params(AcceptLanguageParam, PageParam, CountParam),
+  tag = "Roles"
 )]
 async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let repository = get_role_repository(&connection,DEFAULT_LANGUAGE);
-  let service = get_role_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -59,15 +60,15 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connec
 }
 
 #[utoipa::path(get, path = "/{id}",
-responses(
-(status = 200, description = "Returned role based on the id", body = Role), ServerError, BadRequest, NotFound),
-params(IdParam, AcceptLanguageParam),
-tag = "Roles"
+  responses(
+    (status = 200, description = "Returned role based on the id", body = Role), ServerError, BadRequest, NotFound
+  ),
+  params(IdParam, AcceptLanguageParam),
+  tag = "Roles"
 )]
 async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection) -> impl IntoResponse {
   let connection = connection.0;
-  let repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
-  let service = get_role_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
 
@@ -84,15 +85,15 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
 
 
 #[utoipa::path(get, path = "/name/{name}",
-responses(
-(status = 200, description = "Returned roles based on the name", body = RolesTotal), ServerError, BadRequest),
-params(NameParam, AcceptLanguageParam, PageParam, CountParam),
-tag = "Roles"
+  responses(
+    (status = 200, description = "Returned roles based on the name", body = RolesTotal), ServerError, BadRequest
+  ),
+  params(NameParam, AcceptLanguageParam, PageParam, CountParam),
+  tag = "Roles"
 )]
 async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
-  let service = get_role_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -106,4 +107,9 @@ async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): 
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }
+}
+
+fn get_service(connection: &Client) -> impl RoleService + '_ {
+  let repository = get_role_repository(connection, DEFAULT_LANGUAGE);
+  get_role_service(Arc::new(repository))
 }

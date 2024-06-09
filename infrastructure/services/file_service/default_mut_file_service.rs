@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 use domain::file_name::FileName;
 
@@ -7,11 +8,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultMutFileService<'a> {
-  repository: &'a dyn MutFileRepository,
+  repository: Arc<dyn MutFileRepository + 'a>,
 }
 
 impl<'a> DefaultMutFileService<'a> {
-  pub fn new(repository: &'a impl MutFileRepository) -> DefaultMutFileService {
+  pub fn new(repository: Arc<dyn MutFileRepository + 'a>) -> DefaultMutFileService<'a> {
     DefaultMutFileService { repository }
   }
 }

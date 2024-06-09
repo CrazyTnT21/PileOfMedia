@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::user::create_user::CreateUser;
@@ -11,13 +12,13 @@ use services::user_service::mut_user_service::MutUserService;
 use crate::services::map_server_error;
 
 pub struct DefaultMutUserService<'a> {
-  mut_user_repository: &'a dyn MutUserRepository,
-  mut_image_service: &'a dyn MutImageService,
+  mut_user_repository: Arc<dyn MutUserRepository + 'a>,
+  mut_image_service: Arc<dyn MutImageService + 'a>,
 }
 
 impl<'a> DefaultMutUserService<'a> {
-  pub fn new(mut_user_repository: &'a dyn MutUserRepository,
-             mut_image_service: &'a dyn MutImageService, ) -> DefaultMutUserService<'a> {
+  pub fn new(mut_user_repository: Arc<dyn MutUserRepository + 'a>,
+             mut_image_service: Arc<dyn MutImageService + 'a>, ) -> DefaultMutUserService<'a> {
     DefaultMutUserService { mut_user_repository, mut_image_service }
   }
 }

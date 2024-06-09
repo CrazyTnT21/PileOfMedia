@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use tokio_postgres::Client;
@@ -20,11 +21,11 @@ use crate::select::Select;
 
 pub struct DefaultUserRepository<'a> {
   client: &'a Client,
-  image_repository: &'a dyn ImageRepository,
+  image_repository: Arc<dyn ImageRepository + 'a>,
 }
 
 impl<'a> DefaultUserRepository<'a> {
-  pub fn new(client: &'a Client, image_repository: &'a dyn ImageRepository) -> DefaultUserRepository<'a> {
+  pub fn new(client: &'a Client, image_repository: Arc<dyn ImageRepository + 'a>) -> DefaultUserRepository<'a> {
     DefaultUserRepository { client, image_repository }
   }
 }
@@ -52,7 +53,7 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
       .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), Equal(&id))))
       .get_single(self.client)
       .await?;
-    let image_id = user.as_ref().map(|x| x.0.fk_profile_picture).flatten();
+    let image_id = user.as_ref().and_then(|x| x.0.fk_profile_picture);
     let image = match image_id {
       None => None,
       Some(id) => self.image_repository.get_by_id(id as u32).await?
@@ -104,8 +105,7 @@ impl<'a> DefaultUserRepository<'a> {
     };
     Ok(items.into_iter().map(|x| {
       let image_index = x.0.fk_profile_picture
-        .map(|x| images.iter().position(|y| y.id == x))
-        .flatten();
+        .and_then(|x| images.iter().position(|y| y.id == x));
       let image = image_index.map(|x| images.swap_remove(x));
       x.0.to_entity(image)
     })

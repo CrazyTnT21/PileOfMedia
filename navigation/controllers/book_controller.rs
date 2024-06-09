@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use axum::{Json, Router};
 use axum::extract::{Path, Query};
 use axum::http::StatusCode;
@@ -5,7 +6,7 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
+use tokio_postgres::{Client, NoTls};
 
 use services::book_relations_service::BookRelationsService;
 use services::book_service::BookService;
@@ -39,16 +40,14 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
 }
 
 #[utoipa::path(get, path = "",
-responses(
-(status = 200, description = "Returned books", body = BooksTotal), ServerError, BadRequest),
-params(AcceptLanguageParam, PageParam, CountParam),
-tag = "Books"
+  responses(
+    (status = 200, description = "Returned books", body = BooksTotal), ServerError, BadRequest),
+  params(AcceptLanguageParam, PageParam, CountParam),
+  tag = "Books"
 )]
 async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let service = get_book_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -65,16 +64,15 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connec
 }
 
 #[utoipa::path(get, path = "/{id}",
-responses(
-(status = 200, description = "Returned book based on the id", body = Book), ServerError, BadRequest, NotFound),
-params(IdParam, AcceptLanguageParam),
-tag = "Books"
+  responses(
+    (status = 200, description = "Returned book based on the id", body = Book), ServerError, BadRequest, NotFound
+  ),
+  params(IdParam, AcceptLanguageParam),
+  tag = "Books"
 )]
 async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let service = get_book_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
 
@@ -90,16 +88,15 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
 }
 
 #[utoipa::path(get, path = "/title/{title}",
-responses(
-(status = 200, description = "Returned books based on the title", body = BooksTotal), ServerError, BadRequest),
-params(TitleParam, AcceptLanguageParam, PageParam, CountParam),
-tag = "Books"
+  responses(
+    (status = 200, description = "Returned books based on the title", body = BooksTotal), ServerError, BadRequest
+  ),
+  params(TitleParam, AcceptLanguageParam, PageParam, CountParam),
+  tag = "Books"
 )]
 async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let service = get_book_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -116,24 +113,15 @@ async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages)
 }
 
 #[utoipa::path(get, path = "/{id}/genres",
-responses(
-(status = 200, description = "Returned genres based on the book id", body = GenresTotal), ServerError, BadRequest
-),
-params(IdParam, AcceptLanguageParam, PageParam, CountParam),
-tag = "Books"
+  responses(
+    (status = 200, description = "Returned genres based on the book id", body = GenresTotal), ServerError, BadRequest
+  ),
+  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  tag = "Books"
 )]
 async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
-  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
-  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
-
-  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
-  let service = get_book_relations_service(&repository);
+  let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -150,24 +138,15 @@ async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
 }
 
 #[utoipa::path(get, path = "/{id}/themes",
-responses(
-(status = 200, description = "Returned themes based on the book id", body = ThemesTotal), ServerError, BadRequest
-),
-params(IdParam, AcceptLanguageParam, PageParam, CountParam),
-tag = "Books"
+  responses(
+    (status = 200, description = "Returned themes based on the book id", body = ThemesTotal), ServerError, BadRequest
+  ),
+  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  tag = "Books"
 )]
 async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
-  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
-  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
-
-  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
-  let service = get_book_relations_service(&repository);
+  let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -184,24 +163,15 @@ async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
 }
 
 #[utoipa::path(get, path = "/{id}/characters",
-responses(
-(status = 200, description = "Returned characters based on the book id", body = BookCharactersTotal), ServerError, BadRequest
-),
-params(IdParam, AcceptLanguageParam, PageParam, CountParam),
-tag = "Books"
+  responses(
+    (status = 200, description = "Returned characters based on the book id", body = BookCharactersTotal), ServerError, BadRequest
+  ),
+  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  tag = "Books"
 )]
 async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
-  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
-  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
-
-  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
-  let service = get_book_relations_service(&repository);
+  let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -218,24 +188,15 @@ async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): Ac
 }
 
 #[utoipa::path(get, path = "/{id}/involved",
-responses(
-(status = 200, description = "Returned people involved based on the book id", body = BookInvolvedTotal), ServerError, BadRequest
-),
-params(IdParam, AcceptLanguageParam, PageParam, CountParam),
-tag = "Books"
+  responses(
+    (status = 200, description = "Returned people involved based on the book id", body = BookInvolvedTotal), ServerError, BadRequest
+  ),
+  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  tag = "Books"
 )]
 async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let genre_repository = get_genre_repository(&connection, DEFAULT_LANGUAGE);
-  let theme_repository = get_theme_repository(&connection, DEFAULT_LANGUAGE);
-  let book_repository = get_book_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let character_repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let person_repository = get_person_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let role_repository = get_role_repository(&connection, DEFAULT_LANGUAGE);
-
-  let repository = get_book_relations_repository(&connection, DEFAULT_LANGUAGE, &book_repository, &genre_repository, &theme_repository, &character_repository, &person_repository, &role_repository);
-  let service = get_book_relations_service(&repository);
+  let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -250,4 +211,22 @@ async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): Acce
     Err(error) => Err(convert_service_error(error))
   }
 }
-//TODO: Refactor dependencies
+
+fn get_relations_service(connection: &Client) -> impl BookRelationsService + '_ {
+  let image_repository = Arc::new(get_image_repository(connection));
+  let genre_repository = Arc::new(get_genre_repository(connection, DEFAULT_LANGUAGE));
+  let theme_repository = Arc::new(get_theme_repository(connection, DEFAULT_LANGUAGE));
+  let book_repository = Arc::new(get_book_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
+  let character_repository = Arc::new(get_character_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
+  let person_repository = Arc::new(get_person_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
+  let role_repository = Arc::new(get_role_repository(connection, DEFAULT_LANGUAGE));
+
+  let repository = get_book_relations_repository(connection, DEFAULT_LANGUAGE, book_repository, genre_repository, theme_repository, character_repository, person_repository, role_repository);
+  get_book_relations_service(Arc::new(repository))
+}
+
+fn get_service(connection: &Client) -> impl BookService + '_ {
+  let image_repository = Arc::new(get_image_repository(connection));
+  let repository = get_book_repository(connection, DEFAULT_LANGUAGE, image_repository);
+  get_book_service(Arc::new(repository))
+}

@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use tokio_postgres::Client;
@@ -26,11 +27,11 @@ use crate::select::Select;
 pub struct DefaultPersonRepository<'a> {
   client: &'a Client,
   default_language: DbLanguage,
-  image_repository: &'a dyn ImageRepository,
+  image_repository: Arc<dyn ImageRepository + 'a>,
 }
 
 impl<'a> DefaultPersonRepository<'a> {
-  pub fn new(client: &'a Client, language: Language, image_repository: &'a dyn ImageRepository) -> DefaultPersonRepository<'a> {
+  pub fn new(client: &'a Client, language: Language, image_repository: Arc<dyn ImageRepository + 'a>) -> DefaultPersonRepository<'a> {
     DefaultPersonRepository { client, default_language: language.into(), image_repository }
   }
 }

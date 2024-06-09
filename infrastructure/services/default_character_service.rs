@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::character::Character;
@@ -11,11 +12,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultCharacterService<'a> {
-  character_repository: &'a dyn CharacterRepository,
+  character_repository: Arc<dyn CharacterRepository + 'a>,
 }
 
 impl<'a> DefaultCharacterService<'a> {
-  pub fn new(character_repository: &'a dyn CharacterRepository) -> DefaultCharacterService {
+  pub fn new(character_repository: Arc<dyn CharacterRepository + 'a>) -> DefaultCharacterService<'a> {
     DefaultCharacterService { character_repository }
   }
 }

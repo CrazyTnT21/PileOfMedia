@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{Json, Router};
 use axum::extract::{Path, Query};
 use axum::http::StatusCode;
@@ -5,9 +7,8 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
+use tokio_postgres::{Client, NoTls};
 
-use services::user_service::mut_user_service::MutUserService;
 use services::user_service::UserService;
 
 use crate::controllers::{convert_service_error, set_pagination_limit};
@@ -40,9 +41,7 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
 )]
 async fn get_items(connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_user_repository(&connection, &image_repository);
-  let service = get_user_service(&repository);
+  let service = get_service(&connection);
 
   set_pagination_limit(&mut pagination);
 
@@ -63,9 +62,7 @@ async fn get_items(connection: DatabaseConnection, Query(mut pagination): Query<
 )]
 async fn get_by_id(Path(id): Path<u32>, connection: DatabaseConnection) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_user_repository(&connection, &image_repository);
-  let service = get_user_service(&repository);
+  let service = get_service(&connection);
 
   println!("Route for a user with id {}", id, );
 
@@ -84,9 +81,7 @@ async fn get_by_id(Path(id): Path<u32>, connection: DatabaseConnection) -> impl 
 )]
 async fn get_by_name(Path(name): Path<String>, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_user_repository(&connection, &image_repository);
-  let service = get_user_service(&repository);
+  let service = get_service(&connection);
 
   set_pagination_limit(&mut pagination);
 
@@ -96,4 +91,10 @@ async fn get_by_name(Path(name): Path<String>, connection: DatabaseConnection, Q
     Ok(items) => Ok((StatusCode::OK, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }
+}
+
+fn get_service(connection: &Client) -> impl UserService + '_ {
+  let image_repository = Arc::new(get_image_repository(connection));
+  let repository = get_user_repository(connection, image_repository);
+  get_user_service(Arc::new(repository))
 }

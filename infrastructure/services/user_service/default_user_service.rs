@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::user::User;
@@ -10,11 +11,11 @@ use services::user_service::UserService;
 use crate::services::map_server_error;
 
 pub struct DefaultUserService<'a> {
-  user_repository: &'a dyn UserRepository
+  user_repository: Arc<dyn UserRepository + 'a>,
 }
 
 impl<'a> DefaultUserService<'a> {
-  pub fn new(user_repository: &'a dyn UserRepository ) -> DefaultUserService<'a> {
+  pub fn new(user_repository: Arc<dyn UserRepository + 'a>) -> DefaultUserService<'a> {
     DefaultUserService { user_repository }
   }
 }

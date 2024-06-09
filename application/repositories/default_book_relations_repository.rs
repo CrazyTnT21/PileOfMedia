@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use tokio_postgres::Client;
@@ -35,23 +36,23 @@ use crate::select::Select;
 pub struct DefaultBookRelationsRepository<'a> {
   client: &'a Client,
   default_language: DbLanguage,
-  book_repository: &'a dyn BookRepository,
-  genre_repository: &'a dyn GenreRepository,
-  theme_repository: &'a dyn ThemeRepository,
-  character_repository: &'a dyn CharacterRepository,
-  person_repository: &'a dyn PersonRepository,
-  role_repository: &'a dyn RoleRepository,
+  book_repository: Arc<dyn BookRepository + 'a>,
+  genre_repository: Arc<dyn GenreRepository + 'a>,
+  theme_repository: Arc<dyn ThemeRepository + 'a>,
+  character_repository: Arc<dyn CharacterRepository + 'a>,
+  person_repository: Arc<dyn PersonRepository + 'a>,
+  role_repository: Arc<dyn RoleRepository + 'a>,
 }
 
 impl<'a> DefaultBookRelationsRepository<'a> {
   pub fn new(client: &'a Client,
              default_language: Language,
-             book_repository: &'a dyn BookRepository,
-             genre_repository: &'a dyn GenreRepository,
-             theme_repository: &'a dyn ThemeRepository,
-             character_repository: &'a dyn CharacterRepository,
-             person_repository: &'a dyn PersonRepository,
-             role_repository: &'a dyn RoleRepository,
+             book_repository: Arc<dyn BookRepository + 'a>,
+             genre_repository: Arc<dyn GenreRepository + 'a>,
+             theme_repository: Arc<dyn ThemeRepository + 'a>,
+             character_repository: Arc<dyn CharacterRepository + 'a>,
+             person_repository: Arc<dyn PersonRepository + 'a>,
+             role_repository: Arc<dyn RoleRepository + 'a>,
   ) -> DefaultBookRelationsRepository<'a> {
     DefaultBookRelationsRepository {
       client,

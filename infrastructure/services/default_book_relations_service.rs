@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::book::book_character::BookCharacter;
@@ -14,11 +15,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultBookRelationsService<'a> {
-  book_relations_repository: &'a dyn BookRelationsRepository,
+  book_relations_repository: Arc<dyn BookRelationsRepository + 'a>,
 }
 
 impl<'a> DefaultBookRelationsService<'a> {
-  pub fn new(book_relations_repository: &'a dyn BookRelationsRepository) -> DefaultBookRelationsService {
+  pub fn new(book_relations_repository: Arc<dyn BookRelationsRepository + 'a>) -> DefaultBookRelationsService<'a> {
     DefaultBookRelationsService { book_relations_repository }
   }
 }

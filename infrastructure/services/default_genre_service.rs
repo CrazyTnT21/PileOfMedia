@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::genre::Genre;
@@ -11,11 +12,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultGenreService<'a> {
-  genre_repository: &'a dyn GenreRepository,
+  genre_repository: Arc<dyn GenreRepository + 'a>,
 }
 
 impl<'a> DefaultGenreService<'a> {
-  pub fn new(genre_repository: &'a dyn GenreRepository) -> DefaultGenreService {
+  pub fn new(genre_repository: Arc<dyn GenreRepository + 'a>) -> DefaultGenreService<'a> {
     DefaultGenreService { genre_repository }
   }
 }

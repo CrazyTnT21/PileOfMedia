@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::role::Role;
@@ -11,11 +12,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultRoleService<'a> {
-  role_repository: &'a dyn RoleRepository,
+  role_repository: Arc<dyn RoleRepository + 'a>,
 }
 
 impl<'a> DefaultRoleService<'a> {
-  pub fn new(role_repository: &'a dyn RoleRepository) -> DefaultRoleService {
+  pub fn new(role_repository: Arc<dyn RoleRepository + 'a>) -> DefaultRoleService<'a> {
     DefaultRoleService { role_repository }
   }
 }

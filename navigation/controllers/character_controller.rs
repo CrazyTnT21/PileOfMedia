@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{Json, Router};
 use axum::extract::{Path, Query};
 use axum::http::StatusCode;
@@ -5,7 +7,7 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
+use tokio_postgres::{Client, NoTls};
 
 use services::character_service::CharacterService;
 
@@ -42,9 +44,7 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
 )]
 async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let service = get_character_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -69,9 +69,7 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connec
 )]
 async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let service = get_character_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
 
@@ -96,9 +94,7 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
 )]
 async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = connection.0;
-  let image_repository = get_image_repository(&connection);
-  let repository = get_character_repository(&connection, DEFAULT_LANGUAGE, &image_repository);
-  let service = get_character_service(&repository);
+  let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -112,4 +108,10 @@ async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): 
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }
+}
+
+fn get_service(connection: &Client) -> impl CharacterService + '_ {
+  let image_repository = Arc::new(get_image_repository(connection));
+  let repository = get_character_repository(connection, DEFAULT_LANGUAGE, image_repository);
+  get_character_service(Arc::new(repository))
 }

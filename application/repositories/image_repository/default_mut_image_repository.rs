@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::io::Cursor;
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use image::{DynamicImage, ImageFormat};
@@ -19,16 +20,16 @@ use crate::schemas::db_image_data::DbImageData;
 
 pub struct DefaultMutImageRepository<'a> {
   transaction: &'a Transaction<'a>,
-  image_repository: &'a dyn ImageRepository,
-  mut_file_repository: &'a dyn MutFileRepository,
-  file_repository: &'a dyn FileRepository,
+  image_repository: Arc<dyn ImageRepository + 'a>,
+  mut_file_repository: Arc<dyn MutFileRepository + 'a>,
+  file_repository: Arc<dyn FileRepository + 'a>,
 }
 
 impl<'a> DefaultMutImageRepository<'a> {
   pub fn new(transaction: &'a Transaction<'a>,
-             image_repository: &'a dyn ImageRepository,
-             mut_file_repository: &'a dyn MutFileRepository,
-             file_repository: &'a dyn FileRepository, ) -> DefaultMutImageRepository<'a> {
+             image_repository: Arc<dyn ImageRepository + 'a>,
+             mut_file_repository: Arc<dyn MutFileRepository + 'a>,
+             file_repository: Arc<dyn FileRepository + 'a>, ) -> DefaultMutImageRepository<'a> {
     DefaultMutImageRepository { transaction, image_repository, mut_file_repository, file_repository }
   }
 }

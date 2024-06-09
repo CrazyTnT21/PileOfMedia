@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::theme::Theme;
@@ -11,11 +12,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultThemeService<'a> {
-  theme_repository: &'a dyn ThemeRepository,
+  theme_repository: Arc<dyn ThemeRepository + 'a>,
 }
 
 impl<'a> DefaultThemeService<'a> {
-  pub fn new(theme_repository: &'a dyn ThemeRepository) -> DefaultThemeService {
+  pub fn new(theme_repository: Arc<dyn ThemeRepository + 'a>) -> DefaultThemeService {
     DefaultThemeService { theme_repository }
   }
 }

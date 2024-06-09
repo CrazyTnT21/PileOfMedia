@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::image::Image;
@@ -10,11 +11,11 @@ use services::traits::service_error::ServiceError;
 use crate::services::map_server_error;
 
 pub struct DefaultImageService<'a> {
-  image_repository: &'a dyn ImageRepository,
+  image_repository: Arc<dyn ImageRepository + 'a>,
 }
 
 impl<'a> DefaultImageService<'a> {
-  pub fn new(image_repository: &'a dyn ImageRepository) -> DefaultImageService {
+  pub fn new(image_repository: Arc<dyn ImageRepository + 'a>) -> DefaultImageService<'a> {
     DefaultImageService { image_repository }
   }
 }
