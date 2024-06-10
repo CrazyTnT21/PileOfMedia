@@ -1,6 +1,3 @@
 [submodule "MyCollectionSite"]
 	path = MyCollectionSite
 	url = https://github.com/CrazyTnT21/MyCollectionSite
-[submodule "MyCollectionApp"]
-	path = MyCollectionApp
-	url = https://github.com/CrazyTnT21/MyCollectionApp
