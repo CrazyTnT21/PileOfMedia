@@ -38,7 +38,7 @@ impl<'a> DefaultMutImageRepository<'a> {
 #[async_trait]
 impl<'a> MutImageRepository for DefaultMutImageRepository<'a> {
   async fn create(&self, image: CreateImage<'_>) -> Result<Image, Box<dyn Error>> {
-    let id = Insert::new::<DbImage>([]).returning_transaction(self.transaction).await?;
+    let id = Insert::new::<DbImage>([]).returning_transaction("id", self.transaction).await?;
     let image_data = self.file_repository.get(image.uri).await?;
 
     let file_image = image::io::Reader::new(Cursor::new(image_data.clone())).with_guessed_format()?;

@@ -23,6 +23,7 @@ mod person_controller;
 mod character_controller;
 mod role_controller;
 mod user_controller;
+mod account_controller;
 
 pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
   let doc = doc::ApiDoc::openapi();
@@ -33,7 +34,8 @@ pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: R
     .nest("/people", person_controller::routes(pool.clone()))
     .nest("/characters", character_controller::routes(pool.clone()))
     .nest("/roles", role_controller::routes(pool.clone()))
-    .nest("/users", user_controller::routes(pool))
+    .nest("/users", user_controller::routes(pool.clone()))
+    .nest("/accounts", account_controller::routes(pool))
     .merge(SwaggerUi::new("/swagger-ui")
       .url("/api-docs/openapi.json", doc))
 }
@@ -69,12 +71,12 @@ fn append_content_language_header(headers: &mut HeaderMap, language: Language) -
 //TODO: Make configurable
 pub const DEFAULT_LANGUAGE: Language = EN;
 
-pub fn convert_service_error(service_error: ServiceError) -> StatusCode {
+pub fn convert_service_error(service_error: ServiceError) -> (StatusCode, String) {
   match service_error {
-    ServiceError::ClientError(_) => StatusCode::BAD_REQUEST,
+    ServiceError::ClientError(error) => (StatusCode::BAD_REQUEST, error.title),
     ServiceError::ServerError(e) => {
       eprintln!("Error: {e}");
-      StatusCode::INTERNAL_SERVER_ERROR
+      (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())
     }
   }
 }

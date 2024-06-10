@@ -13,6 +13,7 @@ async-trait = "0.1.80"
 domain = { path = "../domain" }
 services = { path = "../services" }
 repositories = { path = "../repositories" }
+argon2 = { version = "0.5.3", features = ["std"] }
 
 [lib]
 name = "infrastructure"

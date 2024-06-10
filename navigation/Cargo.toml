@@ -15,13 +15,15 @@ infrastructure = { path = "../infrastructure" }
 tower-http = { version = "0.5.2", features = ["cors"] }
 tokio-postgres = { version = "0.7.10", features = ["with-chrono-0_4"] }
 bb8-postgres = { version = "0.8.1", features = ["with-chrono-0_4"] }
-axum = { version = "0.7.5", features = ["macros"] }
+axum = { version = "0.7.5", features = ["macros", "json"] }
 serde = { version = "1.0.202", features = ["derive"] }
 tokio = "1.37.0"
 dotenvy = "0.15.7"
 async-trait = "0.1.80"
-utoipa = { git = "https://github.com/juhaku/utoipa.git",rev = "97bc507" }
-utoipa-swagger-ui = { git = "https://github.com/juhaku/utoipa.git",rev = "97bc507", features = ["axum"] }
+utoipa = { git = "https://github.com/juhaku/utoipa.git", rev = "97bc507" }
+utoipa-swagger-ui = { git = "https://github.com/juhaku/utoipa.git", rev = "97bc507", features = ["axum"] }
+jsonwebtoken = { version = "9.3.0", features = ["pem"] }
+chrono = { version = "0.4.38", features = ["serde"] }
 
 [lib]
 name = "navigation"

@@ -3,7 +3,7 @@ use chrono::NaiveDate;
 use crate::entities::franchise::Franchise;
 use crate::enums::language::Language;
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct InsertBook {
   pub chapters: Option<i16>,
@@ -14,7 +14,7 @@ pub struct InsertBook {
   pub translations: HashMap<Language, TitleDescription>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct TitleDescription {
   title: String,

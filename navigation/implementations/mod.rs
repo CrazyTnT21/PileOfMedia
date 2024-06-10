@@ -1,5 +1,7 @@
 use std::sync::Arc;
 use tokio_postgres::{Client, Transaction};
+use application::repositories::account_repository::default_account_repository::DefaultAccountRepository;
+use application::repositories::account_repository::default_mut_account_repository::DefaultMutAccountRepository;
 
 use application::repositories::default_book_relations_repository::DefaultBookRelationsRepository;
 use application::repositories::default_book_repository::DefaultBookRepository;
@@ -15,6 +17,8 @@ use application::repositories::image_repository::default_mut_image_repository::D
 use application::repositories::user_repository::default_mut_user_repository::DefaultMutUserRepository;
 use application::repositories::user_repository::default_user_repository::DefaultUserRepository;
 use domain::enums::language::Language;
+use infrastructure::services::account_service::default_account_service::DefaultAccountService;
+use infrastructure::services::account_service::default_mut_account_service::DefaultMutAccountService;
 use infrastructure::services::default_book_relations_service::DefaultBookRelationsService;
 use infrastructure::services::default_book_service::DefaultBookService;
 use infrastructure::services::default_character_service::DefaultCharacterService;
@@ -28,6 +32,8 @@ use infrastructure::services::image_service::default_image_service::DefaultImage
 use infrastructure::services::image_service::default_mut_image_service::DefaultMutImageService;
 use infrastructure::services::user_service::default_mut_user_service::DefaultMutUserService;
 use infrastructure::services::user_service::default_user_service::DefaultUserService;
+use repositories::account_repository::AccountRepository;
+use repositories::account_repository::mut_account_repository::MutAccountRepository;
 use repositories::book_relations_repository::BookRelationsRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
@@ -41,6 +47,8 @@ use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::ThemeRepository;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
 use repositories::user_repository::UserRepository;
+use services::account_service::AccountService;
+use services::account_service::mut_account_service::MutAccountService;
 use services::book_relations_service::BookRelationsService;
 use services::book_service::BookService;
 use services::character_service::CharacterService;
@@ -123,7 +131,7 @@ pub fn get_role_service<'a>(role_repository: Arc<dyn RoleRepository + 'a>) -> im
   DefaultRoleService::new(role_repository)
 }
 
-pub fn get_role_repository(client: &Client, language: Language) -> impl RoleRepository +'_ {
+pub fn get_role_repository(client: &Client, language: Language) -> impl RoleRepository + '_ {
   DefaultRoleRepository::new(client, language)
 }
 
@@ -163,6 +171,22 @@ pub fn get_mut_user_service<'a>(mut_user_repository: Arc<dyn MutUserRepository +
   DefaultMutUserService::new(mut_user_repository, mut_image_service)
 }
 
-pub fn get_mut_user_repository<'a>(connection: &'a Transaction, user_repository: Arc<dyn UserRepository + 'a>, image_repository: Arc<dyn ImageRepository + 'a>) -> impl MutUserRepository + 'a {
-  DefaultMutUserRepository::new(connection, user_repository, image_repository)
+pub fn get_mut_user_repository<'a>(transaction: &'a Transaction, user_repository: Arc<dyn UserRepository + 'a>, image_repository: Arc<dyn ImageRepository + 'a>) -> impl MutUserRepository + 'a {
+  DefaultMutUserRepository::new(transaction, user_repository, image_repository)
+}
+
+pub fn get_mut_account_repository<'a>(transaction: &'a Transaction, account_repository: Arc<dyn AccountRepository + 'a>, user_repository: Arc<dyn UserRepository + 'a>) -> impl MutAccountRepository + 'a {
+  DefaultMutAccountRepository::new(transaction, account_repository, user_repository)
+}
+
+pub fn get_mut_account_service<'a>(mut_account_repository: Arc<dyn MutAccountRepository + 'a>, account_service: Arc<dyn AccountService + 'a>, mut_user_service: Arc<dyn MutUserService + 'a>) -> impl MutAccountService + 'a {
+  DefaultMutAccountService::new(mut_account_repository, account_service, mut_user_service)
+}
+
+pub fn get_account_service<'a>(account_repository: Arc<dyn AccountRepository + 'a>) -> impl AccountService + 'a {
+  DefaultAccountService::new(account_repository)
+}
+
+pub fn get_account_repository<'a>(connection: &'a Client, user_repository: Arc<dyn UserRepository + 'a>) -> impl AccountRepository + 'a {
+  DefaultAccountRepository::new(connection, user_repository)
 }

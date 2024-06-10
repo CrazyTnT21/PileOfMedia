@@ -40,13 +40,13 @@ impl<'a, const U: usize> Insert<'a, U> {
     transaction.execute(&self.sql(), &self.values()).await.map_err(InsertError::PostgresError)
   }
 
-  pub async fn returning(&self, connection: &'a Client) -> Result<i32, InsertError> {
+  pub async fn returning(&self, column: &'a str, connection: &'a Client) -> Result<i32, InsertError> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne);
     }
     self.invalid_length()?;
 
-    let result = connection.query_one(&self.returning_sql(), &self.values()).await.map_err(InsertError::PostgresError)?;
+    let result = connection.query_one(&self.returning_sql(column), &self.values()).await.map_err(InsertError::PostgresError)?;
 
     Ok(result.get(0))
   }
@@ -60,12 +60,12 @@ impl<'a, const U: usize> Insert<'a, U> {
     }
     Ok(())
   }
-  pub async fn returning_transaction(&self, transaction: &'a Transaction<'a>) -> Result<i32, InsertError> {
+  pub async fn returning_transaction(&self, column: &'a str, transaction: &'a Transaction<'a>) -> Result<i32, InsertError> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne);
     }
     self.invalid_length()?;
-    let result = transaction.query_one(&self.returning_sql(), &self.values()).await.map_err(InsertError::PostgresError)?;
+    let result = transaction.query_one(&self.returning_sql(column), &self.values()).await.map_err(InsertError::PostgresError)?;
     Ok(result.get(0))
   }
 
@@ -80,15 +80,15 @@ impl<'a, const U: usize> Insert<'a, U> {
     format!(r"INSERT INTO {into}({columns}) values {values}")
   }
 
-  pub fn returning_sql(&self) -> String {
+  pub fn returning_sql(&self, column: &'a str) -> String {
     let into = self.into;
     if self.values.is_empty() {
-      return format!("INSERT INTO {into} DEFAULT VALUES RETURNING id;");
+      return format!("INSERT INTO {into} DEFAULT VALUES RETURNING {column};");
     }
 
     let columns = self.columns_sql();
     let values = self.values_sql();
-    format!(r"INSERT INTO {into}({columns}) values {values} returning id;")
+    format!(r"INSERT INTO {into}({columns}) values {values} returning {column};")
   }
 
   fn columns_sql(&self) -> String {

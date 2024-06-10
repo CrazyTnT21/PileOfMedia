@@ -8,3 +8,4 @@ pub mod character_repository;
 pub mod book_relations_repository;
 pub mod role_repository;
 pub mod user_repository;
+pub mod account_repository;

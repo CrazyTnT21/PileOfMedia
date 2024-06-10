@@ -8,3 +8,4 @@ pub mod default_role_repository;
 pub mod file_repository;
 pub mod image_repository;
 pub mod user_repository;
+pub mod account_repository;

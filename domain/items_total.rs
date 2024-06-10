@@ -8,7 +8,7 @@ use crate::entities::theme::Theme;
 use crate::entities::person::Person;
 use crate::entities::book::book_character::BookCharacter;
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[cfg_attr(feature = "utoipa", aliases(
 BooksTotal = ItemsTotal < Book >,

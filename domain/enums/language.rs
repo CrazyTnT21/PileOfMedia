@@ -5,8 +5,8 @@ use std::str::FromStr;
 use crate::enums::language::Language::{DA, DE, EN, ES, JA, KO, NL};
 
 
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum Language {
   EN,

@@ -18,3 +18,4 @@ pub mod db_book_involved;
 pub mod db_role;
 pub mod db_role_translation;
 pub mod db_user;
+pub mod db_account;
