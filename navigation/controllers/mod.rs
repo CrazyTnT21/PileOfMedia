@@ -1,10 +1,8 @@
+use std::error::Error;
 use std::str::FromStr;
 
 use axum::http::{HeaderMap, StatusCode};
 use axum::Router;
-use bb8_postgres::bb8::Pool;
-use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -12,6 +10,7 @@ use domain::enums::language::Language;
 use domain::enums::language::Language::EN;
 use services::traits::service_error::ServiceError;
 
+use crate::app_state::AppState;
 use crate::extractors::headers::accept_language::AcceptLanguage;
 use crate::extractors::query_pagination::QueryPagination;
 
@@ -25,17 +24,17 @@ mod role_controller;
 mod user_controller;
 mod account_controller;
 
-pub fn route_controllers(pool: Pool<PostgresConnectionManager<NoTls>>, router: Router) -> Router {
+pub fn route_controllers(app_state: AppState) -> Router {
   let doc = doc::ApiDoc::openapi();
-  router
-    .nest("/books", book_controller::routes(pool.clone()))
-    .nest("/genres", genre_controller::routes(pool.clone()))
-    .nest("/themes", theme_controller::routes(pool.clone()))
-    .nest("/people", person_controller::routes(pool.clone()))
-    .nest("/characters", character_controller::routes(pool.clone()))
-    .nest("/roles", role_controller::routes(pool.clone()))
-    .nest("/users", user_controller::routes(pool.clone()))
-    .nest("/accounts", account_controller::routes(pool))
+  Router::new()
+    .nest("/books", book_controller::routes(app_state.clone()))
+    .nest("/genres", genre_controller::routes(app_state.clone()))
+    .nest("/themes", theme_controller::routes(app_state.clone()))
+    .nest("/people", person_controller::routes(app_state.clone()))
+    .nest("/characters", character_controller::routes(app_state.clone()))
+    .nest("/roles", role_controller::routes(app_state.clone()))
+    .nest("/users", user_controller::routes(app_state.clone()))
+    .nest("/accounts", account_controller::routes(app_state))
     .merge(SwaggerUi::new("/swagger-ui")
       .url("/api-docs/openapi.json", doc))
 }
@@ -79,6 +78,11 @@ pub fn convert_service_error(service_error: ServiceError) -> (StatusCode, String
       (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())
     }
   }
+}
+
+pub fn convert_error(error: impl Error) -> (StatusCode, String) {
+  eprintln!("Error: {error}");
+  (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())
 }
 
 fn set_pagination_limit(pagination: &mut QueryPagination) {

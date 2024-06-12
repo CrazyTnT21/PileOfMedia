@@ -1,18 +1,17 @@
 use std::sync::Arc;
+
 use axum::{Json, Router};
-use axum::extract::{Path, Query};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use bb8_postgres::bb8::Pool;
-use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::{Client, NoTls};
+use tokio_postgres::Client;
 
 use services::book_relations_service::BookRelationsService;
 use services::book_service::BookService;
 
-use crate::controllers::{append_content_language_header, content_language_header, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
-use crate::database_connection::DatabaseConnection;
+use crate::app_state::AppState;
+use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
 use crate::implementations::{get_book_relations_repository, get_book_relations_service, get_book_repository, get_book_service, get_character_repository, get_genre_repository, get_image_repository, get_person_repository, get_role_repository, get_theme_repository};
@@ -27,7 +26,7 @@ use crate::openapi::responses::server_error::ServerError;
 
 pub mod book_doc;
 
-pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
+pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
     .route("/:id", get(get_by_id))
@@ -36,7 +35,7 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
     .route("/:id/themes", get(get_themes))
     .route("/:id/characters", get(get_characters))
     .route("/:id/involved", get(get_involved))
-    .with_state(pool)
+    .with_state(app_state)
 }
 
 #[utoipa::path(get, path = "",
@@ -45,8 +44,8 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
   params(AcceptLanguageParam, PageParam, CountParam),
   tag = "Books"
 )]
-async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
@@ -70,8 +69,8 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, connec
   params(IdParam, AcceptLanguageParam),
   tag = "Books"
 )]
-async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
@@ -94,8 +93,8 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
   params(TitleParam, AcceptLanguageParam, PageParam, CountParam),
   tag = "Books"
 )]
-async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
@@ -119,8 +118,8 @@ async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages)
   params(IdParam, AcceptLanguageParam, PageParam, CountParam),
   tag = "Books"
 )]
-async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
@@ -144,8 +143,8 @@ async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
   params(IdParam, AcceptLanguageParam, PageParam, CountParam),
   tag = "Books"
 )]
-async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
@@ -169,8 +168,8 @@ async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
   params(IdParam, AcceptLanguageParam, PageParam, CountParam),
   tag = "Books"
 )]
-async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
@@ -194,8 +193,8 @@ async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): Ac
   params(IdParam, AcceptLanguageParam, PageParam, CountParam),
   tag = "Books"
 )]
-async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_relations_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);

@@ -1,18 +1,16 @@
 use std::sync::Arc;
 
 use axum::{Json, Router};
-use axum::extract::{Path, Query};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use bb8_postgres::bb8::Pool;
-use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::{Client, NoTls};
+use tokio_postgres::Client;
 
 use services::user_service::UserService;
 
-use crate::controllers::{convert_service_error, set_pagination_limit};
-use crate::database_connection::DatabaseConnection;
+use crate::app_state::AppState;
+use crate::controllers::{convert_error, convert_service_error, set_pagination_limit};
 use crate::extractors::query_pagination::QueryPagination;
 use crate::implementations::{get_image_repository, get_user_repository, get_user_service};
 use crate::openapi::params::path::id::IdParam;
@@ -25,12 +23,12 @@ use crate::openapi::responses::server_error::ServerError;
 
 pub mod user_doc;
 
-pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
+pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
     .route("/:id", get(get_by_id))
     .route("/name/:name", get(get_by_name))
-    .with_state(pool)
+    .with_state(app_state)
 }
 
 #[utoipa::path(get, path = "",
@@ -39,8 +37,8 @@ pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
   params(PageParam, CountParam),
   tag = "Users"
 )]
-async fn get_items(connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_items(State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
   set_pagination_limit(&mut pagination);
@@ -60,8 +58,8 @@ async fn get_items(connection: DatabaseConnection, Query(mut pagination): Query<
   params(IdParam),
   tag = "Users"
 )]
-async fn get_by_id(Path(id): Path<u32>, connection: DatabaseConnection) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_by_id(Path(id): Path<u32>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
   println!("Route for a user with id {}", id, );
@@ -79,8 +77,8 @@ async fn get_by_id(Path(id): Path<u32>, connection: DatabaseConnection) -> impl 
   params(NameParam, PageParam, CountParam),
   tag = "Users"
 )]
-async fn get_by_name(Path(name): Path<String>, connection: DatabaseConnection, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
-  let connection = connection.0;
+async fn get_by_name(Path(name): Path<String>, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
   set_pagination_limit(&mut pagination);

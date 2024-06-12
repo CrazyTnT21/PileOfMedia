@@ -72,7 +72,7 @@ impl<'a> DefaultMutImageRepository<'a> {
   async fn resize(&self, factor: u32, file_image: &DynamicImage, format: &ImageFormat, image: &CreateImage<'_>) -> Result<(String, i16, i16), Box<dyn Error>> {
     let mut bytes: Vec<u8> = Vec::new();
     let (x, y) = (file_image.width() / factor, file_image.height() / factor);
-    let temp_image = file_image.resize(x, y, FilterType::Gaussian);
+    let temp_image = file_image.resize(x, y, FilterType::Triangle);
     temp_image.write_to(&mut Cursor::new(&mut bytes), *format)?;
     let path = self.mut_file_repository.create(&bytes, image.file_path, None).await?;
     let path = combined(image.display_path.to_string(), &path.name);

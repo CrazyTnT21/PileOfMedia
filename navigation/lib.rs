@@ -1,31 +1,42 @@
 use std::env;
 
 use axum::http::Method;
-use axum::Router;
 use bb8_postgres::bb8::{ManageConnection, Pool};
 use bb8_postgres::PostgresConnectionManager;
 use dotenvy::dotenv;
 use tokio_postgres::NoTls;
 use tower_http::cors::{Any, CorsLayer};
 
+use crate::app_state::AppState;
 use crate::controllers::route_controllers;
 
 pub mod controllers;
-mod database_connection;
 mod extractors;
 mod openapi;
 mod implementations;
+mod app_state;
 
 pub async fn main() -> std::io::Result<()> {
   dotenv().ok();
   let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+  let server_url = env::var("API_URL").expect("SERVER_URL must be set");
+  let content_path = env::var("CONTENT_PATH").expect("CONTENT_PATH must be set");
+  let secret = env::var("SECRET").expect("SECRET must be set");
+
   let pool = connection_pool(&database_url).await.unwrap();
 
   let cors = CorsLayer::new()
     .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
     .allow_origin(Any);
 
-  let app = route_controllers(pool, Router::new())
+  let app_state = AppState {
+    pool,
+    display_path: server_url,
+    content_path,
+    secret,
+  };
+
+  let app = route_controllers(app_state)
     .layer(cors);
 
   let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;

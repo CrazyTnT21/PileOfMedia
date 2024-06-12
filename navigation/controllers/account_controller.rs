@@ -1,39 +1,23 @@
-use std::error::Error;
-use std::ops::Deref;
 use std::sync::Arc;
 
-use axum::{Json, Router};
-use axum::extract::{FromRef, FromRequestParts};
+use axum::{debug_handler, Json, Router};
+use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
-use bb8_postgres::bb8::Pool;
-use bb8_postgres::PostgresConnectionManager;
-use chrono::Timelike;
 use chrono::Utc;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use tokio_postgres::{Client, NoTls, Transaction};
+use tokio_postgres::{Client, Transaction};
 use utoipa::ToSchema;
 
 use domain::entities::account::{Email, Password};
 use domain::entities::account::partial_create_account::PartialCreateAccount;
-use repositories::account_repository::AccountRepository;
-use repositories::account_repository::mut_account_repository::MutAccountRepository;
-use repositories::file_repository::FileRepository;
-use repositories::file_repository::mut_file_repository::MutFileRepository;
-use repositories::image_repository::ImageRepository;
-use repositories::image_repository::mut_image_repository::MutImageRepository;
-use repositories::user_repository::mut_user_repository::MutUserRepository;
-use repositories::user_repository::UserRepository;
 use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountService;
-use services::image_service::mut_image_service::MutImageService;
-use services::traits::service_error::ServiceError;
-use services::user_service::mut_user_service::MutUserService;
 
-use crate::controllers::convert_service_error;
-use crate::database_connection::DatabaseConnection;
+use crate::app_state::AppState;
+use crate::controllers::{convert_error, convert_service_error};
 use crate::extractors::headers::authorization::JWTAuthorization;
 use crate::implementations::{get_account_repository, get_account_service, get_file_repository, get_image_repository, get_mut_account_repository, get_mut_account_service, get_mut_file_repository, get_mut_file_service, get_mut_image_repository, get_mut_image_service, get_mut_user_repository, get_mut_user_service, get_user_repository};
 use crate::openapi::params::header::json_web_token::JsonWebTokenParam;
@@ -49,12 +33,12 @@ pub struct LoginData {
   password: String,
 }
 
-pub fn routes(pool: Pool<PostgresConnectionManager<NoTls>>) -> Router {
+pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/login", post(login))
     .route("/register", post(register))
     .route("/refresh", get(refresh_token))
-    .with_state(pool)
+    .with_state(app_state)
 }
 
 #[utoipa::path(post, path = "/register",
@@ -64,38 +48,32 @@ responses(
 request_body = PartialCreateAccount,
 tag = "Accounts"
 )]
-async fn register(mut connection: DatabaseConnection, Json(account): Json<PartialCreateAccount>) -> Result<(StatusCode, String), (StatusCode, String)> {
-  let transaction = connection.0
-    .transaction()
-    .await
-    .map_err(map_postgres_error)?;
+#[debug_handler]
+async fn register(State(app_state): State<AppState>, Json(account): Json<PartialCreateAccount>) -> Result<(StatusCode, String), (StatusCode, String)> {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
 
   let account = {
-    let service = get_mut_service(&transaction);
+    let service = get_mut_service(&transaction, &app_state.display_path, &app_state.content_path);
     service.create(account).await.map_err(convert_service_error)?
   };
-  transaction
-    .commit()
-    .await
-    .map_err(map_postgres_error)?;
+  transaction.commit().await.map_err(convert_error)?;
 
   let user_id = account.user.id;
 
   let in_a_week = (Utc::now().timestamp() + 604800) as usize;
   let claim = create_claim("Register".to_string(), user_id as u32, in_a_week);
-  let token = create_token(claim)?;
+  let token = create_token(claim, app_state.secret.as_bytes())?;
 
   Ok((StatusCode::OK, token))
 }
 
-fn create_token(claim: Claim) -> Result<String, (StatusCode, String)> {
-  //TODO use pem
-  let key = EncodingKey::from_secret("TEST".as_ref());
+fn create_token(claim: Claim, secret: &[u8]) -> Result<String, (StatusCode, String)> {
+  let key = EncodingKey::from_secret(secret);
   let header = Header::default();
 
   jsonwebtoken::encode(&header, &claim, &key)
-    .map_err(|x| ServiceError::ServerError(Box::new(x)))
-    .map_err(convert_service_error)
+    .map_err(convert_error)
 }
 
 fn create_claim(subject: String, user_id: u32, exp: usize) -> Claim {
@@ -115,8 +93,8 @@ responses(
 request_body = LoginData,
 tag = "Accounts"
 )]
-async fn login(mut connection: DatabaseConnection, Json(login_data): Json<LoginData>) -> Result<String, (StatusCode, String)> {
-  let pooled = connection.0;
+async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginData>) -> Result<String, (StatusCode, String)> {
+  let pooled = app_state.pool.get().await.unwrap();
 
   let password = login_data.password;
   let email = login_data.email;
@@ -127,8 +105,7 @@ async fn login(mut connection: DatabaseConnection, Json(login_data): Json<LoginD
   };
   let in_a_week = (Utc::now().timestamp() + 604800) as usize;
   let claim = create_claim("Login".to_string(), account.user.id as u32, in_a_week);
-  let token = create_token(claim)?;
-
+  let token = create_token(claim, app_state.secret.as_bytes())?;
 
   Ok(token)
 }
@@ -140,14 +117,14 @@ async fn login(mut connection: DatabaseConnection, Json(login_data): Json<LoginD
   params(JsonWebTokenParam),
   tag = "Accounts"
 )]
-async fn refresh_token(auth: JWTAuthorization) -> impl IntoResponse {
-  let claim = jsonwebtoken::decode::<Claim>(&auth.token, &DecodingKey::from_secret("TEST".as_ref()), &Validation::default());
+async fn refresh_token(auth: JWTAuthorization, State(app_state): State<AppState>) -> impl IntoResponse {
+  let claim = jsonwebtoken::decode::<Claim>(&auth.token, &DecodingKey::from_secret(app_state.secret.as_bytes()), &Validation::default());
   let Ok(claim) = claim else {
     return Err((StatusCode::UNAUTHORIZED, "Invalid JWT".to_string()));
   };
   let in_one_hour = (Utc::now().timestamp() as usize) + 3600;
   let claim = create_claim("Refresh".to_string(), claim.claims.user_id, in_one_hour);
-  let token = create_token(claim)?;
+  let token = create_token(claim, app_state.secret.as_bytes())?;
   Ok((StatusCode::OK, token))
 }
 
@@ -160,7 +137,7 @@ struct Claim {
   iss: String,
 }
 
-fn get_mut_service<'a>(transaction: &'a Transaction) -> impl MutAccountService + 'a {
+fn get_mut_service<'a>(transaction: &'a Transaction, display_path: &'a str, path: &'a str) -> impl MutAccountService + 'a {
   let image_repository = Arc::new(get_image_repository(transaction.client()));
   let user_repository = Arc::new(get_user_repository(transaction.client(), image_repository.clone()));
   let account_repository = Arc::new(get_account_repository(transaction.client(), user_repository.clone()));
@@ -171,7 +148,7 @@ fn get_mut_service<'a>(transaction: &'a Transaction) -> impl MutAccountService +
   let mut_image_repository = Arc::new(get_mut_image_repository(transaction, image_repository, mut_file_repository.clone(), file_repository));
   let mut_file_service = Arc::new(get_mut_file_service(mut_file_repository));
   //TODO: Make configurable
-  let mut_image_service = Arc::new(get_mut_image_service(mut_image_repository, mut_file_service, "http://localhost:3000/images/", ""));
+  let mut_image_service = Arc::new(get_mut_image_service(mut_image_repository, mut_file_service, display_path, path));
   let mut_user_service = Arc::new(get_mut_user_service(mut_user_repository, mut_image_service));
   let account_service = Arc::new(get_account_service(account_repository));
   let mut_account_service = get_mut_account_service(mut_account_repository, account_service, mut_user_service);
@@ -184,8 +161,4 @@ fn get_service(client: &Client) -> impl AccountService + '_ {
   let account_repository = Arc::new(get_account_repository(client, user_repository));
   let account_service = get_account_service(account_repository);
   account_service
-}
-
-fn map_postgres_error(error: tokio_postgres::Error) -> (StatusCode, String) {
-  convert_service_error(ServiceError::ServerError(Box::new(error)))
 }

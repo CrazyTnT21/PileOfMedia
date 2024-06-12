@@ -59,7 +59,7 @@ impl<'a> DefaultMutAccountService<'a> {
       }));
     }
     let exists_email = self.account_service.get_by_email(&account.email).await?;
-    if let Some(_) = exists_email {
+    if exists_email.is_some() {
       return Err(ServiceError::ClientError(ClientError {
         title: format!("Account with the email {} already exists", account.email.0),
         description: None,
