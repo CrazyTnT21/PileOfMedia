@@ -1,10 +1,10 @@
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+
 use tokio_postgres::{Client, Transaction};
 use tokio_postgres::types::ToSql;
 
 use from_row::Table;
-
 
 pub struct Insert<'a, const U: usize> {
   into: &'a str,
@@ -27,16 +27,16 @@ impl<'a, const U: usize> Insert<'a, U> {
     self.values.push(values);
     self
   }
+  pub fn push_as_ref(&mut self, values: [&'a (dyn ToSql + Sync); U]) -> &Self {
+    self.values.push(values);
+    self
+  }
 
   pub async fn execute(&self, connection: &'a Client) -> Result<u64, InsertError> {
-    self.invalid_length()?;
-
     connection.execute(&self.sql(), &self.values()).await.map_err(InsertError::PostgresError)
   }
 
   pub async fn execute_transaction(&self, transaction: &'a Transaction<'a>) -> Result<u64, InsertError> {
-    self.invalid_length()?;
-
     transaction.execute(&self.sql(), &self.values()).await.map_err(InsertError::PostgresError)
   }
 
@@ -44,27 +44,16 @@ impl<'a, const U: usize> Insert<'a, U> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne);
     }
-    self.invalid_length()?;
 
     let result = connection.query_one(&self.returning_sql(column), &self.values()).await.map_err(InsertError::PostgresError)?;
 
     Ok(result.get(0))
   }
-  fn invalid_length(&self) -> Result<(), InsertError> {
-    let columns_length = self.columns.len();
-    for x in &self.values {
-      let values_length = x.len();
-      if values_length != columns_length {
-        return Err(InsertError::InvalidLength(values_length, columns_length));
-      }
-    }
-    Ok(())
-  }
+
   pub async fn returning_transaction(&self, column: &'a str, transaction: &'a Transaction<'a>) -> Result<i32, InsertError> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne);
     }
-    self.invalid_length()?;
     let result = transaction.query_one(&self.returning_sql(column), &self.values()).await.map_err(InsertError::PostgresError)?;
     Ok(result.get(0))
   }
@@ -126,7 +115,6 @@ impl<'a, const U: usize> Insert<'a, U> {
 #[derive(Debug)]
 pub enum InsertError {
   ReturningMoreThanOne,
-  InvalidLength(usize, usize),
   PostgresError(tokio_postgres::Error),
 }
 
@@ -135,8 +123,7 @@ impl Display for InsertError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       InsertError::ReturningMoreThanOne => write!(f, "Returning is not supported for more than 1 value at a time"),
-      InsertError::PostgresError(value) => std::fmt::Display::fmt(&value, f),
-      InsertError::InvalidLength(a, b) => write!(f, "values length '{a}' does not match the length of the columns '{b}'")
+      InsertError::PostgresError(value) => std::fmt::Display::fmt(&value, f)
     }
   }
 }
