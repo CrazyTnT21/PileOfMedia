@@ -10,5 +10,6 @@ pub mod repositories;
 pub mod insert;
 mod fallback_unwrap;
 mod convert_to_sql;
+pub mod delete;
 
 pub type Pooled<'a> = PooledConnection<'a, PostgresConnectionManager<NoTls>>;

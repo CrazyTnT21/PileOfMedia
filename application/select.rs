@@ -9,8 +9,6 @@ use from_row::{FromRow, Table};
 
 use crate::select::column_table::ColumnTable;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison;
-use crate::select::condition::Condition;
 use crate::select::expression::Expression;
 use crate::select::join::{Join, JoinType};
 
@@ -211,8 +209,8 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
 
   fn values(&self) -> Vec<&'a (dyn ToSql + Sync)> {
     let mut total: Vec<&'a (dyn ToSql + Sync)> = vec![];
-    self.joins.iter().for_each(|x| Self::get_values_recursive(&mut total, &x.expression));
-    self.wheres.iter().for_each(|x| Self::get_values_recursive(&mut total, x));
+    self.joins.iter().for_each(|x| Expression::values(&x.expression, &mut total));
+    self.wheres.iter().for_each(|x| Expression::values(x, &mut total));
     total
   }
 
@@ -221,25 +219,5 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
       .query_opt(&self.query_sql(), &self.values())
       .await?
       .map(|x| T::from_row(&x, 0)))
-  }
-
-  fn get_values_recursive(current: &mut Vec<&'a (dyn ToSql + Sync)>, expression: &Expression<'a>) {
-    match &expression.condition {
-      Condition::Column(_, _) => {}
-      Condition::Value(_, b) => match b {
-        Comparison::Equal(value) => current.push(*value),
-        Comparison::NotEqual(value) => current.push(*value),
-        Comparison::IsNull => {}
-        Comparison::IsNotNull => {}
-        Comparison::ILike(value) => current.push(*value),
-        Comparison::In(value) => value.iter().for_each(|x| current.push(*x)),
-        Comparison::Bigger(value) => current.push(*value),
-        Comparison::BiggerEqual(value) => current.push(*value),
-        Comparison::Less(value) => current.push(*value),
-        Comparison::LessEqual(value) => current.push(*value),
-      }
-    };
-    expression.ands.iter().for_each(|x| Self::get_values_recursive(current, x));
-    expression.ors.iter().for_each(|x| Self::get_values_recursive(current, x));
   }
 }
