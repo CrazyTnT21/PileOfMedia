@@ -9,7 +9,7 @@ use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::image_repository::ImageRepository;
 
-use crate::convert_to_sql::convert_to_sql;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 use crate::schemas::db_image::DbImage;
 use crate::schemas::db_image_data::DbImageData;
 use crate::select::comparison::Comparison::{Equal, In};
@@ -62,12 +62,14 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
       return Ok(None);
     };
 
-    let mut image_data = self.get_image_data(&[image.id]).await?;
+    let mut image_data = self.get_image_data(&[image.id as u32]).await?;
     Ok(Some(to_entity(image, &mut image_data)))
   }
 
-  async fn get_by_ids(&self, ids: &[i32]) -> Result<Vec<Image>, Box<dyn Error>> {
-    let ids = convert_to_sql(ids);
+  async fn get_by_ids(&self, ids: &[u32]) -> Result<Vec<Image>, Box<dyn Error>> {
+    let ids = to_i32(ids);
+    let ids = convert_to_sql(&ids);
+
     let images = Select::new::<DbImage>()
       .columns::<DbImage>("image")
       .where_expression(Expression::new(Value(("image", "id"), In(&ids))))
@@ -84,11 +86,11 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
   }
 }
 
-fn get_versions(id: i32, image_data: &mut Vec<DbImageData>) -> Vec<ImageData> {
+fn get_versions(id: u32, image_data: &mut Vec<DbImageData>) -> Vec<ImageData> {
   let mut filtered = Vec::new();
   let mut indices: Vec<usize> = vec![];
   for (i, x) in image_data.iter().enumerate() {
-    if x.fk_image == id {
+    if x.fk_image as u32 == id {
       indices.push(i)
     }
   }
@@ -108,12 +110,14 @@ fn to_entities(images: Vec<DbImage>, mut versions: Vec<DbImageData>) -> Vec<Imag
 
 fn to_entity(image: DbImage, versions: &mut Vec<DbImageData>) -> Image {
   let id = image.id;
-  image.to_entity(get_versions(id, versions))
+  image.to_entity(get_versions(id as u32, versions))
 }
 
 impl<'a> DefaultImageRepository<'a> {
-  async fn get_image_data(&self, image_ids: &[i32]) -> Result<Vec<DbImageData>, Box<dyn Error>> {
-    let image_ids = convert_to_sql(image_ids);
+  async fn get_image_data(&self, image_ids: &[u32]) -> Result<Vec<DbImageData>, Box<dyn Error>> {
+
+    let image_ids = to_i32(image_ids);
+    let image_ids = convert_to_sql(&image_ids);
     Ok(Select::new::<DbImageData>()
       .columns::<DbImageData>("imagedata")
       .where_expression(Expression::new(Value(("imagedata", "fkimage"), In(&image_ids))))
@@ -125,6 +129,6 @@ impl<'a> DefaultImageRepository<'a> {
   }
 }
 
-fn image_ids(images: &[DbImage]) -> Vec<i32> {
-  images.iter().map(|x| x.id).collect::<Vec<i32>>()
+fn image_ids(images: &[DbImage]) -> Vec<u32> {
+  images.iter().map(|x| x.id as u32).collect()
 }

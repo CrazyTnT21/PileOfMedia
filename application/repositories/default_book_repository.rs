@@ -12,7 +12,7 @@ use from_row::Table;
 use repositories::book_repository::BookRepository;
 use repositories::image_repository::ImageRepository;
 
-use crate::convert_to_sql::convert_to_sql;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::{fallback_unwrap, fallback_unwrap_ref};
 use crate::schemas::db_book::DbBook;
@@ -48,7 +48,7 @@ impl<'a> DefaultBookRepository<'a> {
       .map(|item| {
         let book_translation = fallback_unwrap(item.1, item.2);
         let franchise = item.5.map(|x| x.to_entity());
-        let image_index = images.iter().position(|y| y.id == book_translation.fk_cover).unwrap();
+        let image_index = images.iter().position(|y| y.id == book_translation.fk_cover as u32).unwrap();
         let image = images.swap_remove(image_index);
 
         Ok(item.0.to_entity(book_translation, image, franchise))
@@ -64,11 +64,11 @@ impl<'a> DefaultBookRepository<'a> {
   }
 }
 
-fn image_ids(items: &[BookColumns]) -> Vec<i32> {
+fn image_ids(items: &[BookColumns]) -> Vec<u32> {
   items
     .iter()
-    .map(|x| fallback_unwrap_ref(x.3.as_ref(), x.4.as_ref()).id)
-    .collect::<Vec<i32>>()
+    .map(|x| fallback_unwrap_ref(x.3.as_ref(), x.4.as_ref()).id as u32)
+    .collect()
 }
 
 #[async_trait]
@@ -120,9 +120,10 @@ impl BookRepository for DefaultBookRepository<'_> {
     Ok(ItemsTotal { items: books, total })
   }
 
-  async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Book>, Box<dyn Error>> {
+  async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Book>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let ids = convert_to_sql(ids);
+    let ids = to_i32(ids);
+    let ids = convert_to_sql(&ids);
     let books = book_select(&language, &self.default_language)
       .where_expression(Expression::new(Value((DbBook::TABLE_NAME, "id"), In(&ids))))
       .query(self.client)

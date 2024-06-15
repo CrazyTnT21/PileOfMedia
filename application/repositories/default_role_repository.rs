@@ -10,7 +10,7 @@ use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
 use repositories::role_repository::RoleRepository;
 
-use crate::convert_to_sql::convert_to_sql;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_role::DbRole;
@@ -64,9 +64,10 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
     Ok(role.map(to_entity))
   }
 
-  async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Role>, Box<dyn Error>> {
+  async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Role>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let ids = convert_to_sql(ids);
+    let ids = to_i32(ids);
+    let ids = convert_to_sql(&ids);
     let roles = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
       .where_expression(Expression::new(Value(("role", "id"), In(&ids))))

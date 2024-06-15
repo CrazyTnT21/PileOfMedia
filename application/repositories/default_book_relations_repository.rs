@@ -77,12 +77,12 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
 
     let total = theme_ids.count(self.client).await? as usize;
 
-    let theme_ids: Vec<i32> = theme_ids
+    let theme_ids: Vec<u32> = theme_ids
       .pagination(pagination)
       .query(self.client)
       .await?
       .into_iter()
-      .map(|x| x.0)
+      .map(|x| x.0 as u32)
       .collect();
 
     let items = match theme_ids.is_empty() {
@@ -103,12 +103,12 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
 
     let total = genre_ids.count(self.client).await? as usize;
 
-    let genre_ids: Vec<i32> = genre_ids
+    let genre_ids: Vec<u32> = genre_ids
       .pagination(pagination)
       .query(self.client)
       .await?
       .into_iter()
-      .map(|x| x.0)
+      .map(|x| x.0 as u32)
       .collect();
 
     let items = match genre_ids.is_empty() {
@@ -141,9 +141,9 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
       });
     }
 
-    let character_ids: Vec<i32> = character_books_ids
+    let character_ids: Vec<u32> = character_books_ids
       .iter()
-      .map(|x| x.0)
+      .map(|x| x.0 as u32)
       .collect();
 
     let characters = self.character_repository.get_by_ids(&character_ids, language).await?;
@@ -194,22 +194,22 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
       });
     }
 
-    let person_ids: Vec<i32> = involved
+    let person_ids: Vec<u32> = involved
       .iter()
-      .map(|x| x.3)
+      .map(|x| x.3 as u32)
       .collect();
 
-    let role_ids: Vec<i32> = involved
+    let role_ids: Vec<u32> = involved
       .iter()
-      .map(|x| x.4)
+      .map(|x| x.4 as u32)
       .collect();
 
     let mut people = self.person_repository.get_by_ids(&person_ids, language).await?;
     let mut roles = self.role_repository.get_by_ids(&role_ids, language).await?;
 
     let items = involved.into_iter().map(|x| {
-      let person_index = people.iter().position(|y| y.id == x.3).unwrap();
-      let role_index = roles.iter().position(|y| y.id == x.4).unwrap();
+      let person_index = people.iter().position(|y| y.id == x.3 as u32).unwrap();
+      let role_index = roles.iter().position(|y| y.id == x.4 as u32).unwrap();
       let person = people.swap_remove(person_index);
       let role = roles.swap_remove(role_index);
       BookInvolved { person, role: PersonRole { role } }

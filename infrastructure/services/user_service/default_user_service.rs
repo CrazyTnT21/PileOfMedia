@@ -30,7 +30,7 @@ impl<'a> UserService for DefaultUserService<'a> {
     self.user_repository.get_by_id(id).await.map_err(map_server_error)
   }
 
-  async fn get_by_ids(&self, ids: &[i32]) -> Result<Vec<User>, ServiceError> {
+  async fn get_by_ids(&self, ids: &[u32]) -> Result<Vec<User>, ServiceError> {
     self.user_repository.get_by_ids(ids).await.map_err(map_server_error)
   }
 

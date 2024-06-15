@@ -12,7 +12,7 @@ pub struct DbFranchise {
 impl DbFranchise {
   pub fn to_entity(self) -> Franchise {
     Franchise {
-      id: self.id,
+      id: self.id as u32,
       name: self.name,
     }
   }

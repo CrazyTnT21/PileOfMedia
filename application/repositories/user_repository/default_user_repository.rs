@@ -12,7 +12,7 @@ use from_row::Table;
 use repositories::image_repository::ImageRepository;
 use repositories::user_repository::UserRepository;
 
-use crate::convert_to_sql::convert_to_sql;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 use crate::schemas::db_user::DbUser;
 use crate::select::comparison::Comparison::{Equal, ILike, In};
 use crate::select::condition::Condition::Value;
@@ -61,8 +61,9 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
     Ok(user.map(|x| to_entity(x, image)))
   }
 
-  async fn get_by_ids(&self, ids: &[i32]) -> Result<Vec<User>, Box<dyn Error>> {
-    let ids = convert_to_sql(ids);
+  async fn get_by_ids(&self, ids: &[u32]) -> Result<Vec<User>, Box<dyn Error>> {
+    let ids = to_i32(ids);
+    let ids = convert_to_sql(&ids);
     let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
       .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), In(&ids))))
@@ -95,8 +96,8 @@ fn to_entity(user: (DbUser, ), image: Option<Image>) -> User {
 
 impl<'a> DefaultUserRepository<'a> {
   async fn to_entities(&self, items: Vec<(DbUser, )>) -> Result<Vec<User>, Box<dyn Error>> {
-    let image_ids: Vec<i32> = items.iter()
-      .filter_map(|x| x.0.fk_profile_picture)
+    let image_ids: Vec<u32> = items.iter()
+      .filter_map(|x| x.0.fk_profile_picture.map(|x| x as u32))
       .collect();
 
     let mut images = match image_ids.is_empty() {
@@ -105,7 +106,7 @@ impl<'a> DefaultUserRepository<'a> {
     };
     Ok(items.into_iter().map(|x| {
       let image_index = x.0.fk_profile_picture
-        .and_then(|x| images.iter().position(|y| y.id == x));
+        .and_then(|x| images.iter().position(|y| y.id == x as u32));
       let image = image_index.map(|x| images.swap_remove(x));
       x.0.to_entity(image)
     })

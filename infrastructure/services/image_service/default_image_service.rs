@@ -30,7 +30,7 @@ impl<'a> ImageService for DefaultImageService<'a> {
     self.image_repository.get_by_id(id).await.map_err(map_server_error)
   }
 
-  async fn get_by_ids(&self, ids: &[i32]) -> Result<Vec<Image>, ServiceError> {
+  async fn get_by_ids(&self, ids: &[u32]) -> Result<Vec<Image>, ServiceError> {
     self.image_repository.get_by_ids(ids).await.map_err(map_server_error)
   }
 }

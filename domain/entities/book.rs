@@ -11,19 +11,19 @@ pub mod book_involved;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Book {
-  pub id: i32,
+  pub id: u32,
   pub title: String,
   pub description: Option<String>,
-  pub chapters: Option<i16>,
-  pub pages: Option<i16>,
-  pub words: Option<i32>,
+  pub chapters: Option<u16>,
+  pub pages: Option<u16>,
+  pub words: Option<u32>,
   pub published: Option<NaiveDate>,
   pub cover: Image,
   pub score: f32,
-  pub rank: i32,
-  pub popularity: i32,
-  pub favorites: i32,
-  pub members: i32,
+  pub rank: u32,
+  pub popularity: u32,
+  pub favorites: u32,
+  pub members: u32,
   pub added: NaiveDate,
   pub franchise: Option<Franchise>,
 }

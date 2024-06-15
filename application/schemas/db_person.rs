@@ -25,13 +25,13 @@ pub struct DbPerson {
 impl DbPerson {
   pub fn to_entity(self, translation: DbPersonTranslation, image: Option<Image>) -> Person {
     Person {
-      id: self.id,
+      id: self.id as u32,
       name: self.name,
       first_name: self.first_name,
       last_name: self.last_name,
       description: translation.description,
       birthday: self.birthday,
-      height: self.height,
+      height: self.height.map(|x| x as u16),
       image,
     }
   }

@@ -17,8 +17,8 @@ impl DbImageData {
   pub fn to_entity(self) -> ImageData {
     ImageData {
       uri: self.uri,
-      width: self.width,
-      height: self.height,
+      width: self.width as u16,
+      height: self.height as u16,
     }
   }
 }

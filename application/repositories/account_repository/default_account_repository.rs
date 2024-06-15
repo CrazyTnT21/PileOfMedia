@@ -12,7 +12,7 @@ use from_row::Table;
 use repositories::account_repository::AccountRepository;
 use repositories::user_repository::UserRepository;
 
-use crate::convert_to_sql::convert_to_sql;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 use crate::schemas::db_account::DbAccount;
 use crate::select::comparison::Comparison::{Equal, In};
 use crate::select::condition::Condition::Value;
@@ -64,8 +64,9 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
     }
   }
 
-  async fn get_by_user_ids(&self, ids: &[i32]) -> Result<Vec<Account>, Box<dyn Error>> {
-    let ids = convert_to_sql(ids);
+  async fn get_by_user_ids(&self, ids: &[u32]) -> Result<Vec<Account>, Box<dyn Error>> {
+    let ids = to_i32(ids);
+    let ids = convert_to_sql(&ids);
     let accounts = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
       .where_expression(Expression::new(Value((DbAccount::TABLE_NAME, "fkuser"), In(&ids))))
@@ -100,8 +101,8 @@ fn to_entity(account: (DbAccount, ), user: User) -> Account {
 
 impl<'a> DefaultAccountRepository<'a> {
   async fn to_entities(&self, items: Vec<(DbAccount, )>) -> Result<Vec<Account>, Box<dyn Error>> {
-    let user_ids: Vec<i32> = items.iter()
-      .map(|x| x.0.fk_user)
+    let user_ids: Vec<u32> = items.iter()
+      .map(|x| x.0.fk_user as u32)
       .collect();
 
     let mut users = match user_ids.is_empty() {
@@ -111,7 +112,7 @@ impl<'a> DefaultAccountRepository<'a> {
     Ok(items.into_iter().map(|x| {
       let user_index = users
         .iter()
-        .position(|y| y.id == x.0.fk_user)
+        .position(|y| y.id == x.0.fk_user as u32)
         .expect("Associated user should exist");
 
       let user = users.swap_remove(user_index);

@@ -12,7 +12,7 @@ pub struct DbImage {
 impl DbImage {
   pub fn to_entity(self, versions: Vec<ImageData>) -> Image {
     Image {
-      id: self.id,
+      id: self.id as u32,
       versions
     }
   }

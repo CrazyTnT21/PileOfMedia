@@ -13,7 +13,7 @@ use from_row::FromRow;
 use repositories::character_repository::CharacterRepository;
 use repositories::image_repository::ImageRepository;
 
-use crate::convert_to_sql::convert_to_sql;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_character::DbCharacter;
@@ -76,9 +76,10 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     Ok(character.map(|x| to_entity(x, image)))
   }
 
-  async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Character>, Box<dyn Error>> {
+  async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Character>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let ids = convert_to_sql(ids);
+    let ids = to_i32(ids);
+    let ids = convert_to_sql(&ids);
     let characters = character_select_columns()
       .transform(|x| self.character_joins(x, &language))
       .where_expression(Expression::new(Value(("character", "id"), In(&ids))))
@@ -141,7 +142,7 @@ impl<'a> DefaultCharacterRepository<'a> {
     Ok(items
       .into_iter()
       .map(|x| {
-        let fk_image = x.0.fk_image;
+        let fk_image = x.0.fk_image.map(|x| x as u32);
         let image = get_image(fk_image, &mut images);
         to_entity(x, image)
       })
@@ -160,17 +161,17 @@ fn character_select_columns<'a>() -> Select<'a, CharacterColumns> {
     .columns::<Option<DbCharacterTranslation>>("character_translation_fallback")
 }
 
-fn get_image(fk_image: Option<i32>, images: &mut Vec<Image>) -> Option<Image> {
+fn get_image(fk_image: Option<u32>, images: &mut Vec<Image>) -> Option<Image> {
   let fk_image = fk_image?;
   let index = images.iter().position(|x| x.id == fk_image);
   index.map(|index| images.swap_remove(index))
 }
 
-fn image_ids(items: &[CharacterColumns]) -> Vec<i32> {
+fn image_ids(items: &[CharacterColumns]) -> Vec<u32> {
   items
     .iter()
-    .filter_map(|x| x.0.fk_image)
-    .collect::<Vec<i32>>()
+    .filter_map(|x| x.0.fk_image.map(|x| x as u32))
+    .collect()
 }
 
 

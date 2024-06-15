@@ -29,19 +29,19 @@ pub struct DbBook {
 impl DbBook {
   pub fn to_entity(self, book_translation: DbBookTranslation, cover: Image, franchise: Option<Franchise>) -> Book {
     Book {
-      id: self.id,
+      id: self.id as u32,
       title: book_translation.title,
       description: book_translation.description,
-      chapters: self.chapters,
-      pages: self.pages,
-      words: self.words,
+      chapters: self.chapters.map(|x| x as u16),
+      pages: self.pages.map(|x| x as u16),
+      words: self.words.map(|x| x as u32),
       published: self.published,
       cover,
       score: self.score,
-      rank: self.rank,
-      popularity: self.popularity,
-      favorites: self.favorites,
-      members: self.members,
+      rank: self.rank as u32,
+      popularity: self.popularity as u32,
+      favorites: self.favorites as u32,
+      members: self.members as u32,
       added: self.added,
       franchise,
     }

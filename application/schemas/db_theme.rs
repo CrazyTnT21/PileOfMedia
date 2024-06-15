@@ -14,7 +14,7 @@ pub struct DbTheme {
 impl DbTheme {
   pub fn to_entity(self, translation: DbThemeTranslation) -> Theme {
    Theme {
-     id: self.id,
+     id: self.id as u32,
      name: translation.name
    }
   }

@@ -31,7 +31,7 @@ impl<'a> AccountService for DefaultAccountService<'a> {
     self.account_repository.get_by_user_id(id).await.map_err(map_server_error)
   }
 
-  async fn get_by_user_ids(&self, ids: &[i32]) -> Result<Vec<Account>, ServiceError> {
+  async fn get_by_user_ids(&self, ids: &[u32]) -> Result<Vec<Account>, ServiceError> {
     self.account_repository.get_by_user_ids(ids).await.map_err(map_server_error)
   }
 

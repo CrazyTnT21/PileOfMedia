@@ -20,7 +20,7 @@ pub struct DbUser {
 impl DbUser {
   pub fn to_entity(self, profile_picture: Option<Image>) -> User {
     User {
-      id: self.id,
+      id: self.id as u32,
       name: self.name,
       joined: self.joined,
       description: self.description,

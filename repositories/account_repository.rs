@@ -12,6 +12,6 @@ pub mod mut_account_repository;
 pub trait AccountRepository: Send + Sync {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, Box<dyn Error>>;
   async fn get_by_user_id(&self, id: u32) -> Result<Option<Account>, Box<dyn Error>>;
-  async fn get_by_user_ids(&self, ids: &[i32]) -> Result<Vec<Account>, Box<dyn Error>>;
+  async fn get_by_user_ids(&self, ids: &[u32]) -> Result<Vec<Account>, Box<dyn Error>>;
   async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, Box<dyn Error>>;
 }

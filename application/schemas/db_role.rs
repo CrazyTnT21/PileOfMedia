@@ -12,7 +12,7 @@ pub struct DbRole {
 impl DbRole {
   pub fn to_entity(self, role_translation: DbRoleTranslation) -> Role {
     Role {
-      id: self.id,
+      id: self.id as u32,
       name: role_translation.name
     }
   }

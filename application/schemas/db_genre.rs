@@ -14,7 +14,7 @@ pub struct DbGenre {
 impl DbGenre {
   pub fn to_entity(self, genre_translation: DbGenreTranslation) -> Genre {
    Genre {
-     id: self.id,
+     id: self.id as u32,
      name: genre_translation.name
    }
   }

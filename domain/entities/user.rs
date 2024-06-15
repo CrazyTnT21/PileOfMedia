@@ -8,7 +8,7 @@ use crate::entities::image::Image;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct User {
-  pub id: i32,
+  pub id: u32,
   pub name: String,
   pub joined: NaiveDate,
   pub description: Option<String>,

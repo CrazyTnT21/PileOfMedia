@@ -31,7 +31,7 @@ impl<'a> GenreService for DefaultGenreService<'a> {
     self.genre_repository.get_by_id(id, language).await.map_err(map_server_error)
   }
 
-  async fn get_by_ids(&self, ids: &[i32], language: Language) -> Result<Vec<Genre>, ServiceError> {
+  async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Genre>, ServiceError> {
     self.genre_repository.get_by_ids(ids, language).await.map_err(map_server_error)
   }
 
