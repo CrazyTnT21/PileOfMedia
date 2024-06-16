@@ -7,7 +7,7 @@ pub mod insert_book;
 pub mod book_character;
 pub mod book_involved;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Book {
