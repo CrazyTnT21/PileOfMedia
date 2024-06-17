@@ -1,6 +1,6 @@
 use tokio_postgres::types::ToSql;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Comparison<'a> {
   Equal(&'a (dyn ToSql + Sync)),
   NotEqual(&'a (dyn ToSql + Sync)),

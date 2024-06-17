@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 use std::marker::PhantomData;
 
@@ -7,7 +8,7 @@ use tokio_postgres::types::ToSql;
 use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
 
-use crate::select::column_table::ColumnTable;
+use crate::select::column_table::{ColumnTable, SelectElement};
 use crate::select::combined_tuple::CombinedType;
 use crate::select::expression::Expression;
 use crate::select::join::{Join, JoinType};
@@ -20,8 +21,7 @@ pub mod combined_tuple;
 mod column_table;
 
 //TODO: Prepared version
-//TODO: Group By
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Select<'a, T: FromRow<DbType=T> + CombinedType>
 {
   marker: PhantomData<T>,
@@ -29,17 +29,20 @@ pub struct Select<'a, T: FromRow<DbType=T> + CombinedType>
   limit: Option<usize>,
   from: &'a str,
   alias: Option<&'a str>,
-  columns: Vec<ColumnTable<'a>>,
+  columns: Vec<SelectElement<'a>>,
   joins: Vec<Join<'a>>,
   wheres: Vec<Expression<'a>>,
+  distinct: HashMap<&'a str, Vec<&'a str>>,
+  group_by: HashMap<&'a str, Vec<&'a str>>,
+  having: Vec<Expression<'a>>,
 }
 
 impl<'a> Select<'a, ()> {
   pub fn new<T: Table>() -> Select<'a, ()> {
-    Select { marker: PhantomData, from: T::TABLE_NAME, alias: None, columns: vec![], joins: vec![], offset: None, limit: None, wheres: vec![] }
+    Self::new_raw(T::TABLE_NAME)
   }
   pub fn new_raw(from: &'a str) -> Select<'a, ()> {
-    Select { marker: PhantomData, from, alias: None, columns: vec![], joins: vec![], offset: None, limit: None, wheres: vec![] }
+    Select { marker: PhantomData, from, alias: None, columns: vec![], joins: vec![], offset: None, limit: None, wheres: vec![], distinct: HashMap::new(), group_by: HashMap::new(), having: vec![] }
   }
 }
 
@@ -48,11 +51,16 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     self.alias = Some(alias);
     self
   }
-  pub fn column<C: FromRow<DbType=C>>(mut self, from: &'a str, column: &'a str) -> Select<'a, <T as CombinedType>::Combined<C>> where <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>> {
-    self.columns.push(ColumnTable {
+  pub fn column<C: FromRow<DbType=C>>(mut self, from: &'a str, column: &'a str) -> Select<'a, <T as CombinedType>::Combined<C>>
+    where <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>> {
+    self.columns.push(SelectElement::Column(ColumnTable {
       columns: vec![column],
       alias: from,
-    });
+    }));
+    self.create_new_select::<C>()
+  }
+  fn create_new_select<C>(self) -> Select<'a, <T as CombinedType>::Combined<C>>
+    where <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>> {
     Select::<<T as CombinedType>::Combined<C>> {
       marker: PhantomData,
       offset: self.offset,
@@ -62,24 +70,36 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
       columns: self.columns,
       joins: self.joins,
       wheres: self.wheres,
+      distinct: self.distinct,
+      group_by: self.group_by,
+      having: self.having,
     }
   }
-  pub fn columns<C: from_row::RowColumns + FromRow<DbType=C>>(mut self, from: &'a str) -> Select<'a, <T as CombinedType>::Combined<C>> where <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>> {
-    self.columns.push(ColumnTable {
+  pub fn columns<C: from_row::RowColumns + FromRow<DbType=C>>(mut self, from: &'a str) -> Select<'a, <T as CombinedType>::Combined<C>>
+    where <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>> {
+    self.columns.push(SelectElement::Column(ColumnTable {
       columns: C::columns(),
       alias: from,
-    });
-
-    Select::<<T as CombinedType>::Combined<C>> {
-      marker: PhantomData,
-      offset: self.offset,
-      limit: self.limit,
-      from: self.from,
-      alias: self.alias,
-      columns: self.columns,
-      joins: self.joins,
-      wheres: self.wheres,
-    }
+    }));
+    self.create_new_select::<C>()
+  }
+  pub fn distinct_on(mut self, from: &'a str, column: &'a str) -> Self {
+    match self.distinct.get_mut(from) {
+      None => { self.distinct.insert(from, vec![column]); }
+      Some(value) => { value.push(column); }
+    };
+    self
+  }
+  pub fn group_by(mut self, from: &'a str, column: &'a str) -> Self {
+    match self.group_by.get_mut(from) {
+      None => { self.group_by.insert(from, vec![column]); }
+      Some(value) => { value.push(column); }
+    };
+    self
+  }
+  pub fn having(mut self, expression: Expression<'a>) -> Self {
+    self.having.push(expression);
+    self
   }
   pub fn where_expression(mut self, expression: Expression<'a>) -> Self {
     self.wheres.push(expression);
@@ -130,33 +150,39 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     self
   }
 
-  pub async fn count(&self, connection: &'a Client) -> Result<i64, Box<dyn Error>> {
-    let mut count = 0;
-    let joins = self.join_sql(&mut count);
-    let where_sql = self.where_sql(&mut count).unwrap_or_default();
-    let limit_sql = self.limit_sql().unwrap_or_default();
-    let offset_sql = self.offset_sql().unwrap_or_default();
-    let alias_sql = self.alias.unwrap_or_default();
-    let query = format!("SELECT COUNT(*) FROM {} {alias_sql} {joins} {where_sql} {limit_sql} {offset_sql}", self.from);
-
-    let rows = connection
-      .query(&query, &self.values())
-      .await?;
-
-    if rows.is_empty() {
-      return Ok(0);
-    }
-    Ok(rows[0].get(0))
+  pub fn count(mut self) -> Select<'a, <T as CombinedType>::Combined<i64>>
+    where <T as CombinedType>::Combined<i64>: FromRow<DbType=<T as CombinedType>::Combined<i64>> {
+    self.columns.push(SelectElement::Raw("COUNT(*)"));
+    self.create_new_select::<i64>()
   }
 
   fn columns_sql(&self) -> String {
     self.columns
       .iter()
-      .map(|x| x.columns
-        .iter()
-        .map(|y| format!("{}.{}", x.alias, y))
-        .collect::<Vec<String>>().join(","))
+      .map(|x| match x {
+        SelectElement::Column(column_table) => column_table
+          .columns
+          .iter()
+          .map(|y| format!("{}.{}", column_table.alias, y))
+          .collect::<Vec<String>>().join(","),
+        SelectElement::Raw(raw) => raw.to_string()
+      })
       .collect::<Vec<String>>().join(",")
+  }
+
+  fn distinct_sql(&self) -> Option<String> {
+    if self.distinct.is_empty() {
+      return None;
+    }
+    Some(format!("DISTINCT ON ({})", self.distinct
+      .iter()
+      .map(|(from, columns)|
+        columns
+          .iter()
+          .map(|x| format!("{from}.{x}"))
+          .collect::<Vec<String>>()
+          .join(","))
+      .collect::<Vec<String>>().join(",")))
   }
 
   fn limit_sql(&self) -> Option<String> {
@@ -179,6 +205,33 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     Some(format!("WHERE {}", wheres))
   }
 
+  fn group_by_sql(&self) -> Option<String> {
+    if self.group_by.is_empty() {
+      return None;
+    }
+    Some(format!("GROUP BY {}", self.group_by
+      .iter()
+      .map(|(from, columns)|
+        columns
+          .iter()
+          .map(|x| format!("{from}.{x}"))
+          .collect::<Vec<String>>()
+          .join(","))
+      .collect::<Vec<String>>().join(",")))
+  }
+
+  fn having_sql(&self, count: &'a mut usize) -> Option<String> {
+    if self.having.is_empty() {
+      return None;
+    }
+
+    let having = self.having.iter()
+      .map(|expression| expression.fmt(count))
+      .collect::<Vec<String>>()
+      .join("");
+    Some(format!("HAVING {}", having))
+  }
+
   fn join_sql(&self, count: &'a mut usize) -> String {
     self.joins
       .iter()
@@ -191,11 +244,15 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     let mut count = 0;
     let joins = self.join_sql(&mut count);
     let where_sql = self.where_sql(&mut count).unwrap_or_default();
+    let group_by_sql = self.group_by_sql().unwrap_or_default();
+    let having_sql = self.having_sql(&mut count).unwrap_or_default();
     let limit_sql = self.limit_sql().unwrap_or_default();
     let offset_sql = self.offset_sql().unwrap_or_default();
     let alias_sql = self.alias.unwrap_or_default();
+    let distinct_sql = self.distinct_sql().unwrap_or_default();
+    let from = self.from;
 
-    format!("SELECT {columns} FROM {} {alias_sql} {joins} {where_sql} {limit_sql} {offset_sql}", self.from)
+    format!("SELECT {distinct_sql} {columns} FROM {from} {alias_sql} {joins} {where_sql}{group_by_sql} {having_sql} {limit_sql} {offset_sql}")
   }
 
   pub async fn query(self, connection: &'a Client) -> Result<Vec<T>, Box<dyn Error>> {

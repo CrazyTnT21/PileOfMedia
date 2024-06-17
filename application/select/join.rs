@@ -1,6 +1,6 @@
 use crate::select::expression::Expression;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Join<'a> {
   pub table: &'a str,
   pub alias: Option<&'a str>,
@@ -21,7 +21,7 @@ impl<'a> Join<'a> {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum JoinType {
   Inner,
   Left,

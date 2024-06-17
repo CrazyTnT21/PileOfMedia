@@ -5,7 +5,7 @@ use crate::select::comparison::Comparison::{Bigger, BiggerEqual, Equal, ILike, I
 use crate::select::condition::Condition;
 use crate::select::condition::Condition::{Column, Value};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Expression<'a> {
   pub condition: Condition<'a>,
   pub ands: Vec<Expression<'a>>,

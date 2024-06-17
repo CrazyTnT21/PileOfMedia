@@ -19,6 +19,7 @@ use crate::schemas::db_book::DbBook;
 use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::schemas::db_franchise::DbFranchise;
 use crate::schemas::db_image::DbImage;
+use crate::select::combined_tuple::CombinedType;
 use crate::select::comparison::Comparison::{Equal, ILike, In, IsNull};
 use crate::select::condition::Condition::{Column, Value};
 use crate::select::expression::Expression;
@@ -76,11 +77,15 @@ impl BookRepository for DefaultBookRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
 
-    let select = book_select(&language, &self.default_language);
+    let total = Select::new::<DbBook>()
+      .count()
+      .transform(|x| book_joins(x, &language, &self.default_language))
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
 
-    let total = select.count(self.client).await? as usize;
-    let select = select.pagination(pagination);
-    let books = select
+    let books = book_select(&language, &self.default_language)
+      .pagination(pagination)
       .query(self.client)
       .await?;
 
@@ -105,15 +110,20 @@ impl BookRepository for DefaultBookRepository<'_> {
     let title = format!("%{title}%");
     let language = DbLanguage::from(language);
 
-    let select = book_select(&language, &self.default_language)
+    let total = Select::new::<DbBook>()
+      .count()
+      .transform(|x| book_joins(x, &language, &self.default_language))
       .where_expression(Expression::new(Value(("book_translation", "title"), ILike(&title)))
-        .or(Expression::new(Value(("book_translation_fallback", "title"), ILike(&title)))));
+        .or(Expression::new(Value(("book_translation_fallback", "title"), ILike(&title)))))
+      .get_single(self.client).await?
+      .expect("Count should return one row");
 
-    let total = select.count(self.client).await? as usize;
+    let total = total.0 as usize;
 
-    let select = select.pagination(pagination);
-
-    let books = select
+    let books = book_select(&language, &self.default_language)
+      .where_expression(Expression::new(Value(("book_translation", "title"), ILike(&title)))
+        .or(Expression::new(Value(("book_translation_fallback", "title"), ILike(&title)))))
+      .pagination(pagination)
       .query(self.client)
       .await?;
     let books = self.books_from_tuple(books).await?;
@@ -137,9 +147,13 @@ impl BookRepository for DefaultBookRepository<'_> {
 
 fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, BookColumns> {
   book_select_columns()
-    .left_join::<DbBookTranslation>(Some("book_translation"),
-                                    Expression::new(Column(("book_translation", "fktranslation"), ("book", "id")))
-                                      .and(Expression::new(Value(("book_translation", "language"), Equal(language)))))
+    .transform(|x| book_joins(x, language, fallback_language))
+}
+
+fn book_joins<'a, T: from_row::FromRow<DbType=T> + CombinedType>(select: Select<'a, T>, language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, T> {
+  select.left_join::<DbBookTranslation>(Some("book_translation"),
+                                        Expression::new(Column(("book_translation", "fktranslation"), ("book", "id")))
+                                          .and(Expression::new(Value(("book_translation", "language"), Equal(language)))))
     .left_join::<DbBookTranslation>(Some("book_translation_fallback"),
                                     Expression::new(Column(("book", "id"), ("book_translation_fallback", "fktranslation")))
                                       .and(Expression::new(Value(("book_translation", "fktranslation"), IsNull)))

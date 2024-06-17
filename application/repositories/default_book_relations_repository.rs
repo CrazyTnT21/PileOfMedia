@@ -12,7 +12,7 @@ use domain::entities::theme::Theme;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use from_row::Table;
+use from_row::{FromRow, Table};
 use repositories::book_relations_repository::BookRelationsRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
@@ -28,6 +28,7 @@ use crate::schemas::db_book_involved::DbBookInvolved;
 use crate::schemas::db_book_theme::DbBookTheme;
 use crate::schemas::db_role::DbRole;
 use crate::schemas::db_role_translation::DbRoleTranslation;
+use crate::select::combined_tuple::CombinedType;
 use crate::select::comparison::Comparison::Equal;
 use crate::select::condition::Condition::{Column, Value};
 use crate::select::expression::Expression;
@@ -71,13 +72,17 @@ impl<'a> DefaultBookRelationsRepository<'a> {
 impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
   async fn get_themes(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
     let book_id = book_id as i32;
-    let theme_ids = Select::new::<DbBookTheme>()
+
+    let total = Select::new::<DbBookTheme>()
+      .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .count()
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
+
+    let theme_ids: Vec<u32> = Select::new::<DbBookTheme>()
       .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
-      .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fkbook"), Equal(&book_id))));
-
-    let total = theme_ids.count(self.client).await? as usize;
-
-    let theme_ids: Vec<u32> = theme_ids
+      .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fkbook"), Equal(&book_id))))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -97,13 +102,17 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
 
   async fn get_genres(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
     let book_id = book_id as i32;
-    let genre_ids = Select::new::<DbBookGenre>()
+
+    let total = Select::new::<DbBookGenre>()
+      .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .count()
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
+
+    let genre_ids: Vec<u32> = Select::new::<DbBookGenre>()
       .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
-      .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkbook"), Equal(&book_id))));
-
-    let total = genre_ids.count(self.client).await? as usize;
-
-    let genre_ids: Vec<u32> = genre_ids
+      .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkbook"), Equal(&book_id))))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -123,13 +132,17 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
 
   async fn get_characters(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<BookCharacter>, Box<dyn Error>> {
     let book_id = book_id as i32;
+
+    let total = Select::new::<DbBookCharacter>()
+      .where_expression(Expression::new(Value((DbBookCharacter::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .count()
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
+
     let character_books_ids = Select::new::<DbBookCharacter>()
       .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
-      .where_expression(Expression::new(Value((DbBookCharacter::TABLE_NAME, "fkbook"), Equal(&book_id))));
-
-    let total = character_books_ids.count(self.client).await? as usize;
-
-    let character_books_ids = character_books_ids
+      .where_expression(Expression::new(Value((DbBookCharacter::TABLE_NAME, "fkbook"), Equal(&book_id))))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -162,27 +175,23 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
   async fn get_involved(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<BookInvolved>, Box<dyn Error>> {
     let book_id = book_id as i32;
     let db_language = DbLanguage::from(language);
+    let total = Select::new::<DbBookInvolved>()
+      .count()
+      .transform(|x| involved_joins(x, &db_language, &self.default_language))
+      .get_single(self.client)
+      .await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
+
     let involved = Select::new::<DbBookInvolved>()
       .columns::<DbRole>(DbRole::TABLE_NAME)
       .columns::<Option<DbRoleTranslation>>("role_translation")
       .columns::<Option<DbRoleTranslation>>("role_translation_fallback")
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkperson")
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkbook")
+      .transform(|x| involved_joins(x, &db_language, &self.default_language))
       .inner_join::<DbRole>(None, Expression::new(Column((DbRole::TABLE_NAME, "id"), (DbBookInvolved::TABLE_NAME, "fkperson"))))
-      .left_join::<DbRoleTranslation>(
-        Some("role_translation"),
-        Expression::new(Column(("role_translation", "fktranslation"), (DbRole::TABLE_NAME, "id")))
-          .and(Expression::column_equal("role_translation", "language", &db_language)))
-      .left_join::<DbRoleTranslation>(
-        Some("role_translation_fallback"),
-        Expression::new(Column(("role_translation_fallback", "fktranslation"), (DbRole::TABLE_NAME, "id")))
-          .and(Expression::column_equal("role_translation_fallback", "language", &self.default_language))
-          .and(Expression::column_null("role_translation", "fktranslation")))
-      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkbook"), Equal(&book_id))));
-
-    let total = involved.count(self.client).await? as usize;
-
-    let involved = involved
+      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkbook"), Equal(&book_id))))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -221,4 +230,16 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
       total,
     })
   }
+}
+
+fn involved_joins<'a, T: FromRow<DbType=T> + CombinedType>(select: Select<'a, T>, language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, T> {
+  select.left_join::<DbRoleTranslation>(
+    Some("role_translation"),
+    Expression::new(Column(("role_translation", "fktranslation"), (DbRole::TABLE_NAME, "id")))
+      .and(Expression::column_equal("role_translation", "language", language)))
+    .left_join::<DbRoleTranslation>(
+      Some("role_translation_fallback"),
+      Expression::new(Column(("role_translation_fallback", "fktranslation"), (DbRole::TABLE_NAME, "id")))
+        .and(Expression::column_equal("role_translation_fallback", "language", fallback_language))
+        .and(Expression::column_null("role_translation", "fktranslation")))
 }

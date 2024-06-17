@@ -40,12 +40,16 @@ impl<'a> DefaultCharacterRepository<'a> {
 impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let select = character_select_columns()
-      .transform(|x| self.character_joins(x, &language));
 
-    let total = select.count(self.client).await? as usize;
+    let total = Select::new::<DbCharacter>()
+      .count()
+      .transform(|x| self.character_joins(x, &language))
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
 
-    let characters = select
+    let characters = character_select_columns()
+      .transform(|x| self.character_joins(x, &language))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -94,14 +98,18 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
-    let select = character_select_columns()
+
+    let total = Select::new::<DbCharacter>()
+      .count()
+      .transform(|x| self.character_joins(x, &language))
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
+
+    let characters = character_select_columns()
       .transform(|x| self.character_joins(x, &language))
       .where_expression(Expression::new(Value(("character_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("character_translation_fallback", "name"), ILike(&name)))));
-
-    let total = select.count(self.client).await? as usize;
-
-    let characters = select
+        .or(Expression::new(Value(("character_translation_fallback", "name"), ILike(&name)))))
       .pagination(pagination)
       .query(self.client)
       .await?;

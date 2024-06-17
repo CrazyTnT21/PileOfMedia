@@ -33,12 +33,14 @@ impl<'a> DefaultUserRepository<'a> {
 #[async_trait]
 impl<'a> UserRepository for DefaultUserRepository<'a> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
-    let select = Select::new::<DbUser>()
-      .columns::<DbUser>(DbUser::TABLE_NAME);
+    let total = Select::new::<DbUser>()
+      .count()
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
 
-    let total = select.count(self.client).await? as usize;
-
-    let users = select
+    let users = Select::new::<DbUser>()
+      .columns::<DbUser>(DbUser::TABLE_NAME)
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -75,13 +77,17 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
 
   async fn get_by_name(&self, name: &str, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
     let name = format!("%{name}%");
-    let select = Select::new::<DbUser>()
+
+    let total = Select::new::<DbUser>()
+      .count()
+      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "name"), ILike(&name))))
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
+
+    let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
-      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "name"), ILike(&name))));
-
-    let total = select.count(self.client).await? as usize;
-
-    let users = select
+      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "name"), ILike(&name))))
       .pagination(pagination)
       .query(self.client)
       .await?;

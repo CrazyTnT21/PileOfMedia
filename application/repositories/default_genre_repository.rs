@@ -36,12 +36,17 @@ impl<'a> DefaultGenreRepository<'a> {
 impl<'a> GenreRepository for DefaultGenreRepository<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let select = genre_select_columns()
-      .transform(|x| self.genre_joins(x, &language));
 
-    let total = select.count(self.client).await? as usize;
+    let total = Select::new::<DbGenre>()
+      .transform(|x| self.genre_joins(x, &language))
+      .count()
+      .get_single(self.client)
+      .await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
 
-    let genres = select
+    let genres = genre_select_columns()
+      .transform(|x| self.genre_joins(x, &language))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -83,14 +88,21 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
-    let select = genre_select_columns()
+
+    let total = Select::new::<DbGenre>()
       .transform(|x| self.genre_joins(x, &language))
       .where_expression(Expression::new(Value(("genre_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("genre_translation_fallback", "name"), ILike(&name)))));
+        .or(Expression::new(Value(("genre_translation_fallback", "name"), ILike(&name)))))
+      .count()
+      .get_single(self.client)
+      .await?
+      .expect("Count should return one row");
 
-    let total = select.count(self.client).await? as usize;
-
-    let genres = select
+    let total = total.0 as usize;
+    let genres = genre_select_columns()
+      .transform(|x| self.genre_joins(x, &language))
+      .where_expression(Expression::new(Value(("genre_translation", "name"), ILike(&name)))
+        .or(Expression::new(Value(("genre_translation_fallback", "name"), ILike(&name)))))
       .pagination(pagination)
       .query(self.client)
       .await?

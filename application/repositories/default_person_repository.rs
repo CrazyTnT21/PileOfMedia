@@ -40,12 +40,16 @@ impl<'a> DefaultPersonRepository<'a> {
 impl<'a> PersonRepository for DefaultPersonRepository<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
-    let select = person_select_columns()
-      .transform(|x| self.person_joins(x, &language));
 
-    let total = select.count(self.client).await? as usize;
+    let total = Select::new::<DbPerson>()
+      .count()
+      .transform(|x| self.person_joins(x, &language))
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
 
-    let people = select
+    let people = person_select_columns()
+      .transform(|x| self.person_joins(x, &language))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -116,13 +120,18 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
-    let select = person_select_columns()
+
+    let total = Select::new::<DbPerson>()
+      .count()
       .transform(|x| self.person_joins(x, &language))
-      .where_expression(Expression::new(Value(("person", "name"), ILike(&name))));
+      .where_expression(Expression::new(Value(("person", "name"), ILike(&name))))
+      .get_single(self.client).await?
+      .expect("Count should return one row");
+    let total = total.0 as usize;
 
-    let total = select.count(self.client).await? as usize;
-
-    let people = select
+    let people = person_select_columns()
+      .transform(|x| self.person_joins(x, &language))
+      .where_expression(Expression::new(Value(("person", "name"), ILike(&name))))
       .pagination(pagination)
       .query(self.client)
       .await?;

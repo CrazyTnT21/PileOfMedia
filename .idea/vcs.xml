@@ -2,7 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/MyCollectionApp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/MyCollectionSite" vcs="Git" />
   </component>
 </project>
