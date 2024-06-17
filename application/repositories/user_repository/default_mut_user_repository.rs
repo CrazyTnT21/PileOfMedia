@@ -29,10 +29,9 @@ impl<'a> DefaultMutUserRepository<'a> {
 impl<'a> MutUserRepository for DefaultMutUserRepository<'a> {
   async fn create(&self, user: CreateUser) -> Result<User, Box<dyn Error>> {
     let id = Insert::new::<DbUser>(["name", "description", "fkprofilepicture"])
-      .push([&user.name, &user.description, &user.profile_picture.map(|x| x.id)])
+      .push([&user.name, &user.description, &user.profile_picture.map(|x| x.id as i32)])
       .returning_transaction("id", self.transaction)
       .await?;
-
     Ok(self.user_repository.get_by_id(id as u32).await?
       .expect("User was just created, they should exist"))
   }

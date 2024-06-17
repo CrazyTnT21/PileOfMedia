@@ -13,6 +13,7 @@ use utoipa::ToSchema;
 
 use domain::entities::account::{Email, Password};
 use domain::entities::account::partial_create_account::PartialCreateAccount;
+use domain::entities::user::User;
 use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountService;
 
@@ -33,6 +34,12 @@ pub struct LoginData {
   password: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, ToSchema)]
+pub struct RegisterData {
+  token: String,
+  user: User,
+}
+
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/login", post(login))
@@ -43,13 +50,13 @@ pub fn routes(app_state: AppState) -> Router {
 
 #[utoipa::path(post, path = "/register",
 responses(
-(status = 200, description = "Returned JWT. Valid for a week", body = String), ServerError, BadRequest
+(status = 200, description = "Returned JWT and user. Valid for a week", body = RegisterData), ServerError, BadRequest
 ),
 request_body = PartialCreateAccount,
 tag = "Accounts"
 )]
 #[debug_handler]
-async fn register(State(app_state): State<AppState>, Json(account): Json<PartialCreateAccount>) -> Result<(StatusCode, String), (StatusCode, String)> {
+async fn register(State(app_state): State<AppState>, Json(account): Json<PartialCreateAccount>) -> Result<(StatusCode, Json<RegisterData>), (StatusCode, String)> {
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
 
@@ -62,10 +69,10 @@ async fn register(State(app_state): State<AppState>, Json(account): Json<Partial
   let user_id = account.user.id;
 
   let in_a_week = (Utc::now().timestamp() + 604800) as usize;
-  let claim = create_claim("Register".to_string(), user_id as u32, in_a_week);
+  let claim = create_claim("Register".to_string(), user_id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
-
-  Ok((StatusCode::OK, token))
+  let user = account.user;
+  Ok((StatusCode::OK, Json(RegisterData { token, user })))
 }
 
 fn create_token(claim: Claim, secret: &[u8]) -> Result<String, (StatusCode, String)> {
@@ -104,7 +111,7 @@ async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginDa
     service.login(&Email(email), &Password(password)).await.map_err(convert_service_error)?
   };
   let in_a_week = (Utc::now().timestamp() + 604800) as usize;
-  let claim = create_claim("Login".to_string(), account.user.id as u32, in_a_week);
+  let claim = create_claim("Login".to_string(), account.user.id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
 
   Ok(token)
