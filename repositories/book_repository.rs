@@ -5,6 +5,11 @@ use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 
+pub mod book_genre_repository;
+pub mod book_theme_repository;
+pub mod book_character_repository;
+pub mod book_involved_repository;
+
 #[async_trait]
 pub trait BookRepository: Send + Sync {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>>;

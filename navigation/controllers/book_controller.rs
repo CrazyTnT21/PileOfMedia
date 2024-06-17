@@ -6,15 +6,17 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use tokio_postgres::Client;
-
-use services::book_relations_service::BookRelationsService;
+use services::book_service::book_character_service::BookCharacterService;
+use services::book_service::book_genre_service::BookGenreService;
+use services::book_service::book_involved_service::BookInvolvedService;
+use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::BookService;
 
 use crate::app_state::AppState;
 use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
-use crate::implementations::{get_book_relations_repository, get_book_relations_service, get_book_repository, get_book_service, get_character_repository, get_genre_repository, get_image_repository, get_person_repository, get_role_repository, get_theme_repository};
+use crate::implementations::{get_book_character_repository, get_book_character_service, get_book_genre_repository, get_book_genre_service, get_book_involved_repository, get_book_involved_service, get_book_repository, get_book_service, get_book_theme_repository, get_book_theme_service, get_character_repository, get_genre_repository, get_image_repository, get_person_repository, get_role_repository, get_theme_repository};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::title::TitleParam;
@@ -120,7 +122,7 @@ async fn get_by_title(Path(title): Path<String>, AcceptLanguageHeader(languages)
 )]
 async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
-  let service = get_relations_service(&connection);
+  let service = get_genre_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -130,7 +132,7 @@ async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
   let mut content_language = content_language_header(language);
   append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
 
-  match service.get_genres(id, language, pagination.into()).await {
+  match service.get(id, language, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }
@@ -145,7 +147,7 @@ async fn get_genres(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
 )]
 async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
-  let service = get_relations_service(&connection);
+  let service = get_theme_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -155,7 +157,7 @@ async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
   let mut content_language = content_language_header(language);
   append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
 
-  match service.get_themes(id, language, pagination.into()).await {
+  match service.get(id, language, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }
@@ -170,7 +172,7 @@ async fn get_themes(Path(id): Path<u32>, AcceptLanguageHeader(languages): Accept
 )]
 async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
-  let service = get_relations_service(&connection);
+  let service = get_character_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -180,7 +182,7 @@ async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): Ac
   let mut content_language = content_language_header(language);
   append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
 
-  match service.get_characters(id, language, pagination.into()).await {
+  match service.get(id, language, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }
@@ -195,7 +197,7 @@ async fn get_characters(Path(id): Path<u32>, AcceptLanguageHeader(languages): Ac
 )]
 async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
-  let service = get_relations_service(&connection);
+  let service = get_involved_service(&connection);
 
   let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
@@ -205,23 +207,43 @@ async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): Acce
   let mut content_language = content_language_header(language);
   append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
 
-  match service.get_involved(id, language, pagination.into()).await {
+  match service.get(id, language, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error))
   }
 }
 
-fn get_relations_service(connection: &Client) -> impl BookRelationsService + '_ {
+fn get_genre_service(connection: &Client) -> impl BookGenreService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let genre_repository = Arc::new(get_genre_repository(connection, DEFAULT_LANGUAGE));
-  let theme_repository = Arc::new(get_theme_repository(connection, DEFAULT_LANGUAGE));
   let book_repository = Arc::new(get_book_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
-  let character_repository = Arc::new(get_character_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
+  let genre_repository = Arc::new(get_genre_repository(connection, DEFAULT_LANGUAGE));
+  let repository = Arc::new(get_book_genre_repository(connection, DEFAULT_LANGUAGE, book_repository, genre_repository));
+  get_book_genre_service(repository)
+}
+
+fn get_theme_service(connection: &Client) -> impl BookThemeService + '_ {
+  let image_repository = Arc::new(get_image_repository(connection));
+  let book_repository = Arc::new(get_book_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
+  let theme_repository = Arc::new(get_theme_repository(connection, DEFAULT_LANGUAGE));
+  let repository = Arc::new(get_book_theme_repository(connection, DEFAULT_LANGUAGE, book_repository, theme_repository));
+  get_book_theme_service(repository)
+}
+
+fn get_character_service(connection: &Client) -> impl BookCharacterService + '_ {
+  let image_repository = Arc::new(get_image_repository(connection));
+  let book_repository = Arc::new(get_book_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
+  let character_repository = Arc::new(get_character_repository(connection, DEFAULT_LANGUAGE, image_repository));
+  let repository = Arc::new(get_book_character_repository(connection, DEFAULT_LANGUAGE, book_repository, character_repository));
+  get_book_character_service(repository)
+}
+
+fn get_involved_service(connection: &Client) -> impl BookInvolvedService + '_ {
+  let image_repository = Arc::new(get_image_repository(connection));
+  let book_repository = Arc::new(get_book_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
   let person_repository = Arc::new(get_person_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
   let role_repository = Arc::new(get_role_repository(connection, DEFAULT_LANGUAGE));
-
-  let repository = get_book_relations_repository(connection, DEFAULT_LANGUAGE, book_repository, genre_repository, theme_repository, character_repository, person_repository, role_repository);
-  get_book_relations_service(Arc::new(repository))
+  let repository = Arc::new(get_book_involved_repository(connection, DEFAULT_LANGUAGE, book_repository, person_repository, role_repository));
+  get_book_involved_service(repository)
 }
 
 fn get_service(connection: &Client) -> impl BookService + '_ {

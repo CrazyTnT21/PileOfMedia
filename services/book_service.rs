@@ -5,6 +5,11 @@ use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use crate::traits::service_error::ServiceError;
 
+pub mod book_genre_service;
+pub mod book_theme_service;
+pub mod book_character_service;
+pub mod book_involved_service;
+
 #[async_trait]
 pub trait BookService: Send + Sync {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, ServiceError>;

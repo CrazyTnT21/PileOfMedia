@@ -2,9 +2,12 @@ use std::sync::Arc;
 use tokio_postgres::{Client, Transaction};
 use application::repositories::account_repository::default_account_repository::DefaultAccountRepository;
 use application::repositories::account_repository::default_mut_account_repository::DefaultMutAccountRepository;
+use application::repositories::book_repository::default_book_character_repository::DefaultBookCharacterRepository;
+use application::repositories::book_repository::default_book_genre_repository::DefaultBookGenreRepository;
+use application::repositories::book_repository::default_book_involved_repository::DefaultBookInvolvedRepository;
+use application::repositories::book_repository::default_book_repository::DefaultBookRepository;
+use application::repositories::book_repository::default_book_theme_repository::DefaultBookThemeRepository;
 
-use application::repositories::default_book_relations_repository::DefaultBookRelationsRepository;
-use application::repositories::default_book_repository::DefaultBookRepository;
 use application::repositories::default_character_repository::DefaultCharacterRepository;
 use application::repositories::default_genre_repository::DefaultGenreRepository;
 use application::repositories::default_person_repository::DefaultPersonRepository;
@@ -19,8 +22,11 @@ use application::repositories::user_repository::default_user_repository::Default
 use domain::enums::language::Language;
 use infrastructure::services::account_service::default_account_service::DefaultAccountService;
 use infrastructure::services::account_service::default_mut_account_service::DefaultMutAccountService;
-use infrastructure::services::default_book_relations_service::DefaultBookRelationsService;
+use infrastructure::services::default_book_character_service::DefaultBookCharacterService;
+use infrastructure::services::default_book_genre_service::DefaultBookGenreService;
+use infrastructure::services::default_book_involved_service::DefaultBookInvolvedService;
 use infrastructure::services::default_book_service::DefaultBookService;
+use infrastructure::services::default_book_theme_service::DefaultBookThemeService;
 use infrastructure::services::default_character_service::DefaultCharacterService;
 use infrastructure::services::default_genre_service::DefaultGenreService;
 use infrastructure::services::default_person_service::DefaultPersonService;
@@ -34,7 +40,10 @@ use infrastructure::services::user_service::default_mut_user_service::DefaultMut
 use infrastructure::services::user_service::default_user_service::DefaultUserService;
 use repositories::account_repository::AccountRepository;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
-use repositories::book_relations_repository::BookRelationsRepository;
+use repositories::book_repository::book_character_repository::BookCharacterRepository;
+use repositories::book_repository::book_genre_repository::BookGenreRepository;
+use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
+use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
 use repositories::file_repository::FileRepository;
@@ -49,7 +58,10 @@ use repositories::user_repository::mut_user_repository::MutUserRepository;
 use repositories::user_repository::UserRepository;
 use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountService;
-use services::book_relations_service::BookRelationsService;
+use services::book_service::book_character_service::BookCharacterService;
+use services::book_service::book_genre_service::BookGenreService;
+use services::book_service::book_involved_service::BookInvolvedService;
+use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::BookService;
 use services::character_service::CharacterService;
 use services::file_service::FileService;
@@ -111,20 +123,49 @@ pub fn get_character_repository<'a>(client: &'a Client, language: Language, imag
   DefaultCharacterRepository::new(client, language, image_repository)
 }
 
-pub fn get_book_relations_service<'a>(book_relations_repository: Arc<dyn BookRelationsRepository + 'a>) -> impl BookRelationsService + 'a {
-  DefaultBookRelationsService::new(book_relations_repository)
+pub fn get_book_genre_service<'a>(default_book_genre_repository: Arc<dyn BookGenreRepository + 'a>) -> impl BookGenreService + 'a {
+  DefaultBookGenreService::new(default_book_genre_repository)
 }
 
-pub fn get_book_relations_repository<'a>(client: &'a Client,
+pub fn get_book_genre_repository<'a>(client: &'a Client,
+                                     language: Language,
+                                     book_repository: Arc<dyn BookRepository + 'a>,
+                                     genre_repository: Arc<dyn GenreRepository + 'a>) -> impl BookGenreRepository + 'a {
+  DefaultBookGenreRepository::new(client, language, book_repository, genre_repository)
+}
+
+pub fn get_book_theme_service<'a>(default_book_theme_repository: Arc<dyn BookThemeRepository + 'a>) -> impl BookThemeService + 'a {
+  DefaultBookThemeService::new(default_book_theme_repository)
+}
+
+pub fn get_book_theme_repository<'a>(client: &'a Client,
+                                     language: Language,
+                                     book_repository: Arc<dyn BookRepository + 'a>,
+                                     theme_repository: Arc<dyn ThemeRepository + 'a>) -> impl BookThemeRepository + 'a {
+  DefaultBookThemeRepository::new(client, language, book_repository, theme_repository)
+}
+
+pub fn get_book_character_service<'a>(default_book_character_repository: Arc<dyn BookCharacterRepository + 'a>) -> impl BookCharacterService + 'a {
+  DefaultBookCharacterService::new(default_book_character_repository)
+}
+
+pub fn get_book_character_repository<'a>(client: &'a Client,
                                          language: Language,
                                          book_repository: Arc<dyn BookRepository + 'a>,
-                                         genre_repository: Arc<dyn GenreRepository + 'a>,
-                                         theme_repository: Arc<dyn ThemeRepository + 'a>,
-                                         character_repository: Arc<dyn CharacterRepository + 'a>,
-                                         person_repository: Arc<dyn PersonRepository + 'a>,
-                                         role_repository: Arc<dyn RoleRepository + 'a>, ) -> impl BookRelationsRepository + 'a
-{
-  DefaultBookRelationsRepository::new(client, language, book_repository, genre_repository, theme_repository, character_repository, person_repository, role_repository)
+                                         character_repository: Arc<dyn CharacterRepository + 'a>) -> impl BookCharacterRepository + 'a {
+  DefaultBookCharacterRepository::new(client, language, book_repository, character_repository)
+}
+
+pub fn get_book_involved_service<'a>(default_book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>) -> impl BookInvolvedService + 'a {
+  DefaultBookInvolvedService::new(default_book_involved_repository)
+}
+
+pub fn get_book_involved_repository<'a>(client: &'a Client,
+                                        language: Language,
+                                        book_repository: Arc<dyn BookRepository + 'a>,
+                                        person_repository: Arc<dyn PersonRepository + 'a>,
+                                        role_repository: Arc<dyn RoleRepository + 'a>, ) -> impl BookInvolvedRepository + 'a {
+  DefaultBookInvolvedRepository::new(client, language, book_repository, person_repository, role_repository)
 }
 
 pub fn get_role_service<'a>(role_repository: Arc<dyn RoleRepository + 'a>) -> impl RoleService + 'a {
