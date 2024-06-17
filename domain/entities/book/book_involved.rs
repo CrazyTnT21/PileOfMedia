@@ -8,3 +8,9 @@ pub struct BookInvolved {
   pub person: Person,
   pub role: PersonRole,
 }
+/* TODO:
+pub struct BookInvolved {
+  pub person: Person,
+  pub roles: Vec<PersonRole>,
+}
+*/

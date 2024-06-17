@@ -178,6 +178,7 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
     let total = Select::new::<DbBookInvolved>()
       .count()
       .transform(|x| involved_joins(x, &db_language, &self.default_language))
+      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkbook"), Equal(&book_id))))
       .get_single(self.client)
       .await?
       .expect("Count should return one row");
@@ -188,9 +189,8 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
       .columns::<Option<DbRoleTranslation>>("role_translation")
       .columns::<Option<DbRoleTranslation>>("role_translation_fallback")
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkperson")
-      .column::<i32>(DbBookInvolved::TABLE_NAME, "fkbook")
+      .column::<i32>(DbBookInvolved::TABLE_NAME, "fkrole")
       .transform(|x| involved_joins(x, &db_language, &self.default_language))
-      .inner_join::<DbRole>(None, Expression::new(Column((DbRole::TABLE_NAME, "id"), (DbBookInvolved::TABLE_NAME, "fkperson"))))
       .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkbook"), Equal(&book_id))))
       .pagination(pagination)
       .query(self.client)
@@ -202,27 +202,31 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
         total,
       });
     }
-
-    let person_ids: Vec<u32> = involved
+    let mut person_ids: Vec<u32> = involved
       .iter()
       .map(|x| x.3 as u32)
       .collect();
+    person_ids.sort();
+    person_ids.dedup();
 
-    let role_ids: Vec<u32> = involved
+    let mut role_ids: Vec<u32> = involved
       .iter()
       .map(|x| x.4 as u32)
       .collect();
+    role_ids.sort();
+    role_ids.dedup();
 
-    let mut people = self.person_repository.get_by_ids(&person_ids, language).await?;
-    let mut roles = self.role_repository.get_by_ids(&role_ids, language).await?;
+    let people = self.person_repository.get_by_ids(&person_ids, language).await?;
+    let roles = self.role_repository.get_by_ids(&role_ids, language).await?;
 
-    let items = involved.into_iter().map(|x| {
-      let person_index = people.iter().position(|y| y.id == x.3 as u32).unwrap();
-      let role_index = roles.iter().position(|y| y.id == x.4 as u32).unwrap();
-      let person = people.swap_remove(person_index);
-      let role = roles.swap_remove(role_index);
-      BookInvolved { person, role: PersonRole { role } }
-    })
+    let items: Vec<BookInvolved> = involved
+      .iter()
+      .map(|x| {
+        let person = people.iter().find(|y| y.id == x.3 as u32).unwrap().clone();
+        let role = roles.iter().find(|y| y.id == x.4 as u32).unwrap().clone();
+
+        BookInvolved { person, role: PersonRole { role } }
+      })
       .collect();
 
     Ok(ItemsTotal {
@@ -233,10 +237,12 @@ impl<'a> BookRelationsRepository for DefaultBookRelationsRepository<'a> {
 }
 
 fn involved_joins<'a, T: FromRow<DbType=T> + CombinedType>(select: Select<'a, T>, language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, T> {
-  select.left_join::<DbRoleTranslation>(
-    Some("role_translation"),
-    Expression::new(Column(("role_translation", "fktranslation"), (DbRole::TABLE_NAME, "id")))
-      .and(Expression::column_equal("role_translation", "language", language)))
+  select
+    .inner_join::<DbRole>(None, Expression::new(Column((DbRole::TABLE_NAME, "id"), (DbBookInvolved::TABLE_NAME, "fkperson"))))
+    .left_join::<DbRoleTranslation>(
+      Some("role_translation"),
+      Expression::new(Column(("role_translation", "fktranslation"), (DbRole::TABLE_NAME, "id")))
+        .and(Expression::column_equal("role_translation", "language", language)))
     .left_join::<DbRoleTranslation>(
       Some("role_translation_fallback"),
       Expression::new(Column(("role_translation_fallback", "fktranslation"), (DbRole::TABLE_NAME, "id")))
