@@ -4,6 +4,7 @@ use application::repositories::account_repository::default_account_repository::D
 use application::repositories::account_repository::default_mut_account_repository::DefaultMutAccountRepository;
 use application::repositories::book_repository::book_character_repository::default_book_character_repository::DefaultBookCharacterRepository;
 use application::repositories::book_repository::book_character_repository::default_mut_book_character_repository::DefaultMutBookCharacterRepository;
+use application::repositories::book_repository::book_character_repository::default_mut_book_genre_repository::DefaultMutBookGenreRepository;
 use application::repositories::book_repository::default_book_genre_repository::DefaultBookGenreRepository;
 use application::repositories::book_repository::default_book_involved_repository::DefaultBookInvolvedRepository;
 use application::repositories::book_repository::default_book_repository::DefaultBookRepository;
@@ -25,7 +26,8 @@ use infrastructure::services::account_service::default_account_service::DefaultA
 use infrastructure::services::account_service::default_mut_account_service::DefaultMutAccountService;
 use infrastructure::services::book_service::book_character_service::default_book_character_service::DefaultBookCharacterService;
 use infrastructure::services::book_service::book_character_service::default_mut_book_character_service::DefaultMutBookCharacterService;
-use infrastructure::services::book_service::default_book_genre_service::DefaultBookGenreService;
+use infrastructure::services::book_service::book_genre_service::default_book_genre_service::DefaultBookGenreService;
+use infrastructure::services::book_service::book_genre_service::default_mut_book_genre_service::DefaultMutBookGenreService;
 use infrastructure::services::book_service::default_book_involved_service::DefaultBookInvolvedService;
 use infrastructure::services::book_service::default_book_service::DefaultBookService;
 use infrastructure::services::book_service::default_book_theme_service::DefaultBookThemeService;
@@ -45,6 +47,7 @@ use repositories::account_repository::mut_account_repository::MutAccountReposito
 use repositories::book_repository::book_character_repository::BookCharacterRepository;
 use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
+use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
 use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
 use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::BookRepository;
@@ -64,6 +67,7 @@ use services::account_service::mut_account_service::MutAccountService;
 use services::book_service::book_character_service::BookCharacterService;
 use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
 use services::book_service::book_genre_service::BookGenreService;
+use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
 use services::book_service::book_involved_service::BookInvolvedService;
 use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::BookService;
@@ -158,6 +162,13 @@ pub fn get_book_character_repository<'a>(client: &'a Client,
                                          book_repository: Arc<dyn BookRepository + 'a>,
                                          character_repository: Arc<dyn CharacterRepository + 'a>) -> impl BookCharacterRepository + 'a {
   DefaultBookCharacterRepository::new(client, language, book_repository, character_repository)
+}
+pub fn get_mut_book_genre_service<'a>(book_repository: Arc<dyn BookRepository + 'a>, book_genre_repository: Arc<dyn BookGenreRepository + 'a>, mut_book_genre_repository: Arc<dyn MutBookGenreRepository + 'a>, genre_repository: Arc<dyn GenreRepository + 'a>) -> impl MutBookGenreService + 'a {
+  DefaultMutBookGenreService::new(book_repository, book_genre_repository, mut_book_genre_repository, genre_repository)
+}
+
+pub fn get_mut_book_genre_repository<'a>(transaction: &'a Transaction) -> impl MutBookGenreRepository + 'a {
+  DefaultMutBookGenreRepository::new(transaction)
 }
 
 pub fn get_mut_book_character_service<'a>(book_repository: Arc<dyn BookRepository + 'a>, book_character_repository: Arc<dyn BookCharacterRepository + 'a>, mut_book_character_repository: Arc<dyn MutBookCharacterRepository + 'a>, character_repository: Arc<dyn CharacterRepository + 'a>) -> impl MutBookCharacterService + 'a {
