@@ -12,10 +12,11 @@ use from_row::Table;
 use repositories::book_repository::book_character_repository::BookCharacterRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_character::DbBookCharacter;
-use crate::select::comparison::Comparison::Equal;
+use crate::select::comparison::Comparison::{Equal, In};
 use crate::select::condition::Condition::Value;
 use crate::select::expression::Expression;
 use crate::select::Select;
@@ -84,5 +85,21 @@ impl<'a> BookCharacterRepository for DefaultBookCharacterRepository<'a> {
       items,
       total,
     })
+  }
+
+  async fn filter_existing(&self, book_id: u32, characters: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let book_id = book_id as i32;
+    let characters = to_i32(characters);
+    let characters = convert_to_sql(&characters);
+    let filtered = Select::new::<DbBookCharacter>()
+      .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
+      .where_expression(Expression::new(Value((DbBookCharacter::TABLE_NAME, "fkcharacter"), In(&characters))))
+      .where_expression(Expression::column_equal(DbBookCharacter::TABLE_NAME, "fkbook", &book_id))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(filtered)
   }
 }

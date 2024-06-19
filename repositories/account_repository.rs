@@ -14,4 +14,5 @@ pub trait AccountRepository: Send + Sync {
   async fn get_by_user_id(&self, id: u32) -> Result<Option<Account>, Box<dyn Error>>;
   async fn get_by_user_ids(&self, ids: &[u32]) -> Result<Vec<Account>, Box<dyn Error>>;
   async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, Box<dyn Error>>;
+  async fn filter_existing(&self, users: &[u32]) -> Result<Vec<u32>, Box<dyn Error>>;
 }

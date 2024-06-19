@@ -9,7 +9,7 @@ use domain::entities::person::Person;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use from_row::FromRow;
+use from_row::{FromRow, Table};
 use repositories::image_repository::ImageRepository;
 use repositories::person_repository::PersonRepository;
 
@@ -151,6 +151,20 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
         .collect();
 
     Ok(ItemsTotal { items: people, total })
+  }
+
+  async fn filter_existing(&self, people: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let people = to_i32(people);
+    let people = convert_to_sql(&people);
+    let count = Select::new::<DbPerson>()
+      .column::<i32>(DbPerson::TABLE_NAME, "id")
+      .where_expression(Expression::new(Value((DbPerson::TABLE_NAME, "id"), In(&people))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
   }
 }
 

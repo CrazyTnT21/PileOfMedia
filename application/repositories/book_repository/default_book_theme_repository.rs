@@ -12,10 +12,11 @@ use from_row::Table;
 use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::BookRepository;
 use repositories::theme_repository::ThemeRepository;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_theme::DbBookTheme;
-use crate::select::comparison::Comparison::Equal;
+use crate::select::comparison::Comparison::{Equal, In};
 use crate::select::condition::Condition::Value;
 use crate::select::expression::Expression;
 use crate::select::Select;
@@ -72,5 +73,21 @@ impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
       items,
       total,
     })
+  }
+
+  async fn filter_existing(&self, book_id: u32, themes: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let book_id = book_id as i32;
+    let themes = to_i32(themes);
+    let themes = convert_to_sql(&themes);
+    let filtered = Select::new::<DbBookTheme>()
+      .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
+      .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fktheme"), In(&themes))))
+      .where_expression(Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", &book_id))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(filtered)
   }
 }

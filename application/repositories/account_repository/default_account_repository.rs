@@ -95,6 +95,20 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
       }
     }
   }
+
+  async fn filter_existing(&self, users: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let users = to_i32(users);
+    let users = convert_to_sql(&users);
+    let count = Select::new::<DbAccount>()
+      .column::<i32>(DbAccount::TABLE_NAME, "fkuser")
+      .where_expression(Expression::new(Value((DbAccount::TABLE_NAME, "fkuser"), In(&users))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
+  }
 }
 
 fn to_entity(account: (DbAccount, ), user: User) -> Account {

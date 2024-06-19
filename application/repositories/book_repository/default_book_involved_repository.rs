@@ -4,7 +4,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
-use domain::entities::book::book_involved::BookInvolved;
+use domain::entities::book::book_involved::{BookInvolved, InvolvedId};
 use domain::entities::person::person_role::PersonRole;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
@@ -14,13 +14,14 @@ use repositories::book_repository::book_involved_repository::BookInvolvedReposit
 use repositories::book_repository::BookRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
+use crate::convert_to_sql::convert_to_sql;
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_involved::DbBookInvolved;
 use crate::schemas::db_role::DbRole;
 use crate::schemas::db_role_translation::DbRoleTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison::Equal;
+use crate::select::comparison::Comparison::{Equal, In};
 use crate::select::condition::Condition::{Column, Value};
 use crate::select::expression::Expression;
 use crate::select::Select;
@@ -113,6 +114,28 @@ impl<'a> BookInvolvedRepository for DefaultBookInvolvedRepository<'a> {
       items,
       total,
     })
+  }
+
+  async fn filter_existing(&self, book_id: u32, involved: &[InvolvedId]) -> Result<Vec<InvolvedId>, Box<dyn Error>> {
+    let book_id = book_id as i32;
+    let person_ids: Vec<i32> = involved.iter().map(|x| x.person_id as i32).collect();
+    let person_ids = convert_to_sql(&person_ids);
+
+    let role_ids: Vec<i32> = involved.iter().map(|x| x.role_id as i32).collect();
+    let role_ids = convert_to_sql(&role_ids);
+
+    let filtered = Select::new::<DbBookInvolved>()
+      .column::<i32>(DbBookInvolved::TABLE_NAME, "fkperson")
+      .column::<i32>(DbBookInvolved::TABLE_NAME, "fkrole")
+      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkperson"), In(&person_ids))))
+      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkrole"), In(&role_ids))))
+      .where_expression(Expression::column_equal(DbBookInvolved::TABLE_NAME, "fkbook", &book_id))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|(x, y)| { InvolvedId { person_id: x as u32, role_id: y as u32 } })
+      .collect();
+    Ok(filtered)
   }
 }
 

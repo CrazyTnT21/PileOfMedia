@@ -94,6 +94,20 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
 
     Ok(ItemsTotal { items: self.to_entities(users).await?, total })
   }
+
+  async fn filter_existing(&self, users: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let users = to_i32(users);
+    let users = convert_to_sql(&users);
+    let count = Select::new::<DbUser>()
+      .column::<i32>(DbUser::TABLE_NAME, "id")
+      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), In(&users))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
+  }
 }
 
 fn to_entity(user: (DbUser, ), image: Option<Image>) -> User {

@@ -143,6 +143,20 @@ impl BookRepository for DefaultBookRepository<'_> {
 
     Ok(books)
   }
+
+  async fn filter_existing(&self, books: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let books = to_i32(books);
+    let books = convert_to_sql(&books);
+    let count = Select::new::<DbBook>()
+      .column::<i32>(DbBook::TABLE_NAME, "id")
+      .where_expression(Expression::new(Value((DbBook::TABLE_NAME, "id"), In(&books))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
+  }
 }
 
 fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, BookColumns> {

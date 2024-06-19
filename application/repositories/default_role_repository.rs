@@ -109,6 +109,20 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
       .collect();
     Ok(ItemsTotal { items: roles, total })
   }
+
+  async fn filter_existing(&self, roles: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let roles = to_i32(roles);
+    let roles = convert_to_sql(&roles);
+    let count = Select::new::<DbRole>()
+      .column::<i32>(DbRole::TABLE_NAME, "id")
+      .where_expression(Expression::new(Value((DbRole::TABLE_NAME, "id"), In(&roles))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
+  }
 }
 
 impl<'a> DefaultRoleRepository<'a> {

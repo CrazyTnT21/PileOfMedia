@@ -12,10 +12,11 @@ use from_row::Table;
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use repositories::book_repository::BookRepository;
 use repositories::genre_repository::GenreRepository;
+use crate::convert_to_sql::{convert_to_sql, to_i32};
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_genre::DbBookGenre;
-use crate::select::comparison::Comparison::Equal;
+use crate::select::comparison::Comparison::{Equal, In};
 use crate::select::condition::Condition::Value;
 use crate::select::expression::Expression;
 use crate::select::Select;
@@ -72,5 +73,21 @@ impl<'a> BookGenreRepository for DefaultBookGenreRepository<'a> {
       items,
       total,
     })
+  }
+
+  async fn filter_existing(&self, book_id: u32, genres: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let book_id = book_id as i32;
+    let genres = to_i32(genres);
+    let genres = convert_to_sql(&genres);
+    let filtered = Select::new::<DbBookGenre>()
+      .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
+      .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkgenre"), In(&genres))))
+      .where_expression(Expression::column_equal(DbBookGenre::TABLE_NAME, "fkbook", &book_id))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(filtered)
   }
 }

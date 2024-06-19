@@ -7,7 +7,7 @@ use domain::entities::genre::Genre;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use from_row::FromRow;
+use from_row::{FromRow, Table};
 use repositories::genre_repository::GenreRepository;
 
 use crate::convert_to_sql::{convert_to_sql, to_i32};
@@ -110,6 +110,20 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
       .map(to_entity)
       .collect();
     Ok(ItemsTotal { items: genres, total })
+  }
+
+  async fn filter_existing(&self, genres: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let genres = to_i32(genres);
+    let genres = convert_to_sql(&genres);
+    let count = Select::new::<DbGenre>()
+      .column::<i32>(DbGenre::TABLE_NAME, "id")
+      .where_expression(Expression::new(Value((DbGenre::TABLE_NAME, "id"), In(&genres))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
   }
 }
 

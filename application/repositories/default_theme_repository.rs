@@ -7,7 +7,7 @@ use domain::entities::theme::Theme;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use from_row::FromRow;
+use from_row::{FromRow, Table};
 use repositories::theme_repository::ThemeRepository;
 
 use crate::convert_to_sql::{convert_to_sql, to_i32};
@@ -109,6 +109,20 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
       .collect();
 
     Ok(ItemsTotal { items: themes, total })
+  }
+
+  async fn filter_existing(&self, themes: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let themes = to_i32(themes);
+    let themes = convert_to_sql(&themes);
+    let count = Select::new::<DbTheme>()
+      .column::<i32>(DbTheme::TABLE_NAME, "id")
+      .where_expression(Expression::new(Value((DbTheme::TABLE_NAME, "id"), In(&themes))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
   }
 }
 

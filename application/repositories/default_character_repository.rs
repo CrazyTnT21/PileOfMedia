@@ -9,7 +9,7 @@ use domain::entities::image::Image;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use from_row::FromRow;
+use from_row::{FromRow, Table};
 use repositories::character_repository::CharacterRepository;
 use repositories::image_repository::ImageRepository;
 
@@ -117,6 +117,20 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     let characters = self.to_entities(characters).await?;
 
     Ok(ItemsTotal { items: characters, total })
+  }
+
+  async fn filter_existing(&self, characters: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let characters = to_i32(characters);
+    let characters = convert_to_sql(&characters);
+    let count = Select::new::<DbCharacter>()
+      .column::<i32>(DbCharacter::TABLE_NAME, "id")
+      .where_expression(Expression::new(Value((DbCharacter::TABLE_NAME, "id"), In(&characters))))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|x| { x.0 as u32 })
+      .collect();
+    Ok(count)
   }
 }
 

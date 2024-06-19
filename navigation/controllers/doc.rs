@@ -1,4 +1,5 @@
 use crate::controllers::account_controller::RegisterData;
+use domain::entities::book::book_involved::InvolvedId;
 use domain::entities::account::Email;
 use domain::entities::image::partial_create_image::Base64Data;
 use domain::entities::user::partial_create_user::PartialCreateUser;
@@ -63,6 +64,7 @@ use domain::entities::account::Password;
     BookInvolved,
     BookCharacter,
     User,
+    InvolvedId,
     PartialCreateAccount,
     PartialCreateUser,
     PartialCreateImage,

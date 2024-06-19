@@ -201,7 +201,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     let wheres = self.wheres.iter()
       .map(|expression| expression.fmt(count))
       .collect::<Vec<String>>()
-      .join("");
+      .join(" AND ");
     Some(format!("WHERE {}", wheres))
   }
 
