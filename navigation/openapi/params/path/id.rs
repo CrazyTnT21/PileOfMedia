@@ -2,5 +2,5 @@
 #[into_params(names("id"))]
 pub struct IdParam(
   ///Id of the item to search for
-  String
+  u32
 );

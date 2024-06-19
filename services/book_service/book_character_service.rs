@@ -1,3 +1,5 @@
+pub mod mut_book_character_service;
+
 use async_trait::async_trait;
 
 use domain::entities::book::book_character::BookCharacter;

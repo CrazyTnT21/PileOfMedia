@@ -72,7 +72,7 @@ pub const DEFAULT_LANGUAGE: Language = EN;
 
 pub fn convert_service_error(service_error: ServiceError) -> (StatusCode, String) {
   match service_error {
-    ServiceError::ClientError(error) => (StatusCode::BAD_REQUEST, error.title),
+    ServiceError::ClientError(error) => (StatusCode::BAD_REQUEST, format!("{}\n{}",error.title,error.description.unwrap_or_default()) ),
     ServiceError::ServerError(e) => {
       eprintln!("Error: {e}");
       (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())

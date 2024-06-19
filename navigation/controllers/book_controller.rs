@@ -4,9 +4,11 @@ use axum::{Json, Router};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::routing::get;
-use tokio_postgres::Client;
+use axum::routing::{delete, get, post};
+use tokio_postgres::{Client, Transaction};
+
 use services::book_service::book_character_service::BookCharacterService;
+use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
 use services::book_service::book_genre_service::BookGenreService;
 use services::book_service::book_involved_service::BookInvolvedService;
 use services::book_service::book_theme_service::BookThemeService;
@@ -16,7 +18,7 @@ use crate::app_state::AppState;
 use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
-use crate::implementations::{get_book_character_repository, get_book_character_service, get_book_genre_repository, get_book_genre_service, get_book_involved_repository, get_book_involved_service, get_book_repository, get_book_service, get_book_theme_repository, get_book_theme_service, get_character_repository, get_genre_repository, get_image_repository, get_person_repository, get_role_repository, get_theme_repository};
+use crate::implementations::{get_book_character_repository, get_book_character_service, get_book_genre_repository, get_book_genre_service, get_book_involved_repository, get_book_involved_service, get_book_repository, get_book_service, get_book_theme_repository, get_book_theme_service, get_character_repository, get_genre_repository, get_image_repository, get_mut_book_character_repository, get_mut_book_character_service, get_person_repository, get_role_repository, get_theme_repository};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::title::TitleParam;
@@ -36,6 +38,8 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/:ids/genres", get(get_genres))
     .route("/:id/themes", get(get_themes))
     .route("/:id/characters", get(get_characters))
+    .route("/:id/characters/:character_id", post(add_character))
+    .route("/:id/characters/:character_id", delete(remove_character))
     .route("/:id/involved", get(get_involved))
     .with_state(app_state)
 }
@@ -213,6 +217,56 @@ async fn get_involved(Path(id): Path<u32>, AcceptLanguageHeader(languages): Acce
   }
 }
 
+#[utoipa::path(post, path = "/{id}/characters/{character_id}",
+  responses(
+    (status = 200, description = "Character association successfully added"), ServerError, BadRequest
+  ),
+  params(IdParam, ("character_id" = u32, Path,)),
+  tag = "Books"
+)]
+async fn add_character(Path((id, character_id)): Path<(u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_character_service(&transaction, client);
+
+    println!("Route for adding a character with the id {character_id} for a book with the id {id}");
+
+    match service.add(id, &[character_id]).await {
+      Ok(_) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(delete, path = "/{id}/characters/{character_id}",
+  responses(
+    (status = 200, description = "Character association successfully removed"), ServerError, BadRequest
+  ),
+  params(IdParam, ("character_id" = u32, Path,)),
+  tag = "Books"
+)]
+async fn remove_character(Path((id, character_id)): Path<(u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_character_service(&transaction, client);
+
+    println!("Route for removing a character with the id {character_id} for a book with the id {id}");
+
+    match service.remove(id, &[character_id]).await {
+      Ok(_) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
 fn get_genre_service(connection: &Client) -> impl BookGenreService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
   let book_repository = Arc::new(get_book_repository(connection, DEFAULT_LANGUAGE, image_repository.clone()));
@@ -235,6 +289,15 @@ fn get_character_service(connection: &Client) -> impl BookCharacterService + '_ 
   let character_repository = Arc::new(get_character_repository(connection, DEFAULT_LANGUAGE, image_repository));
   let repository = Arc::new(get_book_character_repository(connection, DEFAULT_LANGUAGE, book_repository, character_repository));
   get_book_character_service(repository)
+}
+
+fn get_mut_character_service<'a>(transaction: &'a Transaction<'a>, client: &'a Client) -> impl MutBookCharacterService + 'a {
+  let image_repository = Arc::new(get_image_repository(client));
+  let book_repository = Arc::new(get_book_repository(client, DEFAULT_LANGUAGE, image_repository.clone()));
+  let character_repository = Arc::new(get_character_repository(client, DEFAULT_LANGUAGE, image_repository));
+  let book_character_repository = get_book_character_repository(client, DEFAULT_LANGUAGE, book_repository.clone(), character_repository.clone());
+  let repository = get_mut_book_character_repository(transaction);
+  get_mut_book_character_service(book_repository, Arc::new(book_character_repository), Arc::new(repository), character_repository)
 }
 
 fn get_involved_service(connection: &Client) -> impl BookInvolvedService + '_ {
