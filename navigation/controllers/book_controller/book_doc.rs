@@ -13,7 +13,9 @@ use super::*;
     add_character,
     remove_character,
     add_genre,
-    remove_genre
+    remove_genre,
+    add_theme,
+    remove_theme
   )
 )]
 pub(crate) struct BookDoc;

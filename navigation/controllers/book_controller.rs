@@ -1,11 +1,8 @@
-use std::sync::Arc;
-
 use axum::{Json, Router};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
-use tokio_postgres::{Client, Transaction};
 
 use services::book_service::book_character_service::BookCharacterService;
 use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
@@ -13,14 +10,14 @@ use services::book_service::book_genre_service::BookGenreService;
 use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
 use services::book_service::book_involved_service::BookInvolvedService;
 use services::book_service::book_theme_service::BookThemeService;
+use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
 use services::book_service::BookService;
 
 use crate::app_state::AppState;
 use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
-use crate::controllers::book_controller::book_implementations::{get_character_service, get_genre_service, get_involved_service, get_mut_character_service, get_mut_genre_service, get_service, get_theme_service};
+use crate::controllers::book_controller::book_implementations::{get_character_service, get_genre_service, get_involved_service, get_mut_character_service, get_mut_genre_service, get_mut_theme_service, get_service, get_theme_service};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
-use crate::implementations::{get_book_character_repository, get_book_character_service, get_book_genre_repository, get_book_genre_service, get_book_involved_repository, get_book_involved_service, get_book_repository, get_book_service, get_book_theme_repository, get_book_theme_service, get_character_repository, get_genre_repository, get_image_repository, get_mut_book_character_repository, get_mut_book_character_service, get_mut_book_genre_repository, get_mut_book_genre_service, get_person_repository, get_role_repository, get_theme_repository};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::title::TitleParam;
@@ -42,6 +39,8 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/:id/genres/:genre_id", post(add_genre))
     .route("/:id/genres/:genre_id", delete(remove_genre))
     .route("/:id/themes", get(get_themes))
+    .route("/:id/themes/:theme_id", post(add_theme))
+    .route("/:id/themes/:theme_id", delete(remove_theme))
     .route("/:id/characters", get(get_characters))
     .route("/:id/characters/:character_id", post(add_character))
     .route("/:id/characters/:character_id", delete(remove_character))
@@ -315,6 +314,57 @@ async fn remove_genre(Path((id, genre_id)): Path<(u32, u32)>, State(app_state): 
     println!("Route for removing a genre with the id {genre_id} for a book with the id {id}");
 
     match service.remove(id, &[genre_id]).await {
+      Ok(_) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+
+#[utoipa::path(post, path = "/{id}/themes/{theme_id}",
+  responses(
+    (status = 200, description = "Theme association successfully added"), ServerError, BadRequest
+  ),
+  params(IdParam, ("theme_id" = u32, Path,)),
+  tag = "Books"
+)]
+async fn add_theme(Path((id, theme_id)): Path<(u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_theme_service(&transaction, client);
+
+    println!("Route for adding a theme with the id {theme_id} for a book with the id {id}");
+
+    match service.add(id, &[theme_id]).await {
+      Ok(_) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(delete, path = "/{id}/themes/{theme_id}",
+  responses(
+    (status = 200, description = "Theme association successfully removed"), ServerError, BadRequest
+  ),
+  params(IdParam, ("theme_id" = u32, Path,)),
+  tag = "Books"
+)]
+async fn remove_theme(Path((id, theme_id)): Path<(u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_theme_service(&transaction, client);
+
+    println!("Route for removing a theme with the id {theme_id} for a book with the id {id}");
+
+    match service.remove(id, &[theme_id]).await {
       Ok(_) => Ok(StatusCode::OK),
       Err(error) => Err(convert_service_error(error))
     }

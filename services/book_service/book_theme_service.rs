@@ -1,3 +1,5 @@
+pub mod mut_book_theme_service;
+
 use async_trait::async_trait;
 
 use domain::entities::theme::Theme;
