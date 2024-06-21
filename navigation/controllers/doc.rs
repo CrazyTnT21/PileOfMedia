@@ -1,4 +1,4 @@
-use crate::controllers::account_controller::RegisterData;
+use crate::controllers::account_controller::LoginReturnData;
 use domain::entities::book::book_involved::InvolvedId;
 use domain::entities::account::Email;
 use domain::entities::image::partial_create_image::Base64Data;
@@ -72,7 +72,7 @@ use domain::entities::account::Password;
     Email,
     Password,
     LoginData,
-    RegisterData,
+    LoginReturnData,
     BooksTotal,
     GenresTotal,
     ThemesTotal,

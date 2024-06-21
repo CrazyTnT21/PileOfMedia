@@ -1,5 +1,6 @@
 use std::env;
 use std::error::Error;
+use axum::http::header::CONTENT_TYPE;
 
 use axum::http::Method;
 use bb8_postgres::bb8::{ManageConnection, Pool};
@@ -28,6 +29,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
 
   let cors = CorsLayer::new()
     .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+    .allow_headers([CONTENT_TYPE])
     .allow_origin(Any);
 
   let app_state = AppState {

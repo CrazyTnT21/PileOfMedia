@@ -1,3 +1,4 @@
+use crate::openapi::responses::forbidden::Forbidden;
 use std::sync::Arc;
 
 use axum::{debug_handler, Json, Router};
@@ -35,7 +36,7 @@ pub struct LoginData {
 }
 
 #[derive(Serialize, Deserialize, Debug, ToSchema)]
-pub struct RegisterData {
+pub struct LoginReturnData {
   token: String,
   user: User,
 }
@@ -50,13 +51,13 @@ pub fn routes(app_state: AppState) -> Router {
 
 #[utoipa::path(post, path = "/register",
 responses(
-(status = 200, description = "Returned JWT and user. Valid for a week", body = RegisterData), ServerError, BadRequest
+(status = 201, description = "Returned JWT and user. Valid for a week", body = LoginReturnData), ServerError, BadRequest
 ),
 request_body = PartialCreateAccount,
 tag = "Accounts"
 )]
 #[debug_handler]
-async fn register(State(app_state): State<AppState>, Json(account): Json<PartialCreateAccount>) -> Result<(StatusCode, Json<RegisterData>), (StatusCode, String)> {
+async fn register(State(app_state): State<AppState>, Json(account): Json<PartialCreateAccount>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
 
@@ -72,7 +73,7 @@ async fn register(State(app_state): State<AppState>, Json(account): Json<Partial
   let claim = create_claim("Register".to_string(), user_id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
   let user = account.user;
-  Ok((StatusCode::OK, Json(RegisterData { token, user })))
+  Ok((StatusCode::CREATED, Json(LoginReturnData { token, user })))
 }
 
 fn create_token(claim: Claim, secret: &[u8]) -> Result<String, (StatusCode, String)> {
@@ -95,12 +96,12 @@ fn create_claim(subject: String, user_id: u32, exp: usize) -> Claim {
 
 #[utoipa::path(post, path = "/login",
 responses(
-(status = 200, description = "Returned JWT. Valid for a week", body = String), ServerError, NotAuthorized
+(status = 200, description = "Returned JWT. Valid for a week", body = LoginReturnData), ServerError, NotAuthorized
 ),
 request_body = LoginData,
 tag = "Accounts"
 )]
-async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginData>) -> Result<String, (StatusCode, String)> {
+async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginData>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
   let pooled = app_state.pool.get().await.unwrap();
 
   let password = login_data.password;
@@ -113,13 +114,13 @@ async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginDa
   let in_a_week = (Utc::now().timestamp() + 604800) as usize;
   let claim = create_claim("Login".to_string(), account.user.id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
-
-  Ok(token)
+  let user = account.user;
+  Ok((StatusCode::OK, Json(LoginReturnData { token, user })))
 }
 
 #[utoipa::path(get, path = "/refresh",
   responses(
-    (status = 200, description = "Returned JWT. Valid for an hour", body = String), ServerError, NotAuthorized
+    (status = 200, description = "Returned JWT. Valid for an hour", body = String), ServerError, Forbidden
   ),
   params(JsonWebTokenParam),
   tag = "Accounts"
@@ -127,7 +128,7 @@ async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginDa
 async fn refresh_token(auth: JWTAuthorization, State(app_state): State<AppState>) -> impl IntoResponse {
   let claim = jsonwebtoken::decode::<Claim>(&auth.token, &DecodingKey::from_secret(app_state.secret.as_bytes()), &Validation::default());
   let Ok(claim) = claim else {
-    return Err((StatusCode::UNAUTHORIZED, "Invalid JWT".to_string()));
+    return Err((StatusCode::FORBIDDEN, "Invalid JWT".to_string()));
   };
   let in_one_hour = (Utc::now().timestamp() as usize) + 3600;
   let claim = create_claim("Refresh".to_string(), claim.claims.user_id, in_one_hour);
