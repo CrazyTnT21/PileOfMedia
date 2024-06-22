@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::marker::PhantomData;
 
-use tokio_postgres::Client;
+use tokio_postgres::{Client};
 use tokio_postgres::types::ToSql;
 
 use domain::pagination::Pagination;
@@ -19,9 +19,11 @@ pub mod condition;
 pub mod expression;
 pub mod combined_tuple;
 mod column_table;
+pub mod conditions;
+pub mod selector;
+pub mod to_sql_value;
 
 //TODO: Prepared version
-#[derive(Debug, Clone)]
 pub struct Select<'a, T: FromRow<DbType=T> + CombinedType>
 {
   marker: PhantomData<T>,
@@ -199,7 +201,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     }
 
     let wheres = self.wheres.iter()
-      .map(|expression| expression.fmt(count))
+      .map(|expression| expression.sql(count))
       .collect::<Vec<String>>()
       .join(" AND ");
     Some(format!("WHERE {}", wheres))
@@ -226,7 +228,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     }
 
     let having = self.having.iter()
-      .map(|expression| expression.fmt(count))
+      .map(|expression| expression.sql(count))
       .collect::<Vec<String>>()
       .join("");
     Some(format!("HAVING {}", having))
@@ -241,7 +243,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
 
   fn query_sql(&self) -> String {
     let columns = self.columns_sql();
-    let mut count = 0;
+    let mut count = 1;
     let joins = self.join_sql(&mut count);
     let where_sql = self.where_sql(&mut count).unwrap_or_default();
     let group_by_sql = self.group_by_sql().unwrap_or_default();
@@ -264,10 +266,10 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
       .collect::<Vec<T>>())
   }
 
-  fn values(&self) -> Vec<&'a (dyn ToSql + Sync)> {
+  fn values(&'a self) -> Vec<&'a (dyn ToSql + Sync)> {
     let mut total: Vec<&'a (dyn ToSql + Sync)> = vec![];
-    self.joins.iter().for_each(|x| Expression::values(&x.expression, &mut total));
-    self.wheres.iter().for_each(|x| Expression::values(x, &mut total));
+    self.joins.iter().for_each(|x| total.append(&mut x.expression.values()));
+    self.wheres.iter().for_each(|x| total.append(&mut x.values()));
     total
   }
 

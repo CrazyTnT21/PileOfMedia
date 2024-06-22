@@ -12,10 +12,11 @@ use from_row::Table;
 use repositories::image_repository::ImageRepository;
 use repositories::user_repository::UserRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::schemas::db_user::DbUser;
-use crate::select::comparison::Comparison::{Equal, ILike, In};
-use crate::select::condition::Condition::Value;
+use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -52,7 +53,7 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
     let id = id as i32;
     let user = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
-      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), Equal(&id))))
+      .where_expression(Expression::new(ValueEqual::new((DbUser::TABLE_NAME, "id"), id)))
       .get_single(self.client)
       .await?;
     let image_id = user.as_ref().and_then(|x| x.0.fk_profile_picture);
@@ -65,10 +66,10 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
 
   async fn get_by_ids(&self, ids: &[u32]) -> Result<Vec<User>, Box<dyn Error>> {
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
     let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
-      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new((DbUser::TABLE_NAME, "id"), &ids)))
       .query(self.client)
       .await?;
 
@@ -80,14 +81,14 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
 
     let total = Select::new::<DbUser>()
       .count()
-      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "name"), ILike(&name))))
+      .where_expression(Expression::new(ValueILike::new((DbUser::TABLE_NAME, "name"), &name)))
       .get_single(self.client).await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
     let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
-      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "name"), ILike(&name))))
+      .where_expression(Expression::new(ValueILike::new((DbUser::TABLE_NAME, "name"), &name)))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -97,10 +98,10 @@ impl<'a> UserRepository for DefaultUserRepository<'a> {
 
   async fn filter_existing(&self, users: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let users = to_i32(users);
-    let users = convert_to_sql(&users);
+
     let count = Select::new::<DbUser>()
       .column::<i32>(DbUser::TABLE_NAME, "id")
-      .where_expression(Expression::new(Value((DbUser::TABLE_NAME, "id"), In(&users))))
+      .where_expression(Expression::new(ValueIn::new((DbUser::TABLE_NAME, "id"), &users)))
       .query(self.client)
       .await?
       .into_iter()

@@ -13,14 +13,17 @@ use from_row::{FromRow, Table};
 use repositories::character_repository::CharacterRepository;
 use repositories::image_repository::ImageRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_character::DbCharacter;
 use crate::schemas::db_character_translation::DbCharacterTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison::{Equal, ILike, In};
-use crate::select::condition::Condition::{Column, Value};
+use crate::select::conditions::column_equal::ColumnEqual;
+use crate::select::conditions::column_null::ColumnNull;
+use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -64,7 +67,7 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
     let language = DbLanguage::from(language);
     let character = character_select_columns()
       .transform(|x| self.character_joins(x, &language))
-      .where_expression(Expression::new(Value(("character", "id"), Equal(&id))))
+      .where_expression(Expression::new(ValueEqual::new(("character", "id"), id)))
       .get_single(self.client)
       .await?;
 
@@ -83,10 +86,10 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
   async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Character>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
     let characters = character_select_columns()
       .transform(|x| self.character_joins(x, &language))
-      .where_expression(Expression::new(Value(("character", "id"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new(("character", "id"), &ids)))
       .query(self.client)
       .await?;
 
@@ -108,8 +111,8 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
 
     let characters = character_select_columns()
       .transform(|x| self.character_joins(x, &language))
-      .where_expression(Expression::new(Value(("character_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("character_translation_fallback", "name"), ILike(&name)))))
+      .where_expression(Expression::new(ValueILike::new(("character_translation", "name"), &name))
+        .or(Expression::new(ValueILike::new(("character_translation_fallback", "name"), &name))))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -121,10 +124,10 @@ impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
 
   async fn filter_existing(&self, characters: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let characters = to_i32(characters);
-    let characters = convert_to_sql(&characters);
+
     let count = Select::new::<DbCharacter>()
       .column::<i32>(DbCharacter::TABLE_NAME, "id")
-      .where_expression(Expression::new(Value((DbCharacter::TABLE_NAME, "id"), In(&characters))))
+      .where_expression(Expression::new(ValueIn::new((DbCharacter::TABLE_NAME, "id"), &characters)))
       .query(self.client)
       .await?
       .into_iter()
@@ -140,13 +143,13 @@ impl<'a> DefaultCharacterRepository<'a> {
       .left_join::<DbCharacterTranslation>(
         Some("character_translation"),
         Expression::column_equal("character_translation", "language", language)
-          .and(Expression::new(Column(("character_translation", "fktranslation"), ("character", "id")))),
+          .and(Expression::new(ColumnEqual::new(("character_translation", "fktranslation"), ("character", "id")))),
       )
       .left_join::<DbCharacterTranslation>(
         Some("character_translation_fallback"),
         Expression::column_equal("character_translation_fallback", "language", &self.default_language)
-          .and(Expression::new(Column(("character_translation_fallback", "fktranslation"), ("character", "id"))))
-          .and(Expression::column_null("character_translation", "fktranslation")),
+          .and(Expression::new(ColumnEqual::new(("character_translation_fallback", "fktranslation"), ("character", "id"))))
+          .and(Expression::new(ColumnNull::new(("character_translation", "fktranslation")))),
       )
   }
   async fn to_entities(&self, items: Vec<CharacterColumns>) -> Result<Vec<Character>, Box<dyn Error>> {

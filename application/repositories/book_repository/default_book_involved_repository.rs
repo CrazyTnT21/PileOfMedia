@@ -14,15 +14,16 @@ use repositories::book_repository::book_involved_repository::BookInvolvedReposit
 use repositories::book_repository::BookRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
-use crate::convert_to_sql::convert_to_sql;
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_involved::DbBookInvolved;
 use crate::schemas::db_role::DbRole;
 use crate::schemas::db_role_translation::DbRoleTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison::{Equal, In};
-use crate::select::condition::Condition::{Column, Value};
+use crate::select::conditions::column_equal::ColumnEqual;
+use crate::select::conditions::column_null::ColumnNull;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -59,7 +60,7 @@ impl<'a> BookInvolvedRepository for DefaultBookInvolvedRepository<'a> {
     let total = Select::new::<DbBookInvolved>()
       .count()
       .transform(|x| involved_joins(x, &db_language, &self.default_language))
-      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .where_expression(Expression::new(ValueEqual::new((DbBookInvolved::TABLE_NAME, "fkbook"), book_id)))
       .get_single(self.client)
       .await?
       .expect("Count should return one row");
@@ -72,7 +73,7 @@ impl<'a> BookInvolvedRepository for DefaultBookInvolvedRepository<'a> {
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkperson")
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkrole")
       .transform(|x| involved_joins(x, &db_language, &self.default_language))
-      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .where_expression(Expression::new(ValueEqual::new((DbBookInvolved::TABLE_NAME, "fkbook"), book_id)))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -119,17 +120,17 @@ impl<'a> BookInvolvedRepository for DefaultBookInvolvedRepository<'a> {
   async fn filter_existing(&self, book_id: u32, involved: &[InvolvedId]) -> Result<Vec<InvolvedId>, Box<dyn Error>> {
     let book_id = book_id as i32;
     let person_ids: Vec<i32> = involved.iter().map(|x| x.person_id as i32).collect();
-    let person_ids = convert_to_sql(&person_ids);
+
 
     let role_ids: Vec<i32> = involved.iter().map(|x| x.role_id as i32).collect();
-    let role_ids = convert_to_sql(&role_ids);
+
 
     let filtered = Select::new::<DbBookInvolved>()
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkperson")
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkrole")
-      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkperson"), In(&person_ids))))
-      .where_expression(Expression::new(Value((DbBookInvolved::TABLE_NAME, "fkrole"), In(&role_ids))))
-      .where_expression(Expression::column_equal(DbBookInvolved::TABLE_NAME, "fkbook", &book_id))
+      .where_expression(Expression::new(ValueIn::new((DbBookInvolved::TABLE_NAME, "fkperson"), &person_ids)))
+      .where_expression(Expression::new(ValueIn::new((DbBookInvolved::TABLE_NAME, "fkrole"), &role_ids)))
+      .where_expression(Expression::column_equal(DbBookInvolved::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
       .into_iter()
@@ -141,14 +142,14 @@ impl<'a> BookInvolvedRepository for DefaultBookInvolvedRepository<'a> {
 
 fn involved_joins<'a, T: FromRow<DbType=T> + CombinedType>(select: Select<'a, T>, language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, T> {
   select
-    .inner_join::<DbRole>(None, Expression::new(Column((DbRole::TABLE_NAME, "id"), (DbBookInvolved::TABLE_NAME, "fkperson"))))
+    .inner_join::<DbRole>(None, Expression::new(ColumnEqual::new((DbRole::TABLE_NAME, "id"), (DbBookInvolved::TABLE_NAME, "fkperson"))))
     .left_join::<DbRoleTranslation>(
       Some("role_translation"),
-      Expression::new(Column(("role_translation", "fktranslation"), (DbRole::TABLE_NAME, "id")))
+      Expression::new(ColumnEqual::new(("role_translation", "fktranslation"), (DbRole::TABLE_NAME, "id")))
         .and(Expression::column_equal("role_translation", "language", language)))
     .left_join::<DbRoleTranslation>(
       Some("role_translation_fallback"),
-      Expression::new(Column(("role_translation_fallback", "fktranslation"), (DbRole::TABLE_NAME, "id")))
+      Expression::new(ColumnEqual::new(("role_translation_fallback", "fktranslation"), (DbRole::TABLE_NAME, "id")))
         .and(Expression::column_equal("role_translation_fallback", "language", fallback_language))
-        .and(Expression::column_null("role_translation", "fktranslation")))
+        .and(Expression::new(ColumnNull::new(("role_translation", "fktranslation")))))
 }

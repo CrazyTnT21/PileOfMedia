@@ -6,12 +6,11 @@ use tokio_postgres::Transaction;
 use from_row::Table;
 use repositories::book_repository::book_theme_repository::mut_book_theme_repository::MutBookThemeRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::delete::Delete;
 use crate::insert::Insert;
 use crate::schemas::db_book_theme::DbBookTheme;
-use crate::select::comparison::Comparison::In;
-use crate::select::condition::Condition::Value;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 
 pub struct DefaultMutBookThemeRepository<'a> {
@@ -38,10 +37,10 @@ impl<'a> MutBookThemeRepository for DefaultMutBookThemeRepository<'a> {
   async fn remove(&self, book_id: u32, themes: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let themes = to_i32(themes);
-    let themes = convert_to_sql(&themes);
+
     Delete::new::<DbBookTheme>(
-      Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", &book_id)
-        .and(Expression::new(Value((DbBookTheme::TABLE_NAME, "fktheme"), In(&themes))))
+      Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id)
+        .and(Expression::new(ValueIn::new((DbBookTheme::TABLE_NAME, "fktheme"), &themes)))
     )
       .execute_transaction(self.transaction)
       .await?;

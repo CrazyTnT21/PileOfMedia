@@ -12,10 +12,10 @@ use from_row::Table;
 use repositories::account_repository::AccountRepository;
 use repositories::user_repository::UserRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::schemas::db_account::DbAccount;
-use crate::select::comparison::Comparison::{Equal, In};
-use crate::select::condition::Condition::Value;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -52,7 +52,7 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
     let id = id as i32;
     let account = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
-      .where_expression(Expression::new(Value((DbAccount::TABLE_NAME, "fkuser"), Equal(&id))))
+      .where_expression(Expression::new(ValueEqual::new((DbAccount::TABLE_NAME, "fkuser"), id)))
       .get_single(self.client)
       .await?;
 
@@ -68,10 +68,10 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
 
   async fn get_by_user_ids(&self, ids: &[u32]) -> Result<Vec<Account>, Box<dyn Error>> {
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
     let accounts = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
-      .where_expression(Expression::new(Value((DbAccount::TABLE_NAME, "fkuser"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new((DbAccount::TABLE_NAME, "fkuser"), &ids)))
       .query(self.client)
       .await?;
 
@@ -82,7 +82,7 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
     let email = &email.0;
     let account = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
-      .where_expression(Expression::new(Value((DbAccount::TABLE_NAME, "email"), Equal(email))))
+      .where_expression(Expression::new(ValueEqual::new((DbAccount::TABLE_NAME, "email"), email)))
       .get_single(self.client)
       .await?;
 
@@ -98,10 +98,10 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
 
   async fn filter_existing(&self, users: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let users = to_i32(users);
-    let users = convert_to_sql(&users);
+
     let count = Select::new::<DbAccount>()
       .column::<i32>(DbAccount::TABLE_NAME, "fkuser")
-      .where_expression(Expression::new(Value((DbAccount::TABLE_NAME, "fkuser"), In(&users))))
+      .where_expression(Expression::new(ValueIn::new((DbAccount::TABLE_NAME, "fkuser"), &users)))
       .query(self.client)
       .await?
       .into_iter()

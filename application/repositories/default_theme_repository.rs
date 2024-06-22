@@ -10,14 +10,17 @@ use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
 use repositories::theme_repository::ThemeRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_theme::DbTheme;
 use crate::schemas::db_theme_translation::DbThemeTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison::{Equal, ILike, In};
-use crate::select::condition::Condition::{Column, Value};
+use crate::select::conditions::column_equal::ColumnEqual;
+use crate::select::conditions::column_null::ColumnNull;
+use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -61,7 +64,7 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let language = DbLanguage::from(language);
     let theme = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
-      .where_expression(Expression::new(Value(("theme", "id"), Equal(&id))))
+      .where_expression(Expression::new(ValueEqual::new(("theme", "id"), id)))
       .get_single(self.client)
       .await?;
 
@@ -71,10 +74,10 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
   async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Theme>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
     let themes = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
-      .where_expression(Expression::new(Value(("theme", "id"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new(("theme", "id"), &ids)))
       .query(self.client)
       .await?
       .into_iter()
@@ -91,16 +94,16 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let total = Select::new::<DbTheme>()
       .count()
       .transform(|x| self.theme_joins(x, &language))
-      .where_expression(Expression::new(Value(("theme_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("theme_translation_fallback", "name"), ILike(&name)))))
+      .where_expression(Expression::new(ValueILike::new(("theme_translation", "name"), &name))
+        .or(Expression::new(ValueILike::new(("theme_translation_fallback", "name"), &name))))
       .get_single(self.client).await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
     let themes = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
-      .where_expression(Expression::new(Value(("theme_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("theme_translation_fallback", "name"), ILike(&name)))))
+      .where_expression(Expression::new(ValueILike::new(("theme_translation", "name"), &name))
+        .or(Expression::new(ValueILike::new(("theme_translation_fallback", "name"), &name))))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -113,10 +116,10 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
 
   async fn filter_existing(&self, themes: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let themes = to_i32(themes);
-    let themes = convert_to_sql(&themes);
+
     let count = Select::new::<DbTheme>()
       .column::<i32>(DbTheme::TABLE_NAME, "id")
-      .where_expression(Expression::new(Value((DbTheme::TABLE_NAME, "id"), In(&themes))))
+      .where_expression(Expression::new(ValueIn::new((DbTheme::TABLE_NAME, "id"), &themes)))
       .query(self.client)
       .await?
       .into_iter()
@@ -132,13 +135,13 @@ impl<'a> DefaultThemeRepository<'a> {
       .left_join::<DbThemeTranslation>(
         Some("theme_translation"),
         Expression::column_equal("theme_translation", "language", language)
-          .and(Expression::new(Column(("theme_translation", "fktranslation"), ("theme", "id")))),
+          .and(Expression::new(ColumnEqual::new(("theme_translation", "fktranslation"), ("theme", "id")))),
       )
       .left_join::<DbThemeTranslation>(
         Some("theme_translation_fallback"),
         Expression::column_equal("theme_translation_fallback", "language", &self.default_language)
-          .and(Expression::new(Column(("theme_translation_fallback", "fktranslation"), ("theme", "id"))))
-          .and(Expression::column_null("theme_translation", "fktranslation")),
+          .and(Expression::new(ColumnEqual::new(("theme_translation_fallback", "fktranslation"), ("theme", "id"))))
+          .and(Expression::new(ColumnNull::new(("theme_translation", "fktranslation")))),
       )
   }
 }

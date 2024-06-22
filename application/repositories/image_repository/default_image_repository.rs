@@ -9,11 +9,11 @@ use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::image_repository::ImageRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::schemas::db_image::DbImage;
 use crate::schemas::db_image_data::DbImageData;
-use crate::select::comparison::Comparison::{Equal, In};
-use crate::select::condition::Condition::Value;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -53,9 +53,10 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
   }
 
   async fn get_by_id(&self, id: u32) -> Result<Option<Image>, Box<dyn Error>> {
+    let id = id as i32;
     let image = Select::new::<DbImage>()
       .columns::<DbImage>("image")
-      .where_expression(Expression::new(Value(("image", "id"), Equal(&(id as i32)))))
+      .where_expression(Expression::new(ValueEqual::new(("image", "id"), id)))
       .get_single(self.client)
       .await?
       .map(|x| x.0);
@@ -70,11 +71,11 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
 
   async fn get_by_ids(&self, ids: &[u32]) -> Result<Vec<Image>, Box<dyn Error>> {
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
 
     let images = Select::new::<DbImage>()
       .columns::<DbImage>("image")
-      .where_expression(Expression::new(Value(("image", "id"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new(("image", "id"), &ids)))
       .query(self.client)
       .await?
       .into_iter()
@@ -118,10 +119,10 @@ fn to_entity(image: DbImage, versions: &mut Vec<DbImageData>) -> Image {
 impl<'a> DefaultImageRepository<'a> {
   async fn get_image_data(&self, image_ids: &[u32]) -> Result<Vec<DbImageData>, Box<dyn Error>> {
     let image_ids = to_i32(image_ids);
-    let image_ids = convert_to_sql(&image_ids);
+
     Ok(Select::new::<DbImageData>()
       .columns::<DbImageData>("imagedata")
-      .where_expression(Expression::new(Value(("imagedata", "fkimage"), In(&image_ids))))
+      .where_expression(Expression::new(ValueIn::new(("imagedata", "fkimage"), &image_ids)))
       .query(self.client)
       .await?
       .into_iter()

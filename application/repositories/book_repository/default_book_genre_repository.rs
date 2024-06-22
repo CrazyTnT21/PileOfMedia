@@ -12,12 +12,12 @@ use from_row::Table;
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use repositories::book_repository::BookRepository;
 use repositories::genre_repository::GenreRepository;
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_genre::DbBookGenre;
-use crate::select::comparison::Comparison::{Equal, In};
-use crate::select::condition::Condition::Value;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -49,7 +49,7 @@ impl<'a> BookGenreRepository for DefaultBookGenreRepository<'a> {
     let book_id = book_id as i32;
 
     let total = Select::new::<DbBookGenre>()
-      .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .where_expression(Expression::new(ValueEqual::new((DbBookGenre::TABLE_NAME, "fkbook"), book_id)))
       .count()
       .get_single(self.client).await?
       .expect("Count should return one row");
@@ -57,7 +57,7 @@ impl<'a> BookGenreRepository for DefaultBookGenreRepository<'a> {
 
     let genre_ids: Vec<u32> = Select::new::<DbBookGenre>()
       .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
-      .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .where_expression(Expression::new(ValueEqual::new((DbBookGenre::TABLE_NAME, "fkbook"), book_id)))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -78,11 +78,11 @@ impl<'a> BookGenreRepository for DefaultBookGenreRepository<'a> {
   async fn filter_existing(&self, book_id: u32, genres: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let book_id = book_id as i32;
     let genres = to_i32(genres);
-    let genres = convert_to_sql(&genres);
+
     let filtered = Select::new::<DbBookGenre>()
       .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
-      .where_expression(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkgenre"), In(&genres))))
-      .where_expression(Expression::column_equal(DbBookGenre::TABLE_NAME, "fkbook", &book_id))
+      .where_expression(Expression::new(ValueIn::new((DbBookGenre::TABLE_NAME, "fkgenre"), &genres)))
+      .where_expression(Expression::column_equal(DbBookGenre::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
       .into_iter()

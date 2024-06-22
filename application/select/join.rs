@@ -1,6 +1,5 @@
 use crate::select::expression::Expression;
 
-#[derive(Debug, Clone)]
 pub struct Join<'a> {
   pub table: &'a str,
   pub alias: Option<&'a str>,
@@ -17,7 +16,7 @@ impl<'a> Join<'a> {
       JoinType::Inner => "INNER",
       JoinType::Left => "LEFT"
     };
-    format!("{} JOIN {} {} ON {}", join_type, self.table, self.alias.unwrap_or(""), &self.expression.fmt(count))
+    format!("{} JOIN {} {} ON {}", join_type, self.table, self.alias.unwrap_or(""), &self.expression.sql(count))
   }
 }
 

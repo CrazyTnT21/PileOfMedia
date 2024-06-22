@@ -6,12 +6,11 @@ use tokio_postgres::Transaction;
 use from_row::Table;
 use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::delete::Delete;
 use crate::insert::Insert;
 use crate::schemas::db_book_genre::DbBookGenre;
-use crate::select::comparison::Comparison::In;
-use crate::select::condition::Condition::Value;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 
 pub struct DefaultMutBookGenreRepository<'a> {
@@ -38,10 +37,10 @@ impl<'a> MutBookGenreRepository for DefaultMutBookGenreRepository<'a> {
   async fn remove(&self, book_id: u32, genres: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let genres = to_i32(genres);
-    let genres = convert_to_sql(&genres);
+
     Delete::new::<DbBookGenre>(
-      Expression::column_equal(DbBookGenre::TABLE_NAME, "fkbook", &book_id)
-        .and(Expression::new(Value((DbBookGenre::TABLE_NAME, "fkgenre"), In(&genres))))
+      Expression::column_equal(DbBookGenre::TABLE_NAME, "fkbook", book_id)
+        .and(Expression::new(ValueIn::new((DbBookGenre::TABLE_NAME, "fkgenre"), &genres)))
     )
       .execute_transaction(self.transaction)
       .await?;

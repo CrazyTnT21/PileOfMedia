@@ -10,14 +10,17 @@ use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
 use repositories::role_repository::RoleRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_role::DbRole;
 use crate::schemas::db_role_translation::DbRoleTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison::{Equal, ILike, In};
-use crate::select::condition::Condition::{Column, Value};
+use crate::select::conditions::column_equal::ColumnEqual;
+use crate::select::conditions::column_null::ColumnNull;
+use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -61,7 +64,7 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
     let language = DbLanguage::from(language);
     let role = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
-      .where_expression(Expression::new(Value(("role", "id"), Equal(&id))))
+      .where_expression(Expression::new(ValueEqual::new(("role", "id"), id)))
       .get_single(self.client)
       .await?;
 
@@ -71,10 +74,10 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
   async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Role>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
     let roles = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
-      .where_expression(Expression::new(Value(("role", "id"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new(("role", "id"), &ids)))
       .query(self.client)
       .await?
       .into_iter()
@@ -91,16 +94,16 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
     let total = Select::new::<DbRole>()
       .count()
       .transform(|x| self.role_joins(x, &language))
-      .where_expression(Expression::new(Value(("role_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("role_translation_fallback", "name"), ILike(&name)))))
+      .where_expression(Expression::new(ValueILike::new(("role_translation", "name"), &name))
+        .or(Expression::new(ValueILike::new(("role_translation_fallback", "name"), &name))))
       .get_single(self.client).await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
     let roles = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
-      .where_expression(Expression::new(Value(("role_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("role_translation_fallback", "name"), ILike(&name)))))
+      .where_expression(Expression::new(ValueILike::new(("role_translation", "name"), &name))
+        .or(Expression::new(ValueILike::new(("role_translation_fallback", "name"), &name))))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -112,10 +115,10 @@ impl<'a> RoleRepository for DefaultRoleRepository<'a> {
 
   async fn filter_existing(&self, roles: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let roles = to_i32(roles);
-    let roles = convert_to_sql(&roles);
+
     let count = Select::new::<DbRole>()
       .column::<i32>(DbRole::TABLE_NAME, "id")
-      .where_expression(Expression::new(Value((DbRole::TABLE_NAME, "id"), In(&roles))))
+      .where_expression(Expression::new(ValueIn::new((DbRole::TABLE_NAME, "id"), &roles)))
       .query(self.client)
       .await?
       .into_iter()
@@ -131,13 +134,13 @@ impl<'a> DefaultRoleRepository<'a> {
       .left_join::<DbRoleTranslation>(
         Some("role_translation"),
         Expression::column_equal("role_translation", "language", language)
-          .and(Expression::new(Column(("role_translation", "fktranslation"), ("role", "id")))),
+          .and(Expression::new(ColumnEqual::new(("role_translation", "fktranslation"), ("role", "id")))),
       )
       .left_join::<DbRoleTranslation>(
         Some("role_translation_fallback"),
         Expression::column_equal("role_translation_fallback", "language", &self.default_language)
-          .and(Expression::new(Column(("role_translation_fallback", "fktranslation"), ("role", "id"))))
-          .and(Expression::column_null("role_translation", "fktranslation")),
+          .and(Expression::new(ColumnEqual::new(("role_translation_fallback", "fktranslation"), ("role", "id"))))
+          .and(Expression::new(ColumnNull::new(("role_translation", "fktranslation")))),
       )
   }
 }

@@ -10,14 +10,17 @@ use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
 use repositories::genre_repository::GenreRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_genre::DbGenre;
 use crate::schemas::db_genre_translation::DbGenreTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison::{Equal, ILike, In};
-use crate::select::condition::Condition::{Column, Value};
+use crate::select::conditions::column_equal::ColumnEqual;
+use crate::select::conditions::column_null::ColumnNull;
+use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -62,20 +65,19 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
     let language = DbLanguage::from(language);
     let genre = genre_select_columns()
       .transform(|x| self.genre_joins(x, &language))
-      .where_expression(Expression::new(Value(("genre", "id"), Equal(&id))))
+      .where_expression(Expression::new(ValueEqual::new(("genre", "id"), id)))
       .get_single(self.client)
       .await?;
-
     Ok(genre.map(to_entity))
   }
 
   async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Genre>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
     let genres = genre_select_columns()
       .transform(|x| self.genre_joins(x, &language))
-      .where_expression(Expression::new(Value(("genre", "id"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new(("genre", "id"), &ids)))
       .query(self.client)
       .await?
       .into_iter()
@@ -91,8 +93,8 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
 
     let total = Select::new::<DbGenre>()
       .transform(|x| self.genre_joins(x, &language))
-      .where_expression(Expression::new(Value(("genre_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("genre_translation_fallback", "name"), ILike(&name)))))
+      .where_expression(Expression::new(ValueILike::new(("genre_translation", "name"), &name))
+        .or(Expression::new(ValueILike::new(("genre_translation_fallback", "name"), &name))))
       .count()
       .get_single(self.client)
       .await?
@@ -101,8 +103,8 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
     let total = total.0 as usize;
     let genres = genre_select_columns()
       .transform(|x| self.genre_joins(x, &language))
-      .where_expression(Expression::new(Value(("genre_translation", "name"), ILike(&name)))
-        .or(Expression::new(Value(("genre_translation_fallback", "name"), ILike(&name)))))
+      .where_expression(Expression::new(ValueILike::new(("genre_translation", "name"), &name))
+        .or(Expression::new(ValueILike::new(("genre_translation_fallback", "name"), &name))))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -114,10 +116,10 @@ impl<'a> GenreRepository for DefaultGenreRepository<'a> {
 
   async fn filter_existing(&self, genres: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let genres = to_i32(genres);
-    let genres = convert_to_sql(&genres);
+
     let count = Select::new::<DbGenre>()
       .column::<i32>(DbGenre::TABLE_NAME, "id")
-      .where_expression(Expression::new(Value((DbGenre::TABLE_NAME, "id"), In(&genres))))
+      .where_expression(Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), &genres)))
       .query(self.client)
       .await?
       .into_iter()
@@ -133,13 +135,13 @@ impl<'a> DefaultGenreRepository<'a> {
       .left_join::<DbGenreTranslation>(
         Some("genre_translation"),
         Expression::column_equal("genre_translation", "language", language)
-          .and(Expression::new(Column(("genre_translation", "fktranslation"), ("genre", "id")))),
+          .and(Expression::new(ColumnEqual::new(("genre_translation", "fktranslation"), ("genre", "id")))),
       )
       .left_join::<DbGenreTranslation>(
         Some("genre_translation_fallback"),
         Expression::column_equal("genre_translation_fallback", "language", &self.default_language)
-          .and(Expression::new(Column(("genre_translation_fallback", "fktranslation"), ("genre", "id"))))
-          .and(Expression::column_null("genre_translation", "fktranslation")),
+          .and(Expression::new(ColumnEqual::new(("genre_translation_fallback", "fktranslation"), ("genre", "id"))))
+          .and(Expression::new(ColumnNull::new(("genre_translation", "fktranslation")))),
       )
   }
 }

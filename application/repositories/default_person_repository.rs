@@ -13,14 +13,17 @@ use from_row::{FromRow, Table};
 use repositories::image_repository::ImageRepository;
 use repositories::person_repository::PersonRepository;
 
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_person::DbPerson;
 use crate::schemas::db_person_translation::DbPersonTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::comparison::Comparison::{Equal, ILike, In};
-use crate::select::condition::Condition::{Column, Value};
+use crate::select::conditions::column_equal::ColumnEqual;
+use crate::select::conditions::column_null::ColumnNull;
+use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -76,7 +79,7 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
     let language = DbLanguage::from(language);
     let person = person_select_columns()
       .transform(|x| self.person_joins(x, &language))
-      .where_expression(Expression::new(Value(("person", "id"), Equal(&id))))
+      .where_expression(Expression::new(ValueEqual::new(("person", "id"), id)))
       .get_single(self.client)
       .await?;
     let image = match person {
@@ -94,10 +97,10 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
   async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Person>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let ids = to_i32(ids);
-    let ids = convert_to_sql(&ids);
+
     let people = person_select_columns()
       .transform(|x| self.person_joins(x, &language))
-      .where_expression(Expression::new(Value(("person", "id"), In(&ids))))
+      .where_expression(Expression::new(ValueIn::new(("person", "id"), &ids)))
       .query(self.client)
       .await?;
 
@@ -124,14 +127,14 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
     let total = Select::new::<DbPerson>()
       .count()
       .transform(|x| self.person_joins(x, &language))
-      .where_expression(Expression::new(Value(("person", "name"), ILike(&name))))
+      .where_expression(Expression::new(ValueILike::new(("person", "name"), &name)))
       .get_single(self.client).await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
     let people = person_select_columns()
       .transform(|x| self.person_joins(x, &language))
-      .where_expression(Expression::new(Value(("person", "name"), ILike(&name))))
+      .where_expression(Expression::new(ValueILike::new(("person", "name"), &name)))
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -155,10 +158,10 @@ impl<'a> PersonRepository for DefaultPersonRepository<'a> {
 
   async fn filter_existing(&self, people: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let people = to_i32(people);
-    let people = convert_to_sql(&people);
+
     let count = Select::new::<DbPerson>()
       .column::<i32>(DbPerson::TABLE_NAME, "id")
-      .where_expression(Expression::new(Value((DbPerson::TABLE_NAME, "id"), In(&people))))
+      .where_expression(Expression::new(ValueIn::new((DbPerson::TABLE_NAME, "id"), &people)))
       .query(self.client)
       .await?
       .into_iter()
@@ -174,13 +177,13 @@ impl<'a> DefaultPersonRepository<'a> {
       .left_join::<DbPersonTranslation>(
         Some("person_translation"),
         Expression::column_equal("person_translation", "language", language)
-          .and(Expression::new(Column(("person_translation", "fktranslation"), ("person", "id")))),
+          .and(Expression::new(ColumnEqual::new(("person_translation", "fktranslation"), ("person", "id")))),
       )
       .left_join::<DbPersonTranslation>(
         Some("person_translation_fallback"),
         Expression::column_equal("person_translation_fallback", "language", &self.default_language)
-          .and(Expression::new(Column(("person_translation_fallback", "fktranslation"), ("person", "id"))))
-          .and(Expression::column_null("person_translation", "fktranslation")),
+          .and(Expression::new(ColumnEqual::new(("person_translation_fallback", "fktranslation"), ("person", "id"))))
+          .and(Expression::new(ColumnNull::new(("person_translation", "fktranslation")))),
       )
   }
 }

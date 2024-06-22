@@ -12,12 +12,12 @@ use from_row::Table;
 use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::BookRepository;
 use repositories::theme_repository::ThemeRepository;
-use crate::convert_to_sql::{convert_to_sql, to_i32};
+use crate::convert_to_sql::{to_i32};
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_theme::DbBookTheme;
-use crate::select::comparison::Comparison::{Equal, In};
-use crate::select::condition::Condition::Value;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
 
@@ -49,7 +49,7 @@ impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
     let book_id = book_id as i32;
 
     let total = Select::new::<DbBookTheme>()
-      .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .where_expression(Expression::new(ValueEqual::new((DbBookTheme::TABLE_NAME, "fkbook"), book_id)))
       .count()
       .get_single(self.client).await?
       .expect("Count should return one row");
@@ -57,7 +57,7 @@ impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
 
     let theme_ids: Vec<u32> = Select::new::<DbBookTheme>()
       .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
-      .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fkbook"), Equal(&book_id))))
+      .where_expression(Expression::new(ValueEqual::new((DbBookTheme::TABLE_NAME, "fkbook"), book_id)))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -78,11 +78,11 @@ impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
   async fn filter_existing(&self, book_id: u32, themes: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
     let book_id = book_id as i32;
     let themes = to_i32(themes);
-    let themes = convert_to_sql(&themes);
+
     let filtered = Select::new::<DbBookTheme>()
       .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
-      .where_expression(Expression::new(Value((DbBookTheme::TABLE_NAME, "fktheme"), In(&themes))))
-      .where_expression(Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", &book_id))
+      .where_expression(Expression::new(ValueIn::new((DbBookTheme::TABLE_NAME, "fktheme"), &themes)))
+      .where_expression(Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
       .into_iter()
