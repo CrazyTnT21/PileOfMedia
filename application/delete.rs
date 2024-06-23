@@ -31,7 +31,7 @@ impl<'a> Delete<'a> {
     client.execute(&self.sql(), &self.values()).await.map_err(PostgresError)
   }
   fn sql(&self) -> String {
-    format!("DELETE FROM {} WHERE {}", self.from, self.where_condition.sql(&mut 0))
+    format!("DELETE FROM {} WHERE {}", self.from, self.where_condition.sql(&mut 1))
   }
   fn values(&'a self) -> Vec<&'a (dyn ToSql + Sync)> {
     Expression::values(&self.where_condition)

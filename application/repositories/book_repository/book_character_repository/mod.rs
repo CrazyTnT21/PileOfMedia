@@ -1,4 +1,2 @@
 pub mod default_book_character_repository;
 pub mod default_mut_book_character_repository;
-pub mod default_mut_book_genre_repository;
-pub mod default_mut_book_theme_repository;

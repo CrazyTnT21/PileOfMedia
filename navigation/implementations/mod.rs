@@ -4,12 +4,13 @@ use application::repositories::account_repository::default_account_repository::D
 use application::repositories::account_repository::default_mut_account_repository::DefaultMutAccountRepository;
 use application::repositories::book_repository::book_character_repository::default_book_character_repository::DefaultBookCharacterRepository;
 use application::repositories::book_repository::book_character_repository::default_mut_book_character_repository::DefaultMutBookCharacterRepository;
-use application::repositories::book_repository::book_character_repository::default_mut_book_genre_repository::DefaultMutBookGenreRepository;
-use application::repositories::book_repository::book_character_repository::default_mut_book_theme_repository::DefaultMutBookThemeRepository;
-use application::repositories::book_repository::default_book_genre_repository::DefaultBookGenreRepository;
-use application::repositories::book_repository::default_book_involved_repository::DefaultBookInvolvedRepository;
+use application::repositories::book_repository::book_genre_repository::default_book_genre_repository::DefaultBookGenreRepository;
+use application::repositories::book_repository::book_genre_repository::default_mut_book_genre_repository::DefaultMutBookGenreRepository;
+use application::repositories::book_repository::book_involved_repository::default_book_involved_repository::DefaultBookInvolvedRepository;
+use application::repositories::book_repository::book_involved_repository::default_mut_book_involved_repository::DefaultMutBookInvolvedRepository;
+use application::repositories::book_repository::book_theme_repository::default_book_theme_repository::DefaultBookThemeRepository;
+use application::repositories::book_repository::book_theme_repository::default_mut_book_theme_repository::DefaultMutBookThemeRepository;
 use application::repositories::book_repository::default_book_repository::DefaultBookRepository;
-use application::repositories::book_repository::default_book_theme_repository::DefaultBookThemeRepository;
 
 use application::repositories::default_character_repository::DefaultCharacterRepository;
 use application::repositories::default_genre_repository::DefaultGenreRepository;
@@ -29,7 +30,8 @@ use infrastructure::services::book_service::book_character_service::default_book
 use infrastructure::services::book_service::book_character_service::default_mut_book_character_service::DefaultMutBookCharacterService;
 use infrastructure::services::book_service::book_genre_service::default_book_genre_service::DefaultBookGenreService;
 use infrastructure::services::book_service::book_genre_service::default_mut_book_genre_service::DefaultMutBookGenreService;
-use infrastructure::services::book_service::default_book_involved_service::DefaultBookInvolvedService;
+use infrastructure::services::book_service::book_involved_service::default_book_involved_service::DefaultBookInvolvedService;
+use infrastructure::services::book_service::book_involved_service::default_mut_book_involved_service::DefaultMutBookInvolvedService;
 use infrastructure::services::book_service::default_book_service::DefaultBookService;
 use infrastructure::services::book_service::book_theme_service::default_book_theme_service::DefaultBookThemeService;
 use infrastructure::services::book_service::book_theme_service::default_mut_book_theme_service::DefaultMutBookThemeService;
@@ -51,6 +53,7 @@ use repositories::book_repository::book_character_repository::mut_book_character
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
 use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
+use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
 use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::book_theme_repository::mut_book_theme_repository::MutBookThemeRepository;
 use repositories::book_repository::BookRepository;
@@ -72,6 +75,7 @@ use services::book_service::book_character_service::mut_book_character_service::
 use services::book_service::book_genre_service::BookGenreService;
 use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
 use services::book_service::book_involved_service::BookInvolvedService;
+use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
 use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
 use services::book_service::BookService;
@@ -266,4 +270,16 @@ pub fn get_account_service<'a>(account_repository: Arc<dyn AccountRepository + '
 
 pub fn get_account_repository<'a>(connection: &'a Client, user_repository: Arc<dyn UserRepository + 'a>) -> impl AccountRepository + 'a {
   DefaultAccountRepository::new(connection, user_repository)
+}
+
+pub fn get_mut_book_involved_service<'a>(book_repository: Arc<dyn BookRepository + 'a>,
+                                         book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>,
+                                         mut_book_involved_repository: Arc<dyn MutBookInvolvedRepository + 'a>,
+                                         person_repository: Arc<dyn PersonRepository + 'a>,
+                                         role_repository: Arc<dyn RoleRepository + 'a>) -> impl MutBookInvolvedService + 'a {
+  DefaultMutBookInvolvedService::new(book_repository, book_involved_repository, mut_book_involved_repository, person_repository, role_repository)
+}
+
+pub fn get_mut_book_involved_repository<'a>(transaction: &'a Transaction) -> impl MutBookInvolvedRepository + 'a {
+  DefaultMutBookInvolvedRepository::new(transaction)
 }

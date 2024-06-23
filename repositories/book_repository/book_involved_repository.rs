@@ -1,3 +1,5 @@
+pub mod mut_book_involved_repository;
+
 use std::error::Error;
 
 use async_trait::async_trait;

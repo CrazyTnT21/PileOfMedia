@@ -3,6 +3,7 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
+use domain::entities::book::book_involved::InvolvedId;
 
 use services::book_service::book_character_service::BookCharacterService;
 use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
@@ -12,10 +13,11 @@ use services::book_service::book_involved_service::BookInvolvedService;
 use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
 use services::book_service::BookService;
+use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
 
 use crate::app_state::AppState;
 use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
-use crate::controllers::book_controller::book_implementations::{get_character_service, get_genre_service, get_involved_service, get_mut_character_service, get_mut_genre_service, get_mut_theme_service, get_service, get_theme_service};
+use crate::controllers::book_controller::book_implementations::{get_character_service, get_genre_service, get_involved_service, get_mut_character_service, get_mut_genre_service, get_mut_involved_service, get_mut_theme_service, get_service, get_theme_service};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
@@ -45,6 +47,8 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/:id/characters/:character_id", post(add_character))
     .route("/:id/characters/:character_id", delete(remove_character))
     .route("/:id/involved", get(get_involved))
+    .route("/:id/involved/:person_id/:role_id", post(add_involved))
+    .route("/:id/involved/:person_id/:role_id", delete(remove_involved))
     .with_state(app_state)
 }
 
@@ -373,3 +377,54 @@ async fn remove_theme(Path((id, theme_id)): Path<(u32, u32)>, State(app_state): 
   result
 }
 
+
+#[utoipa::path(post, path = "/{id}/involved/{involved_id}",
+  responses(
+    (status = 200, description = "Involved association successfully added"), ServerError, BadRequest
+  ),
+  params(IdParam, ("person_id" = u32, Path,), ("role_id" = u32, Path,)),
+  tag = "Books"
+)]
+async fn add_involved(Path((id, person_id, role_id)): Path<(u32, u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_involved_service(&transaction, client);
+    let involved_id = InvolvedId { person_id, role_id };
+    println!("Route for adding an association with the ids {involved_id} for a book with the id {id}");
+
+    match service.add(id, &[involved_id]).await {
+      Ok(_) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(delete, path = "/{id}/involved/{involved_id}",
+  responses(
+    (status = 200, description = "Involved association successfully removed"), ServerError, BadRequest
+  ),
+  params(IdParam, ("person_id" = u32, Path,), ("role_id" = u32, Path,)),
+  tag = "Books"
+)]
+async fn remove_involved(Path((id, person_id, role_id)): Path<(u32, u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_involved_service(&transaction, client);
+
+    let involved_id = InvolvedId { person_id, role_id };
+    println!("Route for removing an association with the ids {involved_id} for a book with the id {id}");
+
+    match service.remove(id, &[involved_id]).await {
+      Ok(_) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}

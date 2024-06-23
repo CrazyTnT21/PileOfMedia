@@ -119,17 +119,14 @@ impl<'a> BookInvolvedRepository for DefaultBookInvolvedRepository<'a> {
 
   async fn filter_existing(&self, book_id: u32, involved: &[InvolvedId]) -> Result<Vec<InvolvedId>, Box<dyn Error>> {
     let book_id = book_id as i32;
-    let person_ids: Vec<i32> = involved.iter().map(|x| x.person_id as i32).collect();
-
-
-    let role_ids: Vec<i32> = involved.iter().map(|x| x.role_id as i32).collect();
-
+    let involved: Vec<(i32, i32)> = involved.iter()
+      .map(|x| (x.person_id as i32, x.role_id as i32))
+      .collect();
 
     let filtered = Select::new::<DbBookInvolved>()
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkperson")
       .column::<i32>(DbBookInvolved::TABLE_NAME, "fkrole")
-      .where_expression(Expression::new(ValueIn::new((DbBookInvolved::TABLE_NAME, "fkperson"), &person_ids)))
-      .where_expression(Expression::new(ValueIn::new((DbBookInvolved::TABLE_NAME, "fkrole"), &role_ids)))
+      .where_expression(Expression::new(ValueIn::new(((DbBookInvolved::TABLE_NAME, "fkperson"),(DbBookInvolved::TABLE_NAME, "fkrole")), &involved)))
       .where_expression(Expression::column_equal(DbBookInvolved::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
