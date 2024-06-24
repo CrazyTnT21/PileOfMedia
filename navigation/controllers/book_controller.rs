@@ -378,7 +378,7 @@ async fn remove_theme(Path((id, theme_id)): Path<(u32, u32)>, State(app_state): 
 }
 
 
-#[utoipa::path(post, path = "/{id}/involved/{involved_id}",
+#[utoipa::path(post, path = "/{id}/involved/{person_id}/{role_id}",
   responses(
     (status = 200, description = "Involved association successfully added"), ServerError, BadRequest
   ),
@@ -403,7 +403,7 @@ async fn add_involved(Path((id, person_id, role_id)): Path<(u32, u32, u32)>, Sta
   result
 }
 
-#[utoipa::path(delete, path = "/{id}/involved/{involved_id}",
+#[utoipa::path(delete, path = "/{id}/involved/{person_id}/{role_id}",
   responses(
     (status = 200, description = "Involved association successfully removed"), ServerError, BadRequest
   ),

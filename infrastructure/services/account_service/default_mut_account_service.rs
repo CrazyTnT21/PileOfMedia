@@ -4,8 +4,8 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use async_trait::async_trait;
 
+use domain::entities::account::create_partial_account::CreatePartialAccount;
 use domain::entities::account::create_account::CreateAccount;
-use domain::entities::account::partial_create_account::PartialCreateAccount;
 use domain::entities::account::{Account, Password};
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
 use services::account_service::AccountService;
@@ -31,11 +31,11 @@ impl<'a> DefaultMutAccountService<'a> {
 
 #[async_trait]
 impl<'a> MutAccountService for DefaultMutAccountService<'a> {
-  async fn create(&self, account: PartialCreateAccount) -> Result<Account, ServiceError> {
+  async fn create(&self, account: CreateAccount) -> Result<Account, ServiceError> {
     self.validate_create(&account).await?;
 
     let user = self.mut_user_service.create(account.user).await?;
-    let account = CreateAccount {
+    let account = CreatePartialAccount {
       user,
       email: account.email,
       password: hash_password(&account.password.0)?,
@@ -45,7 +45,7 @@ impl<'a> MutAccountService for DefaultMutAccountService<'a> {
 }
 
 impl<'a> DefaultMutAccountService<'a> {
-  async fn validate_create(&self, account: &PartialCreateAccount) -> Result<(), ServiceError> {
+  async fn validate_create(&self, account: &CreateAccount) -> Result<(), ServiceError> {
     if account.email.0.is_empty() {
       return Err(ServiceError::ClientError(ClientError {
         title: "No email was provided".to_string(),

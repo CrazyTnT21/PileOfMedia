@@ -1,5 +1,5 @@
+pub mod create_partial_account;
 pub mod create_account;
-pub mod partial_create_account;
 
 use crate::entities::user::User;
 

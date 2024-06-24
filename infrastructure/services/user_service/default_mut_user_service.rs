@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 
+use domain::entities::user::create_partial_user::CreatePartialUser;
 use domain::entities::user::create_user::CreateUser;
-use domain::entities::user::partial_create_user::PartialCreateUser;
 use domain::entities::user::User;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
 use services::image_service::mut_image_service::MutImageService;
@@ -25,12 +25,12 @@ impl<'a> DefaultMutUserService<'a> {
 
 #[async_trait]
 impl<'a> MutUserService for DefaultMutUserService<'a> {
-  async fn create(&self, user: PartialCreateUser) -> Result<User, ServiceError> {
+  async fn create(&self, user: CreateUser) -> Result<User, ServiceError> {
     let image = match user.profile_picture {
       None => None,
       Some(value) => Some(self.mut_image_service.create(value).await?)
     };
-    let user = CreateUser {
+    let user = CreatePartialUser {
       name: user.name,
       description: user.description,
       profile_picture: image,

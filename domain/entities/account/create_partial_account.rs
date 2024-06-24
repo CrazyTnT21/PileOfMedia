@@ -1,11 +1,11 @@
 use crate::entities::account::{Email, Password};
-use crate::entities::user::partial_create_user::PartialCreateUser;
+use crate::entities::user::User;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct PartialCreateAccount {
-  pub user: PartialCreateUser,
+pub struct CreatePartialAccount {
+  pub user: User,
   pub email: Email,
   pub password: Password,
 }

@@ -1,5 +1,5 @@
 pub mod create_user;
-pub mod partial_create_user;
+pub mod create_partial_user;
 
 use chrono::NaiveDate;
 use crate::entities::image::Image;

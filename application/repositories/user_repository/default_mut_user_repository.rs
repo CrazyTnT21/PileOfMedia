@@ -4,7 +4,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::user::create_user::CreateUser;
+use domain::entities::user::create_partial_user::CreatePartialUser;
 use domain::entities::user::User;
 use repositories::image_repository::ImageRepository;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
@@ -27,7 +27,7 @@ impl<'a> DefaultMutUserRepository<'a> {
 
 #[async_trait]
 impl<'a> MutUserRepository for DefaultMutUserRepository<'a> {
-  async fn create(&self, user: CreateUser) -> Result<User, Box<dyn Error>> {
+  async fn create(&self, user: CreatePartialUser) -> Result<User, Box<dyn Error>> {
     let id = Insert::new::<DbUser>(["name", "description", "fkprofilepicture"])
       .push([&user.name, &user.description, &user.profile_picture.map(|x| x.id as i32)])
       .returning_transaction("id", self.transaction)

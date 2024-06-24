@@ -13,7 +13,7 @@ use tokio_postgres::{Client, Transaction};
 use utoipa::ToSchema;
 
 use domain::entities::account::{Email, Password};
-use domain::entities::account::partial_create_account::PartialCreateAccount;
+use domain::entities::account::create_account::CreateAccount;
 use domain::entities::user::User;
 use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountService;
@@ -53,11 +53,11 @@ pub fn routes(app_state: AppState) -> Router {
 responses(
 (status = 201, description = "Returned JWT and user. Valid for a week", body = LoginReturnData), ServerError, BadRequest
 ),
-request_body = PartialCreateAccount,
+request_body = CreateAccount,
 tag = "Accounts"
 )]
 #[debug_handler]
-async fn register(State(app_state): State<AppState>, Json(account): Json<PartialCreateAccount>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
+async fn register(State(app_state): State<AppState>, Json(account): Json<CreateAccount>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
 

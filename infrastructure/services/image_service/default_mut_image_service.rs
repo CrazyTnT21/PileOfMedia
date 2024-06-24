@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 
-use domain::entities::image::create_image::CreateImage;
+use domain::entities::image::create_partial_image::CreatePartialImage;
 use domain::entities::image::Image;
-use domain::entities::image::partial_create_image::PartialCreateImage;
+use domain::entities::image::create_image::CreateImage;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
 use services::file_service::mut_file_service::MutFileService;
 use services::image_service::mut_image_service::MutImageService;
@@ -29,10 +29,10 @@ impl<'a> DefaultMutImageService<'a> {
 
 #[async_trait]
 impl<'a> MutImageService for DefaultMutImageService<'a> {
-  async fn create(&self, image: PartialCreateImage) -> Result<Image, ServiceError> {
+  async fn create(&self, image: CreateImage) -> Result<Image, ServiceError> {
     //TODO: Validate data size
     let file = self.mut_file_service.create_base64(&image.data.0, self.path, None).await?;
-    let image = CreateImage { file_path: self.path, uri: &file.uri, file_name: &file.name, display_path: self.display_path };
+    let image = CreatePartialImage { file_path: self.path, uri: &file.uri, file_name: &file.name, display_path: self.display_path };
     self.mut_image_repository.create(image).await.map_err(map_server_error)
   }
 }

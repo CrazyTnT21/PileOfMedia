@@ -1,9 +1,9 @@
 use crate::controllers::account_controller::LoginReturnData;
 use domain::entities::book::book_involved::InvolvedId;
 use domain::entities::account::Email;
-use domain::entities::image::partial_create_image::Base64Data;
-use domain::entities::user::partial_create_user::PartialCreateUser;
-use domain::entities::account::partial_create_account::PartialCreateAccount;
+use domain::entities::image::create_image::Base64Data;
+use domain::entities::user::create_user::CreateUser;
+use domain::entities::account::create_account::CreateAccount;
 use crate::controllers::account_controller::account_doc::AccountDoc;
 use crate::controllers::account_controller::LoginData;
 use domain::entities::user::User;
@@ -35,7 +35,7 @@ use domain::items_total::BookInvolvedTotal;
 use domain::entities::book::book_character::BookCharacter;
 use domain::items_total::BookCharactersTotal;
 use domain::entities::person::person_role::PersonRole;
-use domain::entities::image::partial_create_image::PartialCreateImage;
+use domain::entities::image::create_image::CreateImage;
 use domain::entities::account::Password;
 
 #[derive(utoipa::OpenApi)]
@@ -65,9 +65,9 @@ use domain::entities::account::Password;
     BookCharacter,
     User,
     InvolvedId,
-    PartialCreateAccount,
-    PartialCreateUser,
-    PartialCreateImage,
+    CreateAccount,
+    CreateUser,
+    CreateImage,
     Base64Data,
     Email,
     Password,

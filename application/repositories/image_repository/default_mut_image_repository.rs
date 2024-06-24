@@ -7,7 +7,7 @@ use image::{DynamicImage, ImageFormat};
 use image::imageops::FilterType;
 use tokio_postgres::Transaction;
 
-use domain::entities::image::create_image::CreateImage;
+use domain::entities::image::create_partial_image::CreatePartialImage;
 use domain::entities::image::Image;
 use repositories::file_repository::FileRepository;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
@@ -37,7 +37,7 @@ impl<'a> DefaultMutImageRepository<'a> {
 
 #[async_trait]
 impl<'a> MutImageRepository for DefaultMutImageRepository<'a> {
-  async fn create(&self, image: CreateImage<'_>) -> Result<Image, Box<dyn Error>> {
+  async fn create(&self, image: CreatePartialImage<'_>) -> Result<Image, Box<dyn Error>> {
     let id = Insert::new::<DbImage>([]).returning_transaction("id", self.transaction).await?;
     let image_data = self.file_repository.get(image.uri).await?;
 
@@ -69,7 +69,7 @@ fn combined(mut value: String, b: &str) -> String {
 }
 
 impl<'a> DefaultMutImageRepository<'a> {
-  async fn resize(&self, factor: u32, file_image: &DynamicImage, format: &ImageFormat, image: &CreateImage<'_>) -> Result<(String, i16, i16), Box<dyn Error>> {
+  async fn resize(&self, factor: u32, file_image: &DynamicImage, format: &ImageFormat, image: &CreatePartialImage<'_>) -> Result<(String, i16, i16), Box<dyn Error>> {
     let mut bytes: Vec<u8> = Vec::new();
     let (x, y) = (file_image.width() / factor, file_image.height() / factor);
     let temp_image = file_image.resize(x, y, FilterType::Triangle);

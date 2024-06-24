@@ -4,7 +4,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::{Transaction};
 
-use domain::entities::account::create_account::CreateAccount;
+use domain::entities::account::create_partial_account::CreatePartialAccount;
 use domain::entities::account::Account;
 use repositories::user_repository::UserRepository;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
@@ -26,7 +26,7 @@ impl<'a> DefaultMutAccountRepository<'a> {
 
 #[async_trait]
 impl<'a> MutAccountRepository for DefaultMutAccountRepository<'a> {
-  async fn create(&self, account: CreateAccount) -> Result<Account, Box<dyn Error>> {
+  async fn create(&self, account: CreatePartialAccount) -> Result<Account, Box<dyn Error>> {
     let user_id = account.user.id as i32;
     let id = Insert::new::<DbAccount>(["fkuser", "email", "password"])
       .push([&user_id, &account.email.0, &account.password.0])

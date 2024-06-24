@@ -1,10 +1,10 @@
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct CreateImage<'a> {
-  pub file_name: &'a str,
-  pub file_path: &'a str,
-  pub uri: &'a str,
-  pub display_path: &'a str,
+pub struct CreateImage {
+  pub data: Base64Data,
 }
-
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
+pub struct Base64Data(pub String);
