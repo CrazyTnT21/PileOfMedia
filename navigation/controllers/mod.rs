@@ -23,6 +23,7 @@ mod character_controller;
 mod role_controller;
 mod user_controller;
 mod account_controller;
+mod franchise_controller;
 
 pub fn route_controllers(app_state: AppState) -> Router {
   let doc = doc::ApiDoc::openapi();
@@ -34,6 +35,7 @@ pub fn route_controllers(app_state: AppState) -> Router {
     .nest("/characters", character_controller::routes(app_state.clone()))
     .nest("/roles", role_controller::routes(app_state.clone()))
     .nest("/users", user_controller::routes(app_state.clone()))
+    .nest("/franchises", franchise_controller::routes(app_state.clone()))
     .nest("/accounts", account_controller::routes(app_state))
     .merge(SwaggerUi::new("/swagger-ui")
       .url("/api-docs/openapi.json", doc))

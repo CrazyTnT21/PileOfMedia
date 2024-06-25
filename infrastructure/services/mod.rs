@@ -11,6 +11,7 @@ pub mod image_service;
 pub mod user_service;
 pub mod account_service;
 pub mod book_service;
+pub mod default_franchise_service;
 
 fn map_server_error(error: Box<dyn Error>) -> ServiceError {
   ServiceError::ServerError(error)

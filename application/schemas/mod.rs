@@ -19,3 +19,4 @@ pub mod db_role;
 pub mod db_role_translation;
 pub mod db_user;
 pub mod db_account;
+pub mod db_franchise_translation;

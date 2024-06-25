@@ -37,6 +37,7 @@ use domain::items_total::BookCharactersTotal;
 use domain::entities::person::person_role::PersonRole;
 use domain::entities::image::create_image::CreateImage;
 use domain::entities::account::Password;
+use crate::controllers::franchise_controller::franchise_doc::FranchiseDoc;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(info(title = "mycollection"),
@@ -48,6 +49,7 @@ use domain::entities::account::Password;
     ("/characters", CharacterDoc),
     ("/roles", RoleDoc),
     ("/users", UserDoc),
+    ("/franchises", FranchiseDoc),
     ("/accounts", AccountDoc),
   ),
   components(schemas(

@@ -13,6 +13,7 @@ use application::repositories::book_repository::book_theme_repository::default_m
 use application::repositories::book_repository::default_book_repository::DefaultBookRepository;
 
 use application::repositories::default_character_repository::DefaultCharacterRepository;
+use application::repositories::default_franchise_repository::DefaultFranchiseRepository;
 use application::repositories::default_genre_repository::DefaultGenreRepository;
 use application::repositories::default_person_repository::DefaultPersonRepository;
 use application::repositories::default_role_repository::DefaultRoleRepository;
@@ -36,6 +37,7 @@ use infrastructure::services::book_service::default_book_service::DefaultBookSer
 use infrastructure::services::book_service::book_theme_service::default_book_theme_service::DefaultBookThemeService;
 use infrastructure::services::book_service::book_theme_service::default_mut_book_theme_service::DefaultMutBookThemeService;
 use infrastructure::services::default_character_service::DefaultCharacterService;
+use infrastructure::services::default_franchise_service::DefaultFranchiseService;
 use infrastructure::services::default_genre_service::DefaultGenreService;
 use infrastructure::services::default_person_service::DefaultPersonService;
 use infrastructure::services::default_role_service::DefaultRoleService;
@@ -60,6 +62,7 @@ use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
 use repositories::file_repository::FileRepository;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
+use repositories::franchise_repository::FranchiseRepository;
 use repositories::genre_repository::GenreRepository;
 use repositories::image_repository::ImageRepository;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
@@ -82,6 +85,7 @@ use services::book_service::BookService;
 use services::character_service::CharacterService;
 use services::file_service::FileService;
 use services::file_service::mut_file_service::MutFileService;
+use services::franchise_service::FranchiseService;
 use services::genre_service::GenreService;
 use services::image_service::ImageService;
 use services::image_service::mut_image_service::MutImageService;
@@ -95,12 +99,20 @@ pub fn get_book_service<'a>(book_repository: Arc<dyn BookRepository + 'a>) -> im
   DefaultBookService::new(book_repository)
 }
 
-pub fn get_book_repository<'a>(client: &'a Client, language: Language, image_repository: Arc<dyn ImageRepository + 'a>) -> impl BookRepository + 'a {
-  DefaultBookRepository::new(client, language, image_repository)
+pub fn get_book_repository<'a>(client: &'a Client, language: Language, image_repository: Arc<dyn ImageRepository + 'a>, franchise_repository: Arc<dyn FranchiseRepository + 'a>) -> impl BookRepository + 'a {
+  DefaultBookRepository::new(client, language, image_repository, franchise_repository)
 }
 
 pub fn get_image_repository(client: &Client) -> impl ImageRepository + '_ {
   DefaultImageRepository::new(client)
+}
+
+pub fn get_franchise_repository(client: &Client, language: Language) -> impl FranchiseRepository + '_ {
+  DefaultFranchiseRepository::new(client, language)
+}
+
+pub fn get_franchise_service<'a>(franchise_repository: Arc<dyn FranchiseRepository + 'a>) -> impl FranchiseService + 'a {
+  DefaultFranchiseService::new(franchise_repository)
 }
 
 pub fn get_image_service<'a>(image_repository: Arc<dyn ImageRepository + 'a>) -> impl ImageService + 'a {

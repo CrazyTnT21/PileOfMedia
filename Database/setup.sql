@@ -9,8 +9,17 @@ CREATE TYPE imageextension as ENUM ('JPEG','JPG','PNG','GIF');
 create table Franchise
 (
   Id   int primary key generated always as identity,
-  Name varchar(50) not null
 );
+
+create table FranchiseTranslation
+(
+  Name          varchar(50) not null,
+
+  FKTranslation int         not null references Franchise (Id),
+  Language      language    not null,
+  primary key (FKTranslation, Language)
+);
+
 create table Image
 (
   Id        int primary key generated always as identity

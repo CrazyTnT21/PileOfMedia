@@ -31,10 +31,6 @@ impl<'a> PersonService for DefaultPersonService<'a> {
     self.person_repository.get_by_id(id, language).await.map_err(map_server_error)
   }
 
-  async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Person>, ServiceError> {
-    self.person_repository.get_by_ids(ids, language).await.map_err(map_server_error)
-  }
-
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, ServiceError> {
     self.person_repository.get_by_name(name, language, pagination).await.map_err(map_server_error)
   }

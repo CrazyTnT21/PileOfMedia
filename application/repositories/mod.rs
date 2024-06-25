@@ -8,3 +8,4 @@ pub mod image_repository;
 pub mod user_repository;
 pub mod account_repository;
 pub mod book_repository;
+pub mod default_franchise_repository;

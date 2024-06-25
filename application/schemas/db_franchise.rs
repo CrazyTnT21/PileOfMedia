@@ -1,19 +1,19 @@
 use tokio_postgres::Row;
 use domain::entities::franchise::Franchise;
 use from_row::FromRow;
+use crate::schemas::db_franchise_translation::DbFranchiseTranslation;
 
 #[derive(FromRow, Debug)]
 #[rename = "franchise"]
 pub struct DbFranchise {
   pub id: i32,
-  pub name: String,
 }
 
 impl DbFranchise {
-  pub fn to_entity(self) -> Franchise {
+  pub fn to_entity(self, db_franchise_translation: DbFranchiseTranslation) -> Franchise {
     Franchise {
       id: self.id as u32,
-      name: self.name,
+      name: db_franchise_translation.name,
     }
   }
 }
