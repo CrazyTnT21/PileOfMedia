@@ -6,8 +6,8 @@ use repositories::book_repository::book_character_repository::BookCharacterRepos
 use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
 use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
-use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
-use services::traits::service_error::{ClientError, ServiceError};
+use services::book_service::book_character_service::mut_book_character_service::{MutBookCharacterService, MutBookCharacterServiceError};
+use services::traits::service_error::ServiceError;
 
 use crate::services::map_server_error;
 
@@ -29,64 +29,51 @@ impl<'a> DefaultMutBookCharacterService<'a> {
 
 #[async_trait]
 impl<'a> MutBookCharacterService for DefaultMutBookCharacterService<'a> {
-  async fn add(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError> {
+  async fn add(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError<MutBookCharacterServiceError>> {
     self.validate_add(book_id, characters).await?;
     self.mut_book_character_repository.add(book_id, characters).await.map_err(map_server_error)
   }
 
-  async fn remove(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError> {
+  async fn remove(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError<MutBookCharacterServiceError>> {
     self.validate_remove(book_id, characters).await?;
     self.mut_book_character_repository.remove(book_id, characters).await.map_err(map_server_error)
   }
 }
 
 impl DefaultMutBookCharacterService<'_> {
-  async fn validate_add(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError> {
+  async fn validate_add(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError<MutBookCharacterServiceError>> {
     self.validate(book_id, characters).await?;
-    let existing = self.book_character_repository.filter_existing(book_id, characters).await.map_err(map_server_error)?;
-    if !existing.is_empty() {
-      return Err(ServiceError::ClientError(ClientError {
-        title: "Invalid characters".to_string(),
-        description: Some(format!("The following characters already have an association: [{}]", existing.into_iter().map(|x| x.to_string()).collect::<Vec<String>>().join(","))),
-      }));
+    let associated = self.book_character_repository.filter_existing(book_id, characters).await.map_err(map_server_error)?;
+    if !associated.is_empty() {
+      let error = MutBookCharacterServiceError::AlreadyAssociated(associated);
+      return Err(ServiceError::ClientError(error));
     };
     let existing_characters = self.character_repository.filter_existing(characters).await.map_err(map_server_error)?;
     if existing_characters.len() != characters.len() {
-      let non_existent_characters: Vec<String> = filter_non_existent(characters, &existing_characters).into_iter().map(|x| x.to_string()).collect();
-      return Err(ServiceError::ClientError(ClientError {
-        title: "Invalid characters".to_string(),
-        description: Some(format!("The following characters do not exist: [{}]", non_existent_characters.join(","))),
-      }));
+      let non_existent_characters = filter_non_existent(characters, &existing_characters);
+      let error = MutBookCharacterServiceError::NonExistent(non_existent_characters);
+      return Err(ServiceError::ClientError(error));
     };
 
     Ok(())
   }
-  async fn validate_remove(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError> {
+  async fn validate_remove(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError<MutBookCharacterServiceError>> {
     self.validate(book_id, characters).await?;
     let existing = self.book_character_repository.filter_existing(book_id, characters).await.map_err(map_server_error)?;
     if existing.len() != characters.len() {
-      let non_existent_characters: Vec<String> = filter_non_existent(characters, &existing).into_iter().map(|x| x.to_string()).collect();
-      return Err(ServiceError::ClientError(ClientError {
-        title: "Invalid characters".to_string(),
-        description: Some(format!("The following characters do not have an association: [{}]", non_existent_characters.join(","))),
-      }));
+      let non_existent_characters = filter_non_existent(characters, &existing);
+      return Err(ServiceError::ClientError(MutBookCharacterServiceError::NotAssociated(non_existent_characters)));
     };
 
     Ok(())
   }
-  async fn validate(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError> {
+  async fn validate(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError<MutBookCharacterServiceError>> {
     let ids = self.book_repository.filter_existing(&[book_id]).await.map_err(map_server_error)?;
     if ids.is_empty() {
-      return Err(ServiceError::ClientError(ClientError {
-        title: format!("Book with the id {book_id} does not exist"),
-        description: None,
-      }));
+      return Err(ServiceError::ClientError(MutBookCharacterServiceError::NonExistentBook(book_id)));
     }
     if characters.is_empty() {
-      return Err(ServiceError::ClientError(ClientError {
-        title: "No characters provided".to_string(),
-        description: None,
-      }));
+      return Err(ServiceError::ClientError(MutBookCharacterServiceError::NoCharactersProvided));
     }
     Ok(())
   }

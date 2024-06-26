@@ -7,7 +7,7 @@ use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::book_repository::book_character_repository::BookCharacterRepository;
-use services::book_service::book_character_service::BookCharacterService;
+use services::book_service::book_character_service::{BookCharacterService, BookCharacterServiceError};
 use services::traits::service_error::ServiceError;
 
 use crate::services::map_server_error;
@@ -24,7 +24,7 @@ impl<'a> DefaultBookCharacterService<'a> {
 
 #[async_trait]
 impl<'a> BookCharacterService for DefaultBookCharacterService<'a> {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<BookCharacter>, ServiceError> {
+  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<BookCharacter>, ServiceError<BookCharacterServiceError>> {
     self.book_character_repository.get(book_id, language, pagination).await.map_err(map_server_error)
   }
 }

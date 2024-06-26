@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fmt::Display;
 use std::str::FromStr;
 
 use axum::http::{HeaderMap, StatusCode};
@@ -72,9 +73,9 @@ fn append_content_language_header(headers: &mut HeaderMap, language: Language) -
 //TODO: Make configurable
 pub const DEFAULT_LANGUAGE: Language = EN;
 
-pub fn convert_service_error(service_error: ServiceError) -> (StatusCode, String) {
+pub fn convert_service_error<T: Display>(service_error: ServiceError<T>) -> (StatusCode, String) {
   match service_error {
-    ServiceError::ClientError(error) => (StatusCode::BAD_REQUEST, format!("{}\n{}",error.title,error.description.unwrap_or_default()) ),
+    ServiceError::ClientError(error) => (StatusCode::BAD_REQUEST, error.to_string()),
     ServiceError::ServerError(e) => {
       eprintln!("Error: {e}");
       (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())

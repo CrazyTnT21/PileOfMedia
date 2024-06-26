@@ -1,4 +1,5 @@
 use std::sync::Arc;
+
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use async_trait::async_trait;
 
@@ -6,8 +7,8 @@ use domain::entities::account::{Account, Email, Password};
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::account_repository::AccountRepository;
-use services::account_service::AccountService;
-use services::traits::service_error::{ClientError, ServiceError};
+use services::account_service::{AccountService, AccountServiceError};
+use services::traits::service_error::ServiceError;
 
 use crate::services::map_server_error;
 
@@ -23,19 +24,19 @@ impl<'a> DefaultAccountService<'a> {
 
 #[async_trait]
 impl<'a> AccountService for DefaultAccountService<'a> {
-  async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, ServiceError> {
+  async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, ServiceError<AccountServiceError>> {
     self.account_repository.get(pagination).await.map_err(map_server_error)
   }
 
-  async fn get_by_user_id(&self, id: u32) -> Result<Option<Account>, ServiceError> {
+  async fn get_by_user_id(&self, id: u32) -> Result<Option<Account>, ServiceError<AccountServiceError>> {
     self.account_repository.get_by_user_id(id).await.map_err(map_server_error)
   }
 
-  async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, ServiceError> {
+  async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, ServiceError<AccountServiceError>> {
     self.account_repository.get_by_email(email).await.map_err(map_server_error)
   }
 
-  async fn login(&self, email: &Email, password: &Password) -> Result<Account, ServiceError> {
+  async fn login(&self, email: &Email, password: &Password) -> Result<Account, ServiceError<AccountServiceError>> {
     let account = self.get_by_email(email)
       .await?
       .ok_or(unknown_email())?;
@@ -48,21 +49,14 @@ impl<'a> AccountService for DefaultAccountService<'a> {
   }
 }
 
-fn password_hash(argon_password: &str) -> Result<PasswordHash, ServiceError> {
+fn password_hash(argon_password: &str) -> Result<PasswordHash, ServiceError<AccountServiceError>> {
   PasswordHash::new(argon_password).map_err(|y| map_server_error(Box::new(y)))
 }
 
-fn unknown_email() -> ServiceError {
-  ServiceError::ClientError(ClientError {
-    title: "Unknown email".to_string(),
-    description: None,
-  })
+fn unknown_email() -> ServiceError<AccountServiceError> {
+  ServiceError::ClientError(AccountServiceError::UnknownEmail)
 }
 
-fn wrong_password() -> ServiceError {
-  ServiceError::ClientError(ClientError
-  {
-    title: "Wrong password".to_string(),
-    description: None,
-  })
+fn wrong_password() -> ServiceError<AccountServiceError> {
+  ServiceError::ClientError(AccountServiceError::WrongPassword)
 }

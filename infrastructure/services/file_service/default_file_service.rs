@@ -1,9 +1,11 @@
 use std::sync::Arc;
-use async_trait::async_trait;
-use repositories::file_repository::FileRepository;
-use services::file_service::FileService;
 
+use async_trait::async_trait;
+
+use repositories::file_repository::FileRepository;
+use services::file_service::{FileService, FileServiceError};
 use services::traits::service_error::ServiceError;
+
 use crate::services::map_server_error;
 
 pub struct DefaultFileService<'a> {
@@ -18,7 +20,7 @@ impl<'a> DefaultFileService<'a> {
 
 #[async_trait]
 impl<'a> FileService for DefaultFileService<'a> {
-  async fn get(&self, uri: &str) -> Result<Vec<u8>, ServiceError> {
+  async fn get(&self, uri: &str) -> Result<Vec<u8>, ServiceError<FileServiceError>> {
     self.repository.get(uri).await.map_err(map_server_error)
   }
 }

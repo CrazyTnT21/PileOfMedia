@@ -1,11 +1,12 @@
 use std::sync::Arc;
+
 use async_trait::async_trait;
 
 use domain::entities::image::Image;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::image_repository::ImageRepository;
-use services::image_service::ImageService;
+use services::image_service::{ImageService, ImageServiceError};
 use services::traits::service_error::ServiceError;
 
 use crate::services::map_server_error;
@@ -22,11 +23,11 @@ impl<'a> DefaultImageService<'a> {
 
 #[async_trait]
 impl<'a> ImageService for DefaultImageService<'a> {
-  async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, ServiceError> {
+  async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, ServiceError<ImageServiceError>> {
     self.image_repository.get(pagination).await.map_err(map_server_error)
   }
 
-  async fn get_by_id(&self, id: u32) -> Result<Option<Image>, ServiceError> {
+  async fn get_by_id(&self, id: u32) -> Result<Option<Image>, ServiceError<ImageServiceError>> {
     self.image_repository.get_by_id(id).await.map_err(map_server_error)
   }
 }

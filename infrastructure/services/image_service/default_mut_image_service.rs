@@ -1,13 +1,16 @@
 use std::sync::Arc;
+
 use async_trait::async_trait;
 
+use domain::entities::image::create_image::CreateImage;
 use domain::entities::image::create_partial_image::CreatePartialImage;
 use domain::entities::image::Image;
-use domain::entities::image::create_image::CreateImage;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
 use services::file_service::mut_file_service::MutFileService;
-use services::image_service::mut_image_service::MutImageService;
+use services::image_service::mut_image_service::{MutImageService, MutImageServiceError};
+use services::image_service::mut_image_service::MutImageServiceError::OtherError;
 use services::traits::service_error::ServiceError;
+use services::traits::service_error::ServiceError::ClientError;
 
 use crate::services::map_server_error;
 
@@ -29,9 +32,11 @@ impl<'a> DefaultMutImageService<'a> {
 
 #[async_trait]
 impl<'a> MutImageService for DefaultMutImageService<'a> {
-  async fn create(&self, image: CreateImage) -> Result<Image, ServiceError> {
+  async fn create(&self, image: CreateImage) -> Result<Image, ServiceError<MutImageServiceError>> {
     //TODO: Validate data size
-    let file = self.mut_file_service.create_base64(&image.data.0, self.path, None).await?;
+    let file = self.mut_file_service.create_base64(&image.data.0, self.path, None)
+      .await
+      .map_err(|x| ClientError(OtherError(Box::new(x))))?;
     let image = CreatePartialImage { file_path: self.path, uri: &file.uri, file_name: &file.name, display_path: self.display_path };
     self.mut_image_repository.create(image).await.map_err(map_server_error)
   }

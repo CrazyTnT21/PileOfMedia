@@ -1,17 +1,19 @@
 use std::sync::Arc;
+
 use argon2::{Argon2, PasswordHasher};
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use async_trait::async_trait;
 
-use domain::entities::account::create_partial_account::CreatePartialAccount;
-use domain::entities::account::create_account::CreateAccount;
 use domain::entities::account::{Account, Password};
+use domain::entities::account::create_account::CreateAccount;
+use domain::entities::account::create_partial_account::CreatePartialAccount;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
 use services::account_service::AccountService;
+use services::account_service::mut_account_service::{MutAccountService, MutAccountServiceError};
+use services::account_service::mut_account_service::MutAccountServiceError::OtherError;
+use services::traits::service_error::ServiceError;
 use services::user_service::mut_user_service::MutUserService;
-use services::traits::service_error::{ClientError, ServiceError};
-use services::account_service::mut_account_service::MutAccountService;
 
 use crate::services::map_server_error;
 
@@ -31,10 +33,10 @@ impl<'a> DefaultMutAccountService<'a> {
 
 #[async_trait]
 impl<'a> MutAccountService for DefaultMutAccountService<'a> {
-  async fn create(&self, account: CreateAccount) -> Result<Account, ServiceError> {
+  async fn create(&self, account: CreateAccount) -> Result<Account, ServiceError<MutAccountServiceError>> {
     self.validate_create(&account).await?;
 
-    let user = self.mut_user_service.create(account.user).await?;
+    let user = self.mut_user_service.create(account.user).await.map_err(|x| ServiceError::ClientError(OtherError(Box::new(x))))?;
     let account = CreatePartialAccount {
       user,
       email: account.email,
@@ -45,31 +47,24 @@ impl<'a> MutAccountService for DefaultMutAccountService<'a> {
 }
 
 impl<'a> DefaultMutAccountService<'a> {
-  async fn validate_create(&self, account: &CreateAccount) -> Result<(), ServiceError> {
+  async fn validate_create(&self, account: &CreateAccount) -> Result<(), ServiceError<MutAccountServiceError>> {
     if account.email.0.is_empty() {
-      return Err(ServiceError::ClientError(ClientError {
-        title: "No email was provided".to_string(),
-        description: None,
-      }));
+      return Err(ServiceError::ClientError(MutAccountServiceError::InvalidEmail));
     };
     if account.password.0.is_empty() {
-      return Err(ServiceError::ClientError(ClientError {
-        title: "No password was provided".to_string(),
-        description: None,
-      }));
+      return Err(ServiceError::ClientError(MutAccountServiceError::InvalidPassword));
     }
-    let exists_email = self.account_service.get_by_email(&account.email).await?;
+    let exists_email = self.account_service.get_by_email(&account.email)
+      .await
+      .map_err(|x| ServiceError::ClientError(OtherError(Box::new(x))))?;
     if exists_email.is_some() {
-      return Err(ServiceError::ClientError(ClientError {
-        title: format!("Account with the email {} already exists", account.email.0),
-        description: None,
-      }));
+      return Err(ServiceError::ClientError(MutAccountServiceError::EmailAlreadyExists));
     };
     Ok(())
   }
 }
 
-fn hash_password(password: &str) -> Result<Password, ServiceError> {
+fn hash_password(password: &str) -> Result<Password, ServiceError<MutAccountServiceError>> {
   let salt = SaltString::generate(&mut OsRng);
   let argon2 = Argon2::default();
   let password_hash = argon2.hash_password(password.as_bytes(), &salt).map_err(|y| map_server_error(Box::new(y)))?.to_string();
