@@ -2,6 +2,7 @@ pub mod person_role;
 
 use chrono::NaiveDate;
 use crate::entities::image::Image;
+use crate::enums::language::Language;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -15,4 +16,5 @@ pub struct Person {
   pub birthday: Option<NaiveDate>,
   pub height: Option<u16>,
   pub image: Option<Image>,
+  pub language: Language,
 }

@@ -8,14 +8,15 @@ use crate::schemas::db_theme_translation::DbThemeTranslation;
 #[derive(FromRow, Debug)]
 #[rename = "theme"]
 pub struct DbTheme {
-  pub id: i32
+  pub id: i32,
 }
 
 impl DbTheme {
   pub fn to_entity(self, translation: DbThemeTranslation) -> Theme {
-   Theme {
-     id: self.id as u32,
-     name: translation.name
-   }
+    Theme {
+      id: self.id as u32,
+      name: translation.name,
+      language: translation.language.into(),
+    }
   }
 }

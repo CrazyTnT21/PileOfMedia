@@ -44,6 +44,7 @@ impl DbBook {
       members: self.members as u32,
       added: self.added,
       franchise,
+      language: book_translation.language.into()
     }
   }
 }

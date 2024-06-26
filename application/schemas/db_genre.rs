@@ -8,14 +8,15 @@ use crate::schemas::db_genre_translation::DbGenreTranslation;
 #[derive(FromRow, Debug)]
 #[rename = "genre"]
 pub struct DbGenre {
-  pub id: i32
+  pub id: i32,
 }
 
 impl DbGenre {
   pub fn to_entity(self, genre_translation: DbGenreTranslation) -> Genre {
-   Genre {
-     id: self.id as u32,
-     name: genre_translation.name
-   }
+    Genre {
+      id: self.id as u32,
+      name: genre_translation.name,
+      language: genre_translation.language.into(),
+    }
   }
 }

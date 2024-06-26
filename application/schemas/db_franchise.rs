@@ -14,6 +14,7 @@ impl DbFranchise {
     Franchise {
       id: self.id as u32,
       name: db_franchise_translation.name,
+      language: db_franchise_translation.language.into()
     }
   }
 }

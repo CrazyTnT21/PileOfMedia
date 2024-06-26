@@ -33,6 +33,7 @@ impl DbPerson {
       birthday: self.birthday,
       height: self.height.map(|x| x as u16),
       image,
+      language: translation.language.into(),
     }
   }
 }

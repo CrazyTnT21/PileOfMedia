@@ -28,6 +28,7 @@ impl DbCharacter {
       birthday: self.birthday,
       height: self.height.map(|x| x as u32),
       image,
+      language: translation.language.into(),
     }
   }
 }

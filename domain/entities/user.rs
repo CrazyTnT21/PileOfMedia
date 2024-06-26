@@ -13,5 +13,5 @@ pub struct User {
   pub joined: NaiveDate,
   pub description: Option<String>,
   pub deleted: bool,
-  pub profile_picture: Option<Image>
+  pub profile_picture: Option<Image>,
 }

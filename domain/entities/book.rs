@@ -2,6 +2,7 @@ use chrono::NaiveDate;
 
 use crate::entities::franchise::Franchise;
 use crate::entities::image::Image;
+use crate::enums::language::Language;
 
 pub mod insert_book;
 pub mod book_character;
@@ -26,5 +27,6 @@ pub struct Book {
   pub members: u32,
   pub added: NaiveDate,
   pub franchise: Option<Franchise>,
+  pub language: Language
 }
 
