@@ -1,3 +1,4 @@
+use tokio_postgres::types::ToSql;
 use crate::enums::db_language::DbLanguage;
 use crate::select::expression::{IntoSql, next};
 
@@ -17,6 +18,21 @@ impl<'a, T: ToSqlValue<'a>, A: ToSqlValue<'a>> ToSqlValue<'a> for (T, A) {
   }
   fn sql(&self, index: &mut usize) -> String {
     format!("({},{})", self.0.sql(index), self.1.sql(index))
+  }
+}
+
+impl<'a, T: ToSqlValue<'a> + ToSql + 'a> ToSqlValue<'a> for Option<T> {
+  fn values(&self) -> Vec<&IntoSql<'a>> {
+    match self {
+      None => vec![self],
+      Some(value) => value.values()
+    }
+  }
+  fn sql(&self, index: &mut usize) -> String {
+    match self {
+      None => format!("${}", next(index)),
+      Some(value) => value.sql(index)
+    }
   }
 }
 

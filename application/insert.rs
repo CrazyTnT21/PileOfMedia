@@ -5,11 +5,12 @@ use tokio_postgres::{Client, Transaction};
 use tokio_postgres::types::ToSql;
 
 use from_row::Table;
+use crate::select::to_sql_value::ToSqlValue;
 
 pub struct Insert<'a, const U: usize> {
   into: &'a str,
   columns: [&'a str; U],
-  values: Vec<[&'a (dyn ToSql + Sync); U]>,
+  values: Vec<[&'a dyn ToSqlValue<'a>; U]>,
 }
 
 impl<'a, const U: usize> Insert<'a, U> {
@@ -23,11 +24,11 @@ impl<'a, const U: usize> Insert<'a, U> {
       values: vec![],
     }
   }
-  pub fn push(mut self, values: [&'a (dyn ToSql + Sync); U]) -> Self {
+  pub fn push(mut self, values: [&'a dyn ToSqlValue<'a>; U]) -> Self {
     self.values.push(values);
     self
   }
-  pub fn push_as_ref(&mut self, values: [&'a (dyn ToSql + Sync); U]) -> &Self {
+  pub fn push_as_ref(&mut self, values: [&'a dyn ToSqlValue<'a>; U]) -> &Self {
     self.values.push(values);
     self
   }
@@ -105,7 +106,7 @@ impl<'a, const U: usize> Insert<'a, U> {
     self.values
       .iter().for_each(|x| {
       x.iter().for_each(|x| {
-        result.push(*x)
+        result.append(&mut x.values())
       })
     });
     result
