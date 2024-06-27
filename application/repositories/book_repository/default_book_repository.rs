@@ -68,7 +68,7 @@ impl<'a> DefaultBookRepository<'a> {
   }
   async fn book_from_tuple(&self, item: BookColumns, language: Language) -> Result<Book, Box<dyn Error>> {
     let book_translation = fallback_unwrap(item.1, item.2);
-    let image = self.image_repository.get_by_id(book_translation.fk_translation as u32).await?.unwrap();
+    let image = self.image_repository.get_by_id(book_translation.fk_cover as u32).await?.unwrap();
     let franchise = match item.0.fk_franchise {
       None => None,
       Some(value) => self.franchise_repository.get_by_id(value as u32, language).await?

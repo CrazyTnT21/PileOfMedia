@@ -6,7 +6,7 @@ use tokio_postgres::Transaction;
 use from_row::Table;
 use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
 
-use crate::convert_to_sql::{to_i32};
+use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;
 use crate::insert::Insert;
 use crate::schemas::db_book_genre::DbBookGenre;
@@ -42,6 +42,15 @@ impl<'a> MutBookGenreRepository for DefaultMutBookGenreRepository<'a> {
       Expression::column_equal(DbBookGenre::TABLE_NAME, "fkbook", book_id)
         .and(Expression::new(ValueIn::new((DbBookGenre::TABLE_NAME, "fkgenre"), &genres)))
     )
+      .execute_transaction(self.transaction)
+      .await?;
+    Ok(())
+  }
+  async fn remove_all(&self, book_ids: &[u32]) -> Result<(), Box<dyn Error>> {
+    let book_ids = to_i32(book_ids);
+
+    Delete::new::<DbBookGenre>(
+      Expression::new(ValueIn::new((DbBookGenre::TABLE_NAME, "fkbook"), &book_ids)))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())

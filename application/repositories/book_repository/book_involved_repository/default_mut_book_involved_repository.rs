@@ -6,6 +6,7 @@ use domain::entities::book::book_involved::InvolvedId;
 
 use from_row::Table;
 use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
+use crate::convert_to_sql::to_i32;
 
 use crate::delete::Delete;
 use crate::insert::Insert;
@@ -44,6 +45,16 @@ impl<'a> MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'a> {
       Expression::column_equal(DbBookInvolved::TABLE_NAME, "fkbook", &book_id)
         .and(Expression::new(ValueIn::new(((DbBookInvolved::TABLE_NAME, "fkperson"), (DbBookInvolved::TABLE_NAME, "fkrole")), &involved)))
     )
+      .execute_transaction(self.transaction)
+      .await?;
+    Ok(())
+  }
+
+  async fn remove_all(&self, book_ids: &[u32]) -> Result<(), Box<dyn Error>> {
+    let book_ids = to_i32(book_ids);
+
+    Delete::new::<DbBookInvolved>(
+      Expression::new(ValueIn::new((DbBookInvolved::TABLE_NAME, "fkbook"), &book_ids)))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())

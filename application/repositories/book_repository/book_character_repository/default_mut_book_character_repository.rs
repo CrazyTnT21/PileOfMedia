@@ -40,8 +40,17 @@ impl<'a> MutBookCharacterRepository for DefaultMutBookCharacterRepository<'a> {
 
     Delete::new::<DbBookCharacter>(
       Expression::column_equal(DbBookCharacter::TABLE_NAME, "fkbook", book_id)
-        .and(Expression::new(ValueIn::new((DbBookCharacter::TABLE_NAME, "fkcharacter"), &characters)))
-    )
+        .and(Expression::new(ValueIn::new((DbBookCharacter::TABLE_NAME, "fkcharacter"), &characters))))
+      .execute_transaction(self.transaction)
+      .await?;
+    Ok(())
+  }
+
+  async fn remove_all(&self, book_ids: &[u32]) -> Result<(), Box<dyn Error>> {
+    let book_ids = to_i32(book_ids);
+
+    Delete::new::<DbBookCharacter>(
+      Expression::new(ValueIn::new((DbBookCharacter::TABLE_NAME, "fkbook"), &book_ids)))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())
