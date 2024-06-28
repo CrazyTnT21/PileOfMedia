@@ -29,7 +29,7 @@ impl<'a> MutAccountRepository for DefaultMutAccountRepository<'a> {
   async fn create(&self, account: CreatePartialAccount) -> Result<Account, Box<dyn Error>> {
     let user_id = account.user.id as i32;
     let id = Insert::new::<DbAccount>(["fkuser", "email", "password"])
-      .push([&user_id, &account.email.0, &account.password.0])
+      .values([&user_id, &account.email.0, &account.password.0])
       .returning_transaction("fkuser", self.transaction)
       .await?;
 

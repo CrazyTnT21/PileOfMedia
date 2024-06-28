@@ -51,9 +51,9 @@ impl<'a> MutImageRepository for DefaultMutImageRepository<'a> {
     let (low_path, low_x, low_y) = self.resize(4, &file_image, &format, &image).await?;
 
     let insert = Insert::new::<DbImageData>(["fkimage", "uri", "width", "height"])
-      .push([&id, &original_path, &x, &y])
-      .push([&id, &medium_path, &medium_x, &medium_y])
-      .push([&id, &low_path, &low_x, &low_y]);
+      .values([&id, &original_path, &x, &y])
+      .values([&id, &medium_path, &medium_x, &medium_y])
+      .values([&id, &low_path, &low_x, &low_y]);
 
     insert.execute_transaction(self.transaction).await?;
 

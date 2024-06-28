@@ -29,7 +29,7 @@ impl<'a> MutBookThemeRepository for DefaultMutBookThemeRepository<'a> {
     let book_id = book_id as i32;
     let themes = to_i32(themes);
     let mut insert = Insert::new::<DbBookTheme>(["fkbook", "fktheme"]);
-    themes.iter().for_each(|x| { insert.push_as_ref([&book_id, x]); });
+    themes.iter().for_each(|x| { insert.values_ref([&book_id, x]); });
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }

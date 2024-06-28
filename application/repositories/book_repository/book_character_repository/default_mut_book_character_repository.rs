@@ -29,7 +29,7 @@ impl<'a> MutBookCharacterRepository for DefaultMutBookCharacterRepository<'a> {
     let book_id = book_id as i32;
     let characters = to_i32(characters);
     let mut insert = Insert::new::<DbBookCharacter>(["fkbook", "fkcharacter"]);
-    characters.iter().for_each(|x| { insert.push_as_ref([&book_id, x]); });
+    characters.iter().for_each(|x| { insert.values_ref([&book_id, x]); });
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }

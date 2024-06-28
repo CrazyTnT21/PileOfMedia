@@ -32,7 +32,7 @@ impl<'a> MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'a> {
       .map(|x| (x.person_id as i32, x.role_id as i32))
       .collect();
     let mut insert = Insert::new::<DbBookInvolved>(["fkbook", "fkperson", "fkrole"]);
-    involved.iter().for_each(|(x, y)| { insert.push_as_ref([&book_id, x, y]); });
+    involved.iter().for_each(|(x, y)| { insert.values_ref([&book_id, x, y]); });
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }

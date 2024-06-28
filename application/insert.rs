@@ -24,21 +24,21 @@ impl<'a, const U: usize> Insert<'a, U> {
       values: vec![],
     }
   }
-  pub fn push(mut self, values: [&'a dyn ToSqlValue<'a>; U]) -> Self {
+  pub fn values(mut self, values: [&'a dyn ToSqlValue<'a>; U]) -> Self {
     self.values.push(values);
     self
   }
-  pub fn push_as_ref(&mut self, values: [&'a dyn ToSqlValue<'a>; U]) -> &Self {
+  pub fn values_ref(&mut self, values: [&'a dyn ToSqlValue<'a>; U]) -> &Self {
     self.values.push(values);
     self
   }
 
   pub async fn execute(&self, connection: &'a Client) -> Result<u64, InsertError> {
-    connection.execute(&self.sql(), &self.values()).await.map_err(InsertError::PostgresError)
+    connection.execute(&self.sql(), &self.sql_values()).await.map_err(InsertError::PostgresError)
   }
 
   pub async fn execute_transaction(&self, transaction: &'a Transaction<'a>) -> Result<u64, InsertError> {
-    transaction.execute(&self.sql(), &self.values()).await.map_err(InsertError::PostgresError)
+    transaction.execute(&self.sql(), &self.sql_values()).await.map_err(InsertError::PostgresError)
   }
 
   pub async fn returning(&self, column: &'a str, connection: &'a Client) -> Result<i32, InsertError> {
@@ -46,7 +46,7 @@ impl<'a, const U: usize> Insert<'a, U> {
       return Err(InsertError::ReturningMoreThanOne);
     }
 
-    let result = connection.query_one(&self.returning_sql(column), &self.values()).await.map_err(InsertError::PostgresError)?;
+    let result = connection.query_one(&self.returning_sql(column), &self.sql_values()).await.map_err(InsertError::PostgresError)?;
 
     Ok(result.get(0))
   }
@@ -55,7 +55,7 @@ impl<'a, const U: usize> Insert<'a, U> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne);
     }
-    let result = transaction.query_one(&self.returning_sql(column), &self.values()).await.map_err(InsertError::PostgresError)?;
+    let result = transaction.query_one(&self.returning_sql(column), &self.sql_values()).await.map_err(InsertError::PostgresError)?;
     Ok(result.get(0))
   }
 
@@ -101,7 +101,7 @@ impl<'a, const U: usize> Insert<'a, U> {
     }).collect::<Vec<String>>().join(",")
   }
 
-  fn values(&self) -> Vec<&'a (dyn ToSql + Sync)> {
+  fn sql_values(&self) -> Vec<&'a (dyn ToSql + Sync)> {
     let mut result = vec![];
     self.values
       .iter().for_each(|x| {

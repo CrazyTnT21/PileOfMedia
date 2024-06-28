@@ -29,7 +29,7 @@ impl<'a> MutBookGenreRepository for DefaultMutBookGenreRepository<'a> {
     let book_id = book_id as i32;
     let genres = to_i32(genres);
     let mut insert = Insert::new::<DbBookGenre>(["fkbook", "fkgenre"]);
-    genres.iter().for_each(|x| { insert.push_as_ref([&book_id, x]); });
+    genres.iter().for_each(|x| { insert.values_ref([&book_id, x]); });
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }
