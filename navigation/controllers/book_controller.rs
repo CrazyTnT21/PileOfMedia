@@ -3,6 +3,7 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
+use domain::entities::book::Book;
 use domain::entities::book::book_involved::InvolvedId;
 
 use services::book_service::book_character_service::BookCharacterService;
@@ -95,7 +96,10 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
   append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
 
   match service.get_by_id(id, language).await {
-    Ok(item) => Ok((StatusCode::OK, content_language, Json(item))),
+    Ok(item) => match item {
+      None => Err((StatusCode::NOT_FOUND, "".to_string())),
+      Some(item) => Ok((StatusCode::OK, content_language, Json(item)))
+    },
     Err(error) => Err(convert_service_error(error))
   }
 }

@@ -65,7 +65,10 @@ async fn get_by_id(Path(id): Path<u32>, State(app_state): State<AppState>) -> im
   println!("Route for a user with id {}", id, );
 
   match service.get_by_id(id).await {
-    Ok(item) => Ok((StatusCode::OK, Json(item))),
+    Ok(item) => match item {
+      None => Err((StatusCode::NOT_FOUND, "".to_string())),
+      Some(item) => Ok((StatusCode::OK, Json(item)))
+    },
     Err(error) => Err(convert_service_error(error))
   }
 }
