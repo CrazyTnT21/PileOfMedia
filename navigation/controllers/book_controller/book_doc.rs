@@ -17,7 +17,9 @@ use super::*;
     add_theme,
     remove_theme,
     add_involved,
-    remove_involved
+    remove_involved,
+    create_book,
+    delete_book
   )
 )]
 pub(crate) struct BookDoc;

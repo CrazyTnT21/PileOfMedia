@@ -1,24 +1,30 @@
 use std::collections::HashMap;
 use chrono::NaiveDate;
-use crate::entities::franchise::Franchise;
+use crate::entities::book::book_involved::InvolvedId;
+use crate::entities::image::Image;
 use crate::enums::language::Language;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct InsertBook {
+pub struct CreatePartialBook {
   pub chapters: Option<u16>,
   pub pages: Option<u16>,
   pub words: Option<u32>,
   pub published: Option<NaiveDate>,
-  pub franchise: Option<Franchise>,
-  pub translations: HashMap<Language, TitleDescription>,
+  pub franchise: Option<u32>,
+  pub translations: HashMap<Language, CreatePartialBookTranslation>,
+  pub genres: Vec<u32>,
+  pub themes: Vec<u32>,
+  pub characters: Vec<u32>,
+  pub involved: Vec<InvolvedId>,
 }
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct TitleDescription {
-  title: String,
-  description: Option<String>,
+pub struct CreatePartialBookTranslation {
+  pub title: String,
+  pub description: Option<String>,
+  pub cover: Image,
 }

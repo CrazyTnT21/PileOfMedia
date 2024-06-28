@@ -3,22 +3,23 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
-use domain::entities::book::Book;
-use domain::entities::book::book_involved::InvolvedId;
 
+use domain::entities::book::book_involved::InvolvedId;
+use domain::entities::book::create_book::CreateBook;
 use services::book_service::book_character_service::BookCharacterService;
 use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
 use services::book_service::book_genre_service::BookGenreService;
 use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
 use services::book_service::book_involved_service::BookInvolvedService;
+use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
 use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
 use services::book_service::BookService;
-use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
+use services::book_service::mut_book_service::MutBookService;
 
 use crate::app_state::AppState;
 use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
-use crate::controllers::book_controller::book_implementations::{get_character_service, get_genre_service, get_involved_service, get_mut_character_service, get_mut_genre_service, get_mut_involved_service, get_mut_theme_service, get_service, get_theme_service};
+use crate::controllers::book_controller::book_implementations::{get_character_service, get_genre_service, get_involved_service, get_mut_character_service, get_mut_genre_service, get_mut_involved_service, get_mut_service, get_mut_theme_service, get_service, get_theme_service};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
@@ -36,7 +37,9 @@ mod book_implementations;
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
+    .route("/", post(create_book))
     .route("/:id", get(get_by_id))
+    .route("/:id", delete(delete_book))
     .route("/title/:title", get(get_by_title))
     .route("/:ids/genres", get(get_genres))
     .route("/:id/genres/:genre_id", post(add_genre))
@@ -426,6 +429,56 @@ async fn remove_involved(Path((id, person_id, role_id)): Path<(u32, u32, u32)>, 
 
     match service.remove(id, &[involved_id]).await {
       Ok(_) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(post, path = "",
+responses(
+(status = 201, description = "Book successfully created", body = Book), ServerError, BadRequest
+),
+request_body = CreateBook,
+tag = "Books"
+)]
+async fn create_book(State(app_state): State<AppState>, Json(create_book): Json<CreateBook>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client, &app_state.display_path, &app_state.content_path);
+
+    println!("Route for creating a book");
+
+    match service.create(create_book).await {
+      Ok(book) => Ok((StatusCode::OK, Json(book))),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(delete, path = "/{id}",
+  responses(
+    (status = 204, description = "Book successfully deleted"), ServerError, BadRequest
+  ),
+  params(("id" = u32, Path, description = "Id of the item to delete")),
+  tag = "Books"
+)]
+async fn delete_book(Path(id): Path<u32>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client, &app_state.display_path, &app_state.content_path);
+
+    println!("Route for deleting a book");
+
+    match service.delete(&[id]).await {
+      Ok(_) => Ok(StatusCode::NO_CONTENT),
       Err(error) => Err(convert_service_error(error))
     }
   };

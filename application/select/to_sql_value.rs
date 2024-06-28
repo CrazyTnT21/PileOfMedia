@@ -1,3 +1,4 @@
+use chrono::{NaiveDate, NaiveTime};
 use tokio_postgres::types::ToSql;
 use crate::enums::db_language::DbLanguage;
 use crate::select::expression::{IntoSql, next};
@@ -76,6 +77,8 @@ to_value!(i16);
 to_value!(i32);
 to_value!(i64);
 to_value!(DbLanguage);
+to_value!(NaiveDate);
+to_value!(NaiveTime);
 to_value!(String);
 to_value!(&'a str);
 
