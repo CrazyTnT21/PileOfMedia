@@ -36,7 +36,10 @@ impl<'a> MutImageService for DefaultMutImageService<'a> {
     //TODO: Validate data size
     let file = self.mut_file_service.create_base64(&image.data.0, self.path, None)
       .await
-      .map_err(|x| ClientError(OtherError(Box::new(x))))?;
+      .map_err(|x| match x {
+        ClientError(x) => ClientError(OtherError(Box::new(x))),
+        ServiceError::ServerError(x) => ServiceError::ServerError(x)
+      })?;
     let image = CreatePartialImage { file_path: self.path, uri: &file.uri, file_name: &file.name, display_path: self.display_path };
     self.mut_image_repository.create(image).await.map_err(map_server_error)
   }

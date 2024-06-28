@@ -453,7 +453,7 @@ async fn create_book(State(app_state): State<AppState>, Json(create_book): Json<
     println!("Route for creating a book");
 
     match service.create(create_book).await {
-      Ok(book) => Ok((StatusCode::OK, Json(book))),
+      Ok(book) => Ok((StatusCode::CREATED, Json(book))),
       Err(error) => Err(convert_service_error(error))
     }
   };

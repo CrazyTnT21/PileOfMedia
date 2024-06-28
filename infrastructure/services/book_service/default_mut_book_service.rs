@@ -8,7 +8,6 @@ use domain::entities::book::Book;
 use domain::entities::book::create_book::{CreateBook, CreateBookTranslation, CreateCover};
 use domain::entities::book::create_partial_book::{CreatePartialBook, CreatePartialBookTranslation};
 use domain::enums::language::Language;
-use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::BookRepository;
 use repositories::book_repository::mut_book_repository::MutBookRepository;
 use repositories::character_repository::CharacterRepository;
@@ -21,7 +20,7 @@ use services::book_service::mut_book_service::{MutBookService, MutBookServiceErr
 use services::book_service::mut_book_service::MutBookServiceError::OtherError;
 use services::image_service::mut_image_service::MutImageService;
 use services::traits::service_error::{ServiceError};
-use services::traits::service_error::ServiceError::ClientError;
+use services::traits::service_error::ServiceError::{ClientError, ServerError};
 
 use crate::services::map_server_error;
 
@@ -146,7 +145,10 @@ impl<'a> DefaultMutBookService<'a> {
         CreateCover::Image(image) => self.mut_image_service
           .create(image)
           .await
-          .map_err(|x| ClientError(OtherError(Box::new(x))))?,
+          .map_err(|x| match x {
+            ClientError(x) => ClientError(OtherError(Box::new(x))),
+            ServerError(x) => ServerError(x)
+          })?,
         CreateCover::ReuseFromLanguage(lang) => hash_map
           .get(&lang)
           .expect("Translations are sorted. reuse_from_language should appear last")
@@ -221,7 +223,7 @@ fn filter_non_existent(items: &[u32], existing: &[u32]) -> Vec<u32> {
 }
 
 fn sort_translations(translations: &mut Vec<(Language, CreateBookTranslation)>) {
-  translations.sort_by(|(_, x), ((_, y))| {
+  translations.sort_by(|(_, x), (_, y)| {
     let x_reuse = match x.cover {
       CreateCover::Image(_) => false,
       CreateCover::ReuseFromLanguage(_) => true

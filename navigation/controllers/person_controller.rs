@@ -4,16 +4,18 @@ use axum::{Json, Router};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::routing::get;
-use tokio_postgres::Client;
+use axum::routing::{delete, get, post};
+use tokio_postgres::{Client, Transaction};
 
+use domain::entities::person::create_person::CreatePerson;
+use services::person_service::mut_person_service::MutPersonService;
 use services::person_service::PersonService;
 
 use crate::app_state::AppState;
 use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
-use crate::implementations::{get_image_repository, get_person_repository, get_person_service};
+use crate::implementations::{get_file_repository, get_image_repository, get_mut_file_repository, get_mut_file_service, get_mut_image_repository, get_mut_image_service, get_mut_person_repository, get_mut_person_service, get_person_repository, get_person_service};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::name::NameParam;
@@ -28,7 +30,9 @@ pub mod person_doc;
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
+    .route("/", post(create_item))
     .route("/:id", get(get_by_id))
+    .route("/:id", delete(delete_item))
     .route("/name/:name", get(get_by_name))
     .with_state(app_state)
 }
@@ -110,9 +114,70 @@ async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): 
   }
 }
 
+#[utoipa::path(post, path = "",
+responses(
+(status = 201, description = "Person successfully created", body = Person), ServerError, BadRequest
+),
+request_body = CreatePerson,
+tag = "People"
+)]
+async fn create_item(State(app_state): State<AppState>, Json(create_person): Json<CreatePerson>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client, &app_state.display_path, &app_state.content_path);
+
+    println!("Route for creating a person");
+
+    match service.create(create_person).await {
+      Ok(person) => Ok((StatusCode::CREATED, Json(person))),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(delete, path = "/{id}",
+  responses(
+    (status = 204, description = "Person successfully deleted"), ServerError, BadRequest
+  ),
+  params(("id" = u32, Path, description = "Id of the item to delete")),
+  tag = "People"
+)]
+async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client, &app_state.display_path, &app_state.content_path);
+
+    println!("Route for deleting a person");
+
+    match service.delete(&[id]).await {
+      Ok(_) => Ok(StatusCode::NO_CONTENT),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
 fn get_service(connection: &Client) -> impl PersonService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
   let repository = Arc::new(get_person_repository(connection, DEFAULT_LANGUAGE, image_repository));
   get_person_service(repository)
 }
 
+fn get_mut_service<'a>(transaction: &'a Transaction<'a>, client: &'a Client, display_path: &'a str, path: &'a str) -> impl MutPersonService + 'a {
+  let image_repository = Arc::new(get_image_repository(client));
+  let person_repository = Arc::new(get_person_repository(client, DEFAULT_LANGUAGE, image_repository.clone()));
+  let mut_person_repository = Arc::new(get_mut_person_repository(transaction, DEFAULT_LANGUAGE, person_repository.clone()));
+  let mut_file_repository = Arc::new(get_mut_file_repository());
+  let file_repository = Arc::new(get_file_repository());
+  let mut_image_repository = Arc::new(get_mut_image_repository(transaction, image_repository, mut_file_repository.clone(), file_repository));
+  let mut_file_service = Arc::new(get_mut_file_service(mut_file_repository));
+  let mut_image_service = Arc::new(get_mut_image_service(mut_image_repository, mut_file_service, display_path, path));
+  get_mut_person_service(DEFAULT_LANGUAGE, person_repository, mut_person_repository, mut_image_service)
+}

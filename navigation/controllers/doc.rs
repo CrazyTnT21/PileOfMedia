@@ -1,3 +1,4 @@
+use domain::entities::person::create_person::CreatePerson;
 use domain::entities::account::create_account::CreateAccount;
 use domain::entities::account::Email;
 use domain::entities::account::Password;
@@ -10,6 +11,7 @@ use domain::entities::book::create_book::CreateBookTranslation;
 use domain::entities::book::create_book::CreateCover;
 use domain::entities::character::Character;
 use domain::entities::franchise::Franchise;
+use domain::entities::person::create_person::CreatePersonTranslation;
 use domain::entities::genre::Genre;
 use domain::entities::image::create_image::Base64Data;
 use domain::entities::image::create_image::CreateImage;
@@ -92,6 +94,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     Language,
     CreateBook,
     CreateBookTranslation,
-    CreateCover
+    CreateCover,
+    CreatePerson,
+    CreatePersonTranslation
   )))]
 pub(crate) struct ApiDoc;

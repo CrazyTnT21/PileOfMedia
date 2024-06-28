@@ -8,6 +8,7 @@ use domain::entities::user::User;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
 use services::image_service::mut_image_service::MutImageService;
 use services::traits::service_error::ServiceError;
+use services::traits::service_error::ServiceError::ClientError;
 use services::user_service::mut_user_service::{MutUserService, MutUserServiceError};
 use services::user_service::mut_user_service::MutUserServiceError::OtherError;
 
@@ -32,7 +33,10 @@ impl<'a> MutUserService for DefaultMutUserService<'a> {
       None => None,
       Some(value) => Some(self.mut_image_service.create(value)
         .await
-        .map_err(|x| ServiceError::ClientError(OtherError(Box::new(x))))?)
+        .map_err(|x| match x {
+          ClientError(x) => ClientError(OtherError(Box::new(x))),
+          ServiceError::ServerError(x) => ServiceError::ServerError(x)
+        })?)
     };
     let user = CreatePartialUser {
       name: user.name,
