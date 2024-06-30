@@ -25,15 +25,15 @@ impl<'a> DefaultAccountService<'a> {
 #[async_trait]
 impl<'a> AccountService for DefaultAccountService<'a> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, ServiceError<AccountServiceError>> {
-    self.account_repository.get(pagination).await.map_err(map_server_error)
+    Ok(self.account_repository.get(pagination).await?)
   }
 
   async fn get_by_user_id(&self, id: u32) -> Result<Option<Account>, ServiceError<AccountServiceError>> {
-    self.account_repository.get_by_user_id(id).await.map_err(map_server_error)
+    Ok(self.account_repository.get_by_user_id(id).await?)
   }
 
   async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, ServiceError<AccountServiceError>> {
-    self.account_repository.get_by_email(email).await.map_err(map_server_error)
+    Ok(self.account_repository.get_by_email(email).await?)
   }
 
   async fn login(&self, email: &Email, password: &Password) -> Result<Account, ServiceError<AccountServiceError>> {

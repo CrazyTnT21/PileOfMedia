@@ -9,13 +9,11 @@ use domain::entities::person::Person;
 use domain::enums::language::Language;
 use repositories::person_repository::mut_person_repository::MutPersonRepository;
 use repositories::person_repository::PersonRepository;
-use services::image_service::mut_image_service::{MutImageService, MutImageServiceError};
+use services::image_service::mut_image_service::MutImageService;
 use services::person_service::mut_person_service::{MutPersonService, MutPersonServiceError};
 use services::person_service::mut_person_service::MutPersonServiceError::OtherError;
 use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::{ClientError, ServerError};
-
-use crate::services::map_server_error;
 
 pub struct DefaultMutPersonService<'a> {
   default_language: Language,
@@ -60,12 +58,12 @@ impl<'a> MutPersonService for DefaultMutPersonService<'a> {
       image,
       translations,
     };
-    self.mut_person_repository.create(partial_person).await.map_err(map_server_error)
+    Ok(self.mut_person_repository.create(partial_person).await?)
   }
 
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutPersonServiceError>> {
     self.validate_delete(ids).await?;
-    self.mut_person_repository.delete(ids).await.map_err(map_server_error)
+    Ok(self.mut_person_repository.delete(ids).await?)
   }
 }
 
@@ -75,7 +73,7 @@ impl<'a> DefaultMutPersonService<'a> {
       return Err(ClientError(MutPersonServiceError::NoIdsProvided));
     }
 
-    let existing = self.person_repository.filter_existing(ids).await.map_err(map_server_error)?;
+    let existing = self.person_repository.filter_existing(ids).await?;
     if existing.len() != ids.len() {
       let non_existent_people = filter_non_existent(ids, &existing);
       return Err(ClientError(MutPersonServiceError::NonExistentPeople(non_existent_people)));

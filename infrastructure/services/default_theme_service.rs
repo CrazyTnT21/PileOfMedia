@@ -10,8 +10,6 @@ use repositories::theme_repository::ThemeRepository;
 use services::theme_service::{ThemeService, ThemeServiceError};
 use services::traits::service_error::ServiceError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultThemeService<'a> {
   theme_repository: Arc<dyn ThemeRepository + 'a>,
 }
@@ -25,14 +23,14 @@ impl<'a> DefaultThemeService<'a> {
 #[async_trait]
 impl<'a> ThemeService for DefaultThemeService<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
-    self.theme_repository.get(language, pagination).await.map_err(map_server_error)
+    Ok(self.theme_repository.get(language, pagination).await?)
   }
 
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Theme>, ServiceError<ThemeServiceError>> {
-    self.theme_repository.get_by_id(id, language).await.map_err(map_server_error)
+    Ok(self.theme_repository.get_by_id(id, language).await?)
   }
 
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
-    self.theme_repository.get_by_name(name, language, pagination).await.map_err(map_server_error)
+    Ok(self.theme_repository.get_by_name(name, language, pagination).await?)
   }
 }

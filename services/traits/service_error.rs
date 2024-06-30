@@ -15,3 +15,9 @@ impl<T: Display> Display for ServiceError<T> {
     })
   }
 }
+
+impl<T> From<Box<dyn Error>> for ServiceError<T> {
+  fn from(value: Box<dyn Error>) -> Self {
+    ServiceError::ServerError(value)
+  }
+}

@@ -9,8 +9,6 @@ use repositories::genre_repository::GenreRepository;
 use services::book_service::book_genre_service::mut_book_genre_service::{MutBookGenreService, MutBookGenreServiceError};
 use services::traits::service_error::ServiceError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultMutBookGenreService<'a> {
   book_repository: Arc<dyn BookRepository + 'a>,
   book_genre_repository: Arc<dyn BookGenreRepository + 'a>,
@@ -31,23 +29,23 @@ impl<'a> DefaultMutBookGenreService<'a> {
 impl<'a> MutBookGenreService for DefaultMutBookGenreService<'a> {
   async fn add(&self, book_id: u32, genres: &[u32]) -> Result<(), ServiceError<MutBookGenreServiceError>> {
     self.validate_add(book_id, genres).await?;
-    self.mut_book_genre_repository.add(book_id, genres).await.map_err(map_server_error)
+    Ok(self.mut_book_genre_repository.add(book_id, genres).await?)
   }
 
   async fn remove(&self, book_id: u32, genres: &[u32]) -> Result<(), ServiceError<MutBookGenreServiceError>> {
     self.validate_remove(book_id, genres).await?;
-    self.mut_book_genre_repository.remove(book_id, genres).await.map_err(map_server_error)
+    Ok(self.mut_book_genre_repository.remove(book_id, genres).await?)
   }
 }
 
 impl DefaultMutBookGenreService<'_> {
   async fn validate_add(&self, book_id: u32, genres: &[u32]) -> Result<(), ServiceError<MutBookGenreServiceError>> {
     self.validate(book_id, genres).await?;
-    let existing = self.book_genre_repository.filter_existing(book_id, genres).await.map_err(map_server_error)?;
+    let existing = self.book_genre_repository.filter_existing(book_id, genres).await?;
     if !existing.is_empty() {
       return Err(ServiceError::ClientError(MutBookGenreServiceError::AlreadyAssociated(existing)));
     };
-    let existing_genres = self.genre_repository.filter_existing(genres).await.map_err(map_server_error)?;
+    let existing_genres = self.genre_repository.filter_existing(genres).await?;
     if existing_genres.len() != genres.len() {
       let non_existent_genres = filter_non_existent(genres, &existing_genres);
       return Err(ServiceError::ClientError(MutBookGenreServiceError::NonExistent(non_existent_genres)));
@@ -57,7 +55,7 @@ impl DefaultMutBookGenreService<'_> {
   }
   async fn validate_remove(&self, book_id: u32, genres: &[u32]) -> Result<(), ServiceError<MutBookGenreServiceError>> {
     self.validate(book_id, genres).await?;
-    let existing = self.book_genre_repository.filter_existing(book_id, genres).await.map_err(map_server_error)?;
+    let existing = self.book_genre_repository.filter_existing(book_id, genres).await?;
     if existing.len() != genres.len() {
       let not_associated = filter_non_existent(genres, &existing);
       return Err(ServiceError::ClientError(MutBookGenreServiceError::NotAssociated(not_associated)));
@@ -66,7 +64,7 @@ impl DefaultMutBookGenreService<'_> {
     Ok(())
   }
   async fn validate(&self, book_id: u32, genres: &[u32]) -> Result<(), ServiceError<MutBookGenreServiceError>> {
-    let ids = self.book_repository.filter_existing(&[book_id]).await.map_err(map_server_error)?;
+    let ids = self.book_repository.filter_existing(&[book_id]).await?;
     if ids.is_empty() {
       return Err(ServiceError::ClientError(MutBookGenreServiceError::NonExistentBook(book_id)));
     }

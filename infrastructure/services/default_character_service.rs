@@ -10,8 +10,6 @@ use repositories::character_repository::CharacterRepository;
 use services::character_service::{CharacterService, CharacterServiceError};
 use services::traits::service_error::ServiceError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultCharacterService<'a> {
   character_repository: Arc<dyn CharacterRepository + 'a>,
 }
@@ -25,14 +23,14 @@ impl<'a> DefaultCharacterService<'a> {
 #[async_trait]
 impl<'a> CharacterService for DefaultCharacterService<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, ServiceError<CharacterServiceError>> {
-    self.character_repository.get(language, pagination).await.map_err(map_server_error)
+    Ok(self.character_repository.get(language, pagination).await?)
   }
 
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Character>, ServiceError<CharacterServiceError>> {
-    self.character_repository.get_by_id(id, language).await.map_err(map_server_error)
+    Ok(self.character_repository.get_by_id(id, language).await?)
   }
 
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, ServiceError<CharacterServiceError>> {
-    self.character_repository.get_by_name(name, language, pagination).await.map_err(map_server_error)
+    Ok(self.character_repository.get_by_name(name, language, pagination).await?)
   }
 }

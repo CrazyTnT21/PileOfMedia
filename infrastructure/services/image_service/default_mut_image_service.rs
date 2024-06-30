@@ -12,8 +12,6 @@ use services::image_service::mut_image_service::MutImageServiceError::OtherError
 use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultMutImageService<'a> {
   mut_image_repository: Arc<dyn MutImageRepository + 'a>,
   mut_file_service: Arc<dyn MutFileService + 'a>,
@@ -41,6 +39,6 @@ impl<'a> MutImageService for DefaultMutImageService<'a> {
         ServiceError::ServerError(x) => ServiceError::ServerError(x)
       })?;
     let image = CreatePartialImage { file_path: self.path, uri: &file.uri, file_name: &file.name, display_path: self.display_path };
-    self.mut_image_repository.create(image).await.map_err(map_server_error)
+    Ok(self.mut_image_repository.create(image).await?)
   }
 }

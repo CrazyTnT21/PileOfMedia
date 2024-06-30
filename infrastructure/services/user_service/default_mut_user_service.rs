@@ -12,8 +12,6 @@ use services::traits::service_error::ServiceError::ClientError;
 use services::user_service::mut_user_service::{MutUserService, MutUserServiceError};
 use services::user_service::mut_user_service::MutUserServiceError::OtherError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultMutUserService<'a> {
   mut_user_repository: Arc<dyn MutUserRepository + 'a>,
   mut_image_service: Arc<dyn MutImageService + 'a>,
@@ -43,6 +41,6 @@ impl<'a> MutUserService for DefaultMutUserService<'a> {
       description: user.description,
       profile_picture: image,
     };
-    self.mut_user_repository.create(user).await.map_err(map_server_error)
+    Ok(self.mut_user_repository.create(user).await?)
   }
 }

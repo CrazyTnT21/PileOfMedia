@@ -10,8 +10,6 @@ use repositories::person_repository::PersonRepository;
 use services::person_service::{PersonService, PersonServiceError};
 use services::traits::service_error::ServiceError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultPersonService<'a> {
   person_repository: Arc<dyn PersonRepository + 'a>,
 }
@@ -25,14 +23,14 @@ impl<'a> DefaultPersonService<'a> {
 #[async_trait]
 impl<'a> PersonService for DefaultPersonService<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, ServiceError<PersonServiceError>> {
-    self.person_repository.get(language, pagination).await.map_err(map_server_error)
+    Ok(self.person_repository.get(language, pagination).await?)
   }
 
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Person>, ServiceError<PersonServiceError>> {
-    self.person_repository.get_by_id(id, language).await.map_err(map_server_error)
+    Ok(self.person_repository.get_by_id(id, language).await?)
   }
 
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, ServiceError<PersonServiceError>> {
-    self.person_repository.get_by_name(name, language, pagination).await.map_err(map_server_error)
+    Ok(self.person_repository.get_by_name(name, language, pagination).await?)
   }
 }

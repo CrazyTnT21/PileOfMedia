@@ -10,8 +10,6 @@ use repositories::book_repository::BookRepository;
 use services::book_service::{BookService, BookServiceError};
 use services::traits::service_error::ServiceError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultBookService<'a> {
   book_repository: Arc<dyn BookRepository + 'a>,
 }
@@ -25,14 +23,14 @@ impl<'a> DefaultBookService<'a> {
 #[async_trait]
 impl<'a> BookService for DefaultBookService<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
-    self.book_repository.get(language, pagination).await.map_err(map_server_error)
+    Ok(self.book_repository.get(language, pagination).await?)
   }
 
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, ServiceError<BookServiceError>> {
-    self.book_repository.get_by_id(id, language).await.map_err(map_server_error)
+    Ok(self.book_repository.get_by_id(id, language).await?)
   }
 
   async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
-    self.book_repository.get_by_title(title, language, pagination).await.map_err(map_server_error)
+    Ok(self.book_repository.get_by_title(title, language, pagination).await?)
   }
 }

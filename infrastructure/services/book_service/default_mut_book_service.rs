@@ -19,10 +19,8 @@ use repositories::theme_repository::ThemeRepository;
 use services::book_service::mut_book_service::{MutBookService, MutBookServiceError};
 use services::book_service::mut_book_service::MutBookServiceError::OtherError;
 use services::image_service::mut_image_service::MutImageService;
-use services::traits::service_error::{ServiceError};
+use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::{ClientError, ServerError};
-
-use crate::services::map_server_error;
 
 pub struct DefaultMutBookService<'a> {
   default_language: Language,
@@ -82,12 +80,12 @@ impl<'a> MutBookService for DefaultMutBookService<'a> {
       characters: item.characters,
       involved: item.involved,
     };
-    self.mut_book_repository.create(partial_book).await.map_err(map_server_error)
+    Ok(self.mut_book_repository.create(partial_book).await?)
   }
 
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutBookServiceError>> {
     self.validate_delete(ids).await?;
-    self.mut_book_repository.delete(ids).await.map_err(map_server_error)
+    Ok(self.mut_book_repository.delete(ids).await?)
   }
 }
 
@@ -97,7 +95,7 @@ impl<'a> DefaultMutBookService<'a> {
       return Err(ClientError(MutBookServiceError::NoIdsProvided));
     }
 
-    let existing = self.book_repository.filter_existing(ids).await.map_err(map_server_error)?;
+    let existing = self.book_repository.filter_existing(ids).await?;
     if existing.len() != ids.len() {
       let non_existent_books = filter_non_existent(ids, &existing);
       return Err(ClientError(MutBookServiceError::NonExistentBooks(non_existent_books)));
@@ -166,27 +164,27 @@ impl<'a> DefaultMutBookService<'a> {
   }
   async fn validate_create(&self, item: &CreateBook) -> Result<(), ServiceError<MutBookServiceError>> {
     if let Some(franchise_id) = item.franchise {
-      let ids = self.franchise_repository.filter_existing(&[franchise_id]).await.map_err(map_server_error)?;
+      let ids = self.franchise_repository.filter_existing(&[franchise_id]).await?;
       if ids.is_empty() {
         return Err(ClientError(MutBookServiceError::NonExistentFranchise(franchise_id)));
       }
     }
     if !item.themes.is_empty() {
-      let existing_themes = self.theme_repository.filter_existing(&item.themes).await.map_err(map_server_error)?;
+      let existing_themes = self.theme_repository.filter_existing(&item.themes).await?;
       if item.themes.len() != existing_themes.len() {
         let non_existent_themes = filter_non_existent(&item.themes, &existing_themes);
         return Err(ClientError(MutBookServiceError::NonExistentThemes(non_existent_themes)));
       }
     }
     if !item.genres.is_empty() {
-      let existing_genres = self.genre_repository.filter_existing(&item.genres).await.map_err(map_server_error)?;
+      let existing_genres = self.genre_repository.filter_existing(&item.genres).await?;
       if item.genres.len() != existing_genres.len() {
         let non_existent_genres = filter_non_existent(&item.genres, &existing_genres);
         return Err(ClientError(MutBookServiceError::NonExistentGenres(non_existent_genres)));
       }
     }
     if !item.characters.is_empty() {
-      let existing_characters = self.character_repository.filter_existing(&item.characters).await.map_err(map_server_error)?;
+      let existing_characters = self.character_repository.filter_existing(&item.characters).await?;
       if item.characters.len() != existing_characters.len() {
         let non_existent_characters = filter_non_existent(&item.characters, &existing_characters);
         return Err(ClientError(MutBookServiceError::NonExistentCharacters(non_existent_characters)));
@@ -194,7 +192,7 @@ impl<'a> DefaultMutBookService<'a> {
     }
     let people: Vec<u32> = item.involved.iter().map(|x| x.person_id).collect();
     if !people.is_empty() {
-      let existing_people = self.person_repository.filter_existing(&people).await.map_err(map_server_error)?;
+      let existing_people = self.person_repository.filter_existing(&people).await?;
       if people.len() != existing_people.len() {
         let non_existent_people = filter_non_existent(&people, &existing_people);
         return Err(ClientError(MutBookServiceError::NonExistentPeople(non_existent_people)));
@@ -202,7 +200,7 @@ impl<'a> DefaultMutBookService<'a> {
     }
     let roles: Vec<u32> = item.involved.iter().map(|x| x.role_id).collect();
     if !roles.is_empty() {
-      let existing_roles = self.role_repository.filter_existing(&roles).await.map_err(map_server_error)?;
+      let existing_roles = self.role_repository.filter_existing(&roles).await?;
       if roles.len() != existing_roles.len() {
         let non_existent_roles = filter_non_existent(&roles, &existing_roles);
         return Err(ClientError(MutBookServiceError::NonExistentRoles(non_existent_roles)));

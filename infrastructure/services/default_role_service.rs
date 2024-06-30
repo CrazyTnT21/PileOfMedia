@@ -10,8 +10,6 @@ use repositories::role_repository::RoleRepository;
 use services::role_service::{RoleService, RoleServiceError};
 use services::traits::service_error::ServiceError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultRoleService<'a> {
   role_repository: Arc<dyn RoleRepository + 'a>,
 }
@@ -25,14 +23,14 @@ impl<'a> DefaultRoleService<'a> {
 #[async_trait]
 impl<'a> RoleService for DefaultRoleService<'a> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>> {
-    self.role_repository.get(language, pagination).await.map_err(map_server_error)
+    Ok(self.role_repository.get(language, pagination).await?)
   }
 
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Role>, ServiceError<RoleServiceError>> {
-    self.role_repository.get_by_id(id, language).await.map_err(map_server_error)
+    Ok(self.role_repository.get_by_id(id, language).await?)
   }
 
   async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>> {
-    self.role_repository.get_by_name(name, language, pagination).await.map_err(map_server_error)
+    Ok(self.role_repository.get_by_name(name, language, pagination).await?)
   }
 }

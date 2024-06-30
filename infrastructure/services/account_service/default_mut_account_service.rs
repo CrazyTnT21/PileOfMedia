@@ -13,6 +13,7 @@ use services::account_service::AccountService;
 use services::account_service::mut_account_service::{MutAccountService, MutAccountServiceError};
 use services::account_service::mut_account_service::MutAccountServiceError::OtherError;
 use services::traits::service_error::ServiceError;
+use services::traits::service_error::ServiceError::{ClientError, ServerError};
 use services::user_service::mut_user_service::MutUserService;
 
 use crate::services::map_server_error;
@@ -36,29 +37,36 @@ impl<'a> MutAccountService for DefaultMutAccountService<'a> {
   async fn create(&self, account: CreateAccount) -> Result<Account, ServiceError<MutAccountServiceError>> {
     self.validate_create(&account).await?;
 
-    let user = self.mut_user_service.create(account.user).await.map_err(|x| ServiceError::ClientError(OtherError(Box::new(x))))?;
+    let user = self.mut_user_service.create(account.user).await
+      .map_err(|x| match x {
+        ClientError(x) => ClientError(OtherError(Box::new(x))),
+        ServerError(x) => ServerError(x)
+      })?;
     let account = CreatePartialAccount {
       user,
       email: account.email,
       password: hash_password(&account.password.0)?,
     };
-    self.mut_account_repository.create(account).await.map_err(map_server_error)
+    Ok(self.mut_account_repository.create(account).await?)
   }
 }
 
 impl<'a> DefaultMutAccountService<'a> {
   async fn validate_create(&self, account: &CreateAccount) -> Result<(), ServiceError<MutAccountServiceError>> {
     if account.email.0.is_empty() {
-      return Err(ServiceError::ClientError(MutAccountServiceError::InvalidEmail));
+      return Err(ClientError(MutAccountServiceError::InvalidEmail));
     };
     if account.password.0.is_empty() {
-      return Err(ServiceError::ClientError(MutAccountServiceError::InvalidPassword));
+      return Err(ClientError(MutAccountServiceError::InvalidPassword));
     }
     let exists_email = self.account_service.get_by_email(&account.email)
       .await
-      .map_err(|x| ServiceError::ClientError(OtherError(Box::new(x))))?;
+      .map_err(|x| match x {
+        ClientError(x) => ClientError(OtherError(Box::new(x))),
+        ServerError(x) => ServerError(x)
+      })?;
     if exists_email.is_some() {
-      return Err(ServiceError::ClientError(MutAccountServiceError::EmailAlreadyExists));
+      return Err(ClientError(MutAccountServiceError::EmailAlreadyExists));
     };
     Ok(())
   }

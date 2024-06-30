@@ -9,8 +9,6 @@ use repositories::theme_repository::ThemeRepository;
 use services::book_service::book_theme_service::mut_book_theme_service::{MutBookThemeService, MutBookThemeServiceError};
 use services::traits::service_error::ServiceError;
 
-use crate::services::map_server_error;
-
 pub struct DefaultMutBookThemeService<'a> {
   book_repository: Arc<dyn BookRepository + 'a>,
   book_theme_repository: Arc<dyn BookThemeRepository + 'a>,
@@ -31,23 +29,23 @@ impl<'a> DefaultMutBookThemeService<'a> {
 impl<'a> MutBookThemeService for DefaultMutBookThemeService<'a> {
   async fn add(&self, book_id: u32, themes: &[u32]) -> Result<(), ServiceError<MutBookThemeServiceError>> {
     self.validate_add(book_id, themes).await?;
-    self.mut_book_theme_repository.add(book_id, themes).await.map_err(map_server_error)
+    Ok(self.mut_book_theme_repository.add(book_id, themes).await?)
   }
 
   async fn remove(&self, book_id: u32, themes: &[u32]) -> Result<(), ServiceError<MutBookThemeServiceError>> {
     self.validate_remove(book_id, themes).await?;
-    self.mut_book_theme_repository.remove(book_id, themes).await.map_err(map_server_error)
+    Ok(self.mut_book_theme_repository.remove(book_id, themes).await?)
   }
 }
 
 impl DefaultMutBookThemeService<'_> {
   async fn validate_add(&self, book_id: u32, themes: &[u32]) -> Result<(), ServiceError<MutBookThemeServiceError>> {
     self.validate(book_id, themes).await?;
-    let existing = self.book_theme_repository.filter_existing(book_id, themes).await.map_err(map_server_error)?;
+    let existing = self.book_theme_repository.filter_existing(book_id, themes).await?;
     if !existing.is_empty() {
       return Err(ServiceError::ClientError(MutBookThemeServiceError::AlreadyAssociated(existing)));
     };
-    let existing_themes = self.theme_repository.filter_existing(themes).await.map_err(map_server_error)?;
+    let existing_themes = self.theme_repository.filter_existing(themes).await?;
     if existing_themes.len() != themes.len() {
       let non_existent_themes = filter_non_existent(themes, &existing_themes);
       return Err(ServiceError::ClientError(MutBookThemeServiceError::NonExistent(non_existent_themes)));
@@ -57,7 +55,7 @@ impl DefaultMutBookThemeService<'_> {
   }
   async fn validate_remove(&self, book_id: u32, themes: &[u32]) -> Result<(), ServiceError<MutBookThemeServiceError>> {
     self.validate(book_id, themes).await?;
-    let existing = self.book_theme_repository.filter_existing(book_id, themes).await.map_err(map_server_error)?;
+    let existing = self.book_theme_repository.filter_existing(book_id, themes).await?;
     if existing.len() != themes.len() {
       let not_associated = filter_non_existent(themes, &existing);
       return Err(ServiceError::ClientError(MutBookThemeServiceError::NotAssociated(not_associated)));
@@ -66,7 +64,7 @@ impl DefaultMutBookThemeService<'_> {
     Ok(())
   }
   async fn validate(&self, book_id: u32, themes: &[u32]) -> Result<(), ServiceError<MutBookThemeServiceError>> {
-    let ids = self.book_repository.filter_existing(&[book_id]).await.map_err(map_server_error)?;
+    let ids = self.book_repository.filter_existing(&[book_id]).await?;
     if ids.is_empty() {
       return Err(ServiceError::ClientError(MutBookThemeServiceError::NonExistentBook(book_id)));
     }
