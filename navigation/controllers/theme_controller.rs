@@ -4,16 +4,19 @@ use axum::{Json, Router};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::routing::get;
-use tokio_postgres::Client;
+use axum::routing::{delete, get, post};
+use tokio_postgres::{Client, Transaction};
+use domain::entities::theme::create_theme::CreateTheme;
 
+use services::genre_service::mut_genre_service::MutGenreService;
+use services::theme_service::mut_theme_service::MutThemeService;
 use services::theme_service::ThemeService;
 
 use crate::app_state::AppState;
 use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
-use crate::implementations::{get_theme_repository, get_theme_service};
+use crate::implementations::{get_mut_theme_repository, get_mut_theme_service, get_theme_repository, get_theme_service};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::name::NameParam;
@@ -28,7 +31,9 @@ pub mod theme_doc;
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
+    .route("/", post(create_item))
     .route("/:id", get(get_by_id))
+    .route("/:id", delete(delete_item))
     .route("/name/:name", get(get_by_name))
     .with_state(app_state)
 }
@@ -115,3 +120,59 @@ fn get_service(connection: &Client) -> impl ThemeService + '_ {
   get_theme_service(Arc::new(repository))
 }
 
+
+#[utoipa::path(post, path = "",
+responses(
+(status = 201, description = "Theme successfully created", body = Theme), ServerError, BadRequest
+),
+request_body = CreateTheme,
+tag = "Themes"
+)]
+async fn create_item(State(app_state): State<AppState>, Json(create_theme): Json<CreateTheme>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client);
+
+    println!("Route for creating a theme");
+
+    match service.create(create_theme).await {
+      Ok(theme) => Ok((StatusCode::CREATED, Json(theme))),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(delete, path = "/{id}",
+  responses(
+    (status = 204, description = "Theme successfully deleted"), ServerError, BadRequest
+  ),
+  params(("id" = u32, Path, description = "Id of the item to delete")),
+  tag = "Themes"
+)]
+async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client);
+
+    println!("Route for deleting a theme");
+
+    match service.delete(&[id]).await {
+      Ok(_) => Ok(StatusCode::NO_CONTENT),
+      Err(error) => Err(convert_service_error(error))
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+fn get_mut_service<'a>(transaction: &'a Transaction<'a>, client: &'a Client) -> impl MutThemeService + 'a {
+  let theme_repository = Arc::new(get_theme_repository(client, DEFAULT_LANGUAGE));
+  let mut_theme_repository = Arc::new(get_mut_theme_repository(transaction, DEFAULT_LANGUAGE, theme_repository.clone()));
+  get_mut_theme_service(DEFAULT_LANGUAGE, theme_repository, mut_theme_repository)
+}

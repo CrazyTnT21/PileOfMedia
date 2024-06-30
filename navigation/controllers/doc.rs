@@ -1,3 +1,5 @@
+use domain::entities::theme::create_theme::CreateThemeTranslation;
+use domain::entities::theme::create_theme::CreateTheme;
 use domain::entities::genre::create_genre::CreateGenre;
 use domain::entities::person::create_person::CreatePerson;
 use domain::entities::account::create_account::CreateAccount;
@@ -100,6 +102,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     CreatePerson,
     CreatePersonTranslation,
     CreateGenre,
-    CreateGenreTranslation
+    CreateGenreTranslation,
+    CreateTheme,
+    CreateThemeTranslation
   )))]
 pub(crate) struct ApiDoc;
