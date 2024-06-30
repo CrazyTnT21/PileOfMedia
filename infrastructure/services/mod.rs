@@ -3,7 +3,6 @@ use std::error::Error;
 use services::traits::service_error::ServiceError;
 
 pub mod default_character_service;
-pub mod default_role_service;
 pub mod file_service;
 pub mod image_service;
 pub mod user_service;
@@ -13,6 +12,7 @@ pub mod default_franchise_service;
 pub mod person_service;
 pub mod genre_service;
 pub mod theme_service;
+pub mod role_service;
 
 fn map_server_error<T>(error: Box<dyn Error>) -> ServiceError<T> {
   ServiceError::ServerError(error)

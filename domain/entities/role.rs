@@ -1,3 +1,6 @@
+pub mod create_role;
+pub mod create_partial_role;
+
 use crate::enums::language::Language;
 
 #[derive(Debug, Clone)]

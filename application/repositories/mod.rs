@@ -1,5 +1,4 @@
 pub mod default_character_repository;
-pub mod default_role_repository;
 pub mod file_repository;
 pub mod image_repository;
 pub mod user_repository;
@@ -9,3 +8,4 @@ pub mod default_franchise_repository;
 pub mod person_repository;
 pub mod genre_repository;
 pub mod theme_repository;
+pub mod role_repository;

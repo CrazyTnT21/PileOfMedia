@@ -16,7 +16,6 @@ use application::repositories::book_repository::default_book_repository::Default
 use application::repositories::book_repository::default_mut_book_repository::DefaultMutBookRepository;
 use application::repositories::default_character_repository::DefaultCharacterRepository;
 use application::repositories::default_franchise_repository::DefaultFranchiseRepository;
-use application::repositories::default_role_repository::DefaultRoleRepository;
 use application::repositories::file_repository::default_file_repository::DefaultFileRepository;
 use application::repositories::file_repository::default_mut_file_repository::DefaultMutFileRepository;
 use application::repositories::genre_repository::default_genre_repository::DefaultGenreRepository;
@@ -25,6 +24,8 @@ use application::repositories::image_repository::default_image_repository::Defau
 use application::repositories::image_repository::default_mut_image_repository::DefaultMutImageRepository;
 use application::repositories::person_repository::default_mut_person_repository::DefaultMutPersonRepository;
 use application::repositories::person_repository::default_person_repository::DefaultPersonRepository;
+use application::repositories::role_repository::default_mut_role_repository::DefaultMutRoleRepository;
+use application::repositories::role_repository::default_role_repository::DefaultRoleRepository;
 use application::repositories::theme_repository::default_mut_theme_repository::DefaultMutThemeRepository;
 use application::repositories::theme_repository::default_theme_repository::DefaultThemeRepository;
 use application::repositories::user_repository::default_mut_user_repository::DefaultMutUserRepository;
@@ -44,7 +45,6 @@ use infrastructure::services::book_service::default_book_service::DefaultBookSer
 use infrastructure::services::book_service::default_mut_book_service::DefaultMutBookService;
 use infrastructure::services::default_character_service::DefaultCharacterService;
 use infrastructure::services::default_franchise_service::DefaultFranchiseService;
-use infrastructure::services::default_role_service::DefaultRoleService;
 use infrastructure::services::file_service::default_file_service::DefaultFileService;
 use infrastructure::services::file_service::default_mut_file_service::DefaultMutFileService;
 use infrastructure::services::genre_service::default_genre_service::DefaultGenreService;
@@ -53,6 +53,8 @@ use infrastructure::services::image_service::default_image_service::DefaultImage
 use infrastructure::services::image_service::default_mut_image_service::DefaultMutImageService;
 use infrastructure::services::person_service::default_mut_person_service::DefaultMutPersonService;
 use infrastructure::services::person_service::default_person_service::DefaultPersonService;
+use infrastructure::services::role_service::default_mut_role_service::DefaultMutRoleService;
+use infrastructure::services::role_service::default_role_service::DefaultRoleService;
 use infrastructure::services::theme_service::default_mut_theme_service::DefaultMutThemeService;
 use infrastructure::services::theme_service::default_theme_service::DefaultThemeService;
 use infrastructure::services::user_service::default_mut_user_service::DefaultMutUserService;
@@ -79,6 +81,7 @@ use repositories::image_repository::ImageRepository;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
 use repositories::person_repository::mut_person_repository::MutPersonRepository;
 use repositories::person_repository::PersonRepository;
+use repositories::role_repository::mut_role_repository::MutRoleRepository;
 use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::mut_theme_repository::MutThemeRepository;
 use repositories::theme_repository::ThemeRepository;
@@ -106,6 +109,7 @@ use services::image_service::ImageService;
 use services::image_service::mut_image_service::MutImageService;
 use services::person_service::mut_person_service::MutPersonService;
 use services::person_service::PersonService;
+use services::role_service::mut_role_service::MutRoleService;
 use services::role_service::RoleService;
 use services::theme_service::mut_theme_service::MutThemeService;
 use services::theme_service::ThemeService;
@@ -360,4 +364,12 @@ pub fn get_mut_theme_service<'a>(default_language: Language, theme_repository: A
 
 pub fn get_mut_theme_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, theme_repository: Arc<dyn ThemeRepository + 'a>) -> impl MutThemeRepository + 'a {
   DefaultMutThemeRepository::new(transaction, default_language, theme_repository)
+}
+
+pub fn get_mut_role_service<'a>(default_language: Language, role_repository: Arc<dyn RoleRepository + 'a>, mut_role_repository: Arc<dyn MutRoleRepository + 'a>) -> impl MutRoleService + 'a {
+  DefaultMutRoleService::new(default_language, role_repository, mut_role_repository)
+}
+
+pub fn get_mut_role_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, role_repository: Arc<dyn RoleRepository + 'a>) -> impl MutRoleRepository + 'a {
+  DefaultMutRoleRepository::new(transaction, default_language, role_repository)
 }
