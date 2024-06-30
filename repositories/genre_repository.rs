@@ -1,3 +1,5 @@
+pub mod mut_genre_repository;
+
 use std::error::Error;
 
 use async_trait::async_trait;

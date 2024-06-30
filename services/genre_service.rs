@@ -1,3 +1,5 @@
+pub mod mut_genre_service;
+
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;

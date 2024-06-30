@@ -108,7 +108,7 @@ impl<'a> DefaultMutBookService<'a> {
       return Err(ClientError(MutBookServiceError::NoTranslationsProvided));
     }
     if !translations.contains_key(default_language) {
-      return Err(ClientError(MutBookServiceError::NoTranslationInLanguageProvided(default_language.clone())));
+      return Err(ClientError(MutBookServiceError::NoTranslationInLanguageProvided(*default_language)));
     }
     for (current_language, item) in translations {
       if item.title.is_empty() {
@@ -220,7 +220,7 @@ fn filter_non_existent(items: &[u32], existing: &[u32]) -> Vec<u32> {
   ).collect()
 }
 
-fn sort_translations(translations: &mut Vec<(Language, CreateBookTranslation)>) {
+fn sort_translations(translations: &mut [(Language, CreateBookTranslation)]) {
   translations.sort_by(|(_, x), (_, y)| {
     let x_reuse = match x.cover {
       CreateCover::Image(_) => false,
@@ -236,6 +236,6 @@ fn sort_translations(translations: &mut Vec<(Language, CreateBookTranslation)>) 
     if !x_reuse && y_reuse {
       return Ordering::Less;
     }
-    return Ordering::Equal;
+    Ordering::Equal
   });
 }

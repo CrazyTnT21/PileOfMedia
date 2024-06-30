@@ -15,12 +15,13 @@ use application::repositories::book_repository::default_mut_book_repository::Def
 
 use application::repositories::default_character_repository::DefaultCharacterRepository;
 use application::repositories::default_franchise_repository::DefaultFranchiseRepository;
-use application::repositories::default_genre_repository::DefaultGenreRepository;
 use application::repositories::person_repository::default_person_repository::DefaultPersonRepository;
 use application::repositories::default_role_repository::DefaultRoleRepository;
 use application::repositories::default_theme_repository::DefaultThemeRepository;
 use application::repositories::file_repository::default_file_repository::DefaultFileRepository;
 use application::repositories::file_repository::default_mut_file_repository::DefaultMutFileRepository;
+use application::repositories::genre_repository::default_genre_repository::DefaultGenreRepository;
+use application::repositories::genre_repository::default_mut_genre_repository::DefaultMutGenreRepository;
 use application::repositories::image_repository::default_image_repository::DefaultImageRepository;
 use application::repositories::image_repository::default_mut_image_repository::DefaultMutImageRepository;
 use application::repositories::person_repository::default_mut_person_repository::DefaultMutPersonRepository;
@@ -41,12 +42,13 @@ use infrastructure::services::book_service::book_theme_service::default_mut_book
 use infrastructure::services::book_service::default_mut_book_service::DefaultMutBookService;
 use infrastructure::services::default_character_service::DefaultCharacterService;
 use infrastructure::services::default_franchise_service::DefaultFranchiseService;
-use infrastructure::services::default_genre_service::DefaultGenreService;
+use infrastructure::services::genre_service::default_genre_service::DefaultGenreService;
 use infrastructure::services::person_service::default_person_service::DefaultPersonService;
 use infrastructure::services::default_role_service::DefaultRoleService;
 use infrastructure::services::default_theme_service::DefaultThemeService;
 use infrastructure::services::file_service::default_file_service::DefaultFileService;
 use infrastructure::services::file_service::default_mut_file_service::DefaultMutFileService;
+use infrastructure::services::genre_service::default_mut_genre_service::DefaultMutGenreService;
 use infrastructure::services::image_service::default_image_service::DefaultImageService;
 use infrastructure::services::image_service::default_mut_image_service::DefaultMutImageService;
 use infrastructure::services::person_service::default_mut_person_service::DefaultMutPersonService;
@@ -69,6 +71,7 @@ use repositories::file_repository::FileRepository;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
 use repositories::franchise_repository::FranchiseRepository;
 use repositories::genre_repository::GenreRepository;
+use repositories::genre_repository::mut_genre_repository::MutGenreRepository;
 use repositories::image_repository::ImageRepository;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
 use repositories::person_repository::mut_person_repository::MutPersonRepository;
@@ -94,6 +97,7 @@ use services::file_service::FileService;
 use services::file_service::mut_file_service::MutFileService;
 use services::franchise_service::FranchiseService;
 use services::genre_service::GenreService;
+use services::genre_service::mut_genre_service::MutGenreService;
 use services::image_service::ImageService;
 use services::image_service::mut_image_service::MutImageService;
 use services::person_service::mut_person_service::MutPersonService;
@@ -335,4 +339,11 @@ pub fn get_mut_person_service<'a>(default_language: Language, person_repository:
 
 pub fn get_mut_person_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, person_repository: Arc<dyn PersonRepository + 'a>) -> impl MutPersonRepository + 'a {
   DefaultMutPersonRepository::new(transaction, default_language, person_repository)
+}
+pub fn get_mut_genre_service<'a>(default_language: Language, genre_repository: Arc<dyn GenreRepository + 'a>, mut_genre_repository: Arc<dyn MutGenreRepository + 'a>) -> impl MutGenreService + 'a {
+  DefaultMutGenreService::new(default_language, genre_repository, mut_genre_repository)
+}
+
+pub fn get_mut_genre_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, genre_repository: Arc<dyn GenreRepository + 'a>) -> impl MutGenreRepository + 'a {
+  DefaultMutGenreRepository::new(transaction, default_language, genre_repository)
 }

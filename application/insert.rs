@@ -61,7 +61,7 @@ impl<'a, const U: usize> Insert<'a, U> {
 
   pub fn sql(&self) -> String {
     let into = self.into;
-    if self.values.is_empty() {
+    if U == 0 {
       return format!("INSERT INTO {into} DEFAULT VALUES;");
     }
 
@@ -72,7 +72,7 @@ impl<'a, const U: usize> Insert<'a, U> {
 
   pub fn returning_sql(&self, column: &'a str) -> String {
     let into = self.into;
-    if self.values.is_empty() {
+    if U == 0 {
       return format!("INSERT INTO {into} DEFAULT VALUES RETURNING {column};");
     }
 

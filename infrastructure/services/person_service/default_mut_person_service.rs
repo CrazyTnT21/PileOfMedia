@@ -85,9 +85,9 @@ impl<'a> DefaultMutPersonService<'a> {
       return Err(ClientError(MutPersonServiceError::NoTranslationsProvided));
     }
     if !translations.contains_key(default_language) {
-      return Err(ClientError(MutPersonServiceError::NoTranslationInLanguageProvided(default_language.clone())));
+      return Err(ClientError(MutPersonServiceError::NoTranslationInLanguageProvided(*default_language)));
     }
-    for (_, item) in translations {
+    for item in translations.values() {
       if let Some(description) = &item.description {
         if description.is_empty() {
           return Err(ClientError(MutPersonServiceError::InvalidDescription(description.clone())));

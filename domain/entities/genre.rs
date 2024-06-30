@@ -1,3 +1,6 @@
+pub mod create_genre;
+pub mod create_partial_genre;
+
 use crate::enums::language::Language;
 
 #[derive(Debug, Clone)]
