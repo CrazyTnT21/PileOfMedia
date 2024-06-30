@@ -1,0 +1,2 @@
+pub mod default_franchise_repository;
+pub mod default_mut_franchise_repository;

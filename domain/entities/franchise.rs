@@ -1,3 +1,6 @@
+pub mod create_partial_franchise;
+pub mod create_franchise;
+
 use crate::enums::language::Language;
 
 #[derive(Debug, Clone)]

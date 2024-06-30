@@ -1,0 +1,10 @@
+use std::error::Error;
+use async_trait::async_trait;
+use domain::entities::franchise::Franchise;
+use domain::entities::franchise::create_partial_franchise::CreatePartialFranchise;
+
+#[async_trait]
+pub trait MutFranchiseRepository: Send + Sync {
+  async fn create(&self, item: CreatePartialFranchise) -> Result<Franchise, Box<dyn Error>>;
+  async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>>;
+}

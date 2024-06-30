@@ -1,3 +1,5 @@
+use domain::entities::franchise::create_franchise::CreateFranchiseTranslation;
+use domain::entities::franchise::create_franchise::CreateFranchise;
 use domain::entities::role::create_role::CreateRoleTranslation;
 use domain::entities::role::create_role::CreateRole;
 use domain::entities::theme::create_theme::CreateThemeTranslation;
@@ -108,6 +110,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     CreateTheme,
     CreateThemeTranslation,
     CreateRole,
-    CreateRoleTranslation
+    CreateRoleTranslation,
+    CreateFranchise,
+    CreateFranchiseTranslation
   )))]
 pub(crate) struct ApiDoc;
