@@ -12,6 +12,8 @@ use crate::select::column_table::{ColumnTable, SelectElement};
 use crate::select::combined_tuple::CombinedType;
 use crate::select::expression::Expression;
 use crate::select::join::{Join, JoinType};
+use crate::select::order_by::{Direction, NullsOrder, OrderBy};
+use crate::select::selector::Selector;
 
 pub mod comparison;
 pub mod join;
@@ -22,6 +24,7 @@ mod column_table;
 pub mod conditions;
 pub mod selector;
 pub mod to_sql_value;
+pub mod order_by;
 
 //TODO: Prepared version
 pub struct Select<'a, T: FromRow<DbType=T> + CombinedType>
@@ -36,6 +39,7 @@ pub struct Select<'a, T: FromRow<DbType=T> + CombinedType>
   wheres: Vec<Expression<'a>>,
   distinct: HashMap<&'a str, Vec<&'a str>>,
   group_by: HashMap<&'a str, Vec<&'a str>>,
+  order_by: Vec<OrderBy<'a>>,
   having: Vec<Expression<'a>>,
 }
 
@@ -44,7 +48,20 @@ impl<'a> Select<'a, ()> {
     Self::new_raw(T::TABLE_NAME)
   }
   pub fn new_raw(from: &'a str) -> Select<'a, ()> {
-    Select { marker: PhantomData, from, alias: None, columns: vec![], joins: vec![], offset: None, limit: None, wheres: vec![], distinct: HashMap::new(), group_by: HashMap::new(), having: vec![] }
+    Select {
+      marker: PhantomData,
+      from,
+      alias: None,
+      columns: vec![],
+      joins: vec![],
+      offset: None,
+      limit: None,
+      wheres: vec![],
+      distinct: HashMap::new(),
+      group_by: HashMap::new(),
+      order_by: vec![],
+      having: vec![],
+    }
   }
 }
 
@@ -74,6 +91,7 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
       wheres: self.wheres,
       distinct: self.distinct,
       group_by: self.group_by,
+      order_by: self.order_by,
       having: self.having,
     }
   }
@@ -158,6 +176,15 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     self.create_new_select::<i64>()
   }
 
+  pub fn order_by(mut self, selector: impl Selector + 'a, direction: Direction, nulls_order: Option<NullsOrder>) -> Self {
+    self.order_by.push(OrderBy {
+      selector: Box::new(selector),
+      direction,
+      nulls_order,
+    });
+    self
+  }
+
   fn columns_sql(&self) -> String {
     self.columns
       .iter()
@@ -185,6 +212,17 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
           .collect::<Vec<String>>()
           .join(","))
       .collect::<Vec<String>>().join(",")))
+  }
+  fn order_by_sql(&self) -> Option<String> {
+    if self.order_by.is_empty() {
+      return None;
+    }
+
+    let order_bys = self.order_by.iter()
+      .map(|order_by| order_by.to_string())
+      .collect::<Vec<String>>()
+      .join(",");
+    Some(format!("ORDER BY {}", order_bys))
   }
 
   fn limit_sql(&self) -> Option<String> {
@@ -252,9 +290,10 @@ impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
     let offset_sql = self.offset_sql().unwrap_or_default();
     let alias_sql = self.alias.unwrap_or_default();
     let distinct_sql = self.distinct_sql().unwrap_or_default();
+    let order_by_sql = self.order_by_sql().unwrap_or_default();
     let from = self.from;
 
-    format!("SELECT {distinct_sql} {columns} FROM {from} {alias_sql} {joins} {where_sql}{group_by_sql} {having_sql} {limit_sql} {offset_sql}")
+    format!("SELECT {distinct_sql} {columns} FROM {from} {alias_sql} {joins} {where_sql}{group_by_sql} {having_sql} {order_by_sql} {limit_sql} {offset_sql}")
   }
 
   pub async fn query(self, connection: &'a Client) -> Result<Vec<T>, Box<dyn Error>> {
