@@ -21,8 +21,9 @@ mod app_state;
 pub async fn main() -> Result<(), Box<dyn Error>> {
   dotenv().ok();
   let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-  let server_url = env::var("API_URL").expect("SERVER_URL must be set");
+  //let server_url = env::var("SERVER_URL").expect("SERVER_URL must be set");
   let content_path = env::var("CONTENT_PATH").expect("CONTENT_PATH must be set");
+  let content_display_path = env::var("CONTENT_DISPLAY_PATH").expect("CONTENT_DISPLAY_PATH must be set");
   let secret = env::var("SECRET").expect("SECRET must be set");
 
   let pool = connection_pool(&database_url).await?;
@@ -34,7 +35,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
 
   let app_state = AppState {
     pool,
-    display_path: server_url,
+    display_path: content_display_path,
     content_path,
     secret,
   };

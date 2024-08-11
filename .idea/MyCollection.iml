@@ -11,8 +11,13 @@
       <sourceFolder url="file://$MODULE_DIR$/Application/from_row/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Application/from_row_macro/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/application/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/src/navigation/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/.idea.MyCollectionServer/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/MyCollectionSite/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/MyCollectionSite/.idea/shelf" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

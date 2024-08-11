@@ -8,7 +8,7 @@ CREATE TYPE userstatus AS ENUM ('NotStarted','Ongoing','Finished','Paused');
 CREATE TYPE imageextension as ENUM ('JPEG','JPG','PNG','GIF');
 create table Franchise
 (
-  Id   int primary key generated always as identity,
+  Id   int primary key generated always as identity
 );
 
 create table FranchiseTranslation

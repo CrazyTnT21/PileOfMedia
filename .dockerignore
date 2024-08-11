@@ -1,0 +1,15 @@
+/target
+/Database
+/MyCollectionSite
+/.github
+/.git
+/Dockerfile
+/.dockerignore
+/.editorconfig
+/tests
+/.gitmodules
+/.gitignore
+/.idea
+/docker-compose.yml
+.env
+README.md
