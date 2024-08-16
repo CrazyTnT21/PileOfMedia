@@ -8,7 +8,6 @@ use axum::routing::{delete, get, post};
 use tokio_postgres::{Client, Transaction};
 use domain::entities::theme::create_theme::CreateTheme;
 
-use services::genre_service::mut_genre_service::MutGenreService;
 use services::theme_service::mut_theme_service::MutThemeService;
 use services::theme_service::ThemeService;
 
@@ -30,12 +29,12 @@ pub mod theme_doc;
 
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
-    .route("/", get(get_items))
-    .route("/", post(create_item))
-    .route("/:id", get(get_by_id))
-    .route("/:id", delete(delete_item))
-    .route("/name/:name", get(get_by_name))
-    .with_state(app_state)
+      .route("/", get(get_items))
+      .route("/", post(create_item))
+      .route("/:id", get(get_by_id))
+      .route("/:id", delete(delete_item))
+      .route("/name/:name", get(get_by_name))
+      .with_state(app_state)
 }
 
 #[utoipa::path(get, path = "",

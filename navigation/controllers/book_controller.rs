@@ -1,9 +1,10 @@
+use multipart::MultiPartRequest;
 use axum::{Json, Router};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
-
+use utoipa::ToSchema;
 use domain::entities::book::book_involved::InvolvedId;
 use domain::entities::book::create_book::CreateBook;
 use services::book_service::book_character_service::BookCharacterService;
@@ -36,24 +37,24 @@ mod book_implementations;
 
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
-    .route("/", get(get_items))
-    .route("/", post(create_book))
-    .route("/:id", get(get_by_id))
-    .route("/:id", delete(delete_book))
-    .route("/title/:title", get(get_by_title))
-    .route("/:ids/genres", get(get_genres))
-    .route("/:id/genres/:genre_id", post(add_genre))
-    .route("/:id/genres/:genre_id", delete(remove_genre))
-    .route("/:id/themes", get(get_themes))
-    .route("/:id/themes/:theme_id", post(add_theme))
-    .route("/:id/themes/:theme_id", delete(remove_theme))
-    .route("/:id/characters", get(get_characters))
-    .route("/:id/characters/:character_id", post(add_character))
-    .route("/:id/characters/:character_id", delete(remove_character))
-    .route("/:id/involved", get(get_involved))
-    .route("/:id/involved/:person_id/:role_id", post(add_involved))
-    .route("/:id/involved/:person_id/:role_id", delete(remove_involved))
-    .with_state(app_state)
+      .route("/", get(get_items))
+      .route("/", post(create_book))
+      .route("/:id", get(get_by_id))
+      .route("/:id", delete(delete_book))
+      .route("/title/:title", get(get_by_title))
+      .route("/:ids/genres", get(get_genres))
+      .route("/:id/genres/:genre_id", post(add_genre))
+      .route("/:id/genres/:genre_id", delete(remove_genre))
+      .route("/:id/themes", get(get_themes))
+      .route("/:id/themes/:theme_id", post(add_theme))
+      .route("/:id/themes/:theme_id", delete(remove_theme))
+      .route("/:id/characters", get(get_characters))
+      .route("/:id/characters/:character_id", post(add_character))
+      .route("/:id/characters/:character_id", delete(remove_character))
+      .route("/:id/involved", get(get_involved))
+      .route("/:id/involved/:person_id/:role_id", post(add_involved))
+      .route("/:id/involved/:person_id/:role_id", delete(remove_involved))
+      .with_state(app_state)
 }
 
 #[utoipa::path(get, path = "",
@@ -435,15 +436,19 @@ async fn remove_involved(Path((id, person_id, role_id)): Path<(u32, u32, u32)>, 
   transaction.commit().await.map_err(convert_error)?;
   result
 }
-
+#[derive(ToSchema)] //TODO: Multipart header
+pub struct BookMultiPart {
+  book: CreateBook,
+  cover: Vec<Vec<u8>>,
+}
 #[utoipa::path(post, path = "",
-responses(
-(status = 201, description = "Book successfully created", body = Book), ServerError, BadRequest
-),
-request_body = CreateBook,
-tag = "Books"
+  responses(
+    (status = 201, description = "Book successfully created", body = Book), ServerError, BadRequest
+  ),
+  request_body(content_type = ["multipart/form-data"], content = BookMultiPart),
+  tag = "Books"
 )]
-async fn create_book(State(app_state): State<AppState>, Json(create_book): Json<CreateBook>) -> impl IntoResponse {
+async fn create_book(State(app_state): State<AppState>, MultiPartRequest(create_book): MultiPartRequest<CreateBook>) -> impl IntoResponse {
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
   let result = {

@@ -1,3 +1,6 @@
+use crate::controllers::book_controller::BookMultiPart;
+use crate::controllers::person_controller::PersonMultiPart;
+use crate::controllers::account_controller::AccountMultiPart;
 use domain::entities::franchise::create_franchise::CreateFranchiseTranslation;
 use domain::entities::franchise::create_franchise::CreateFranchise;
 use domain::entities::role::create_role::CreateRoleTranslation;
@@ -20,7 +23,6 @@ use domain::entities::character::Character;
 use domain::entities::franchise::Franchise;
 use domain::entities::person::create_person::CreatePersonTranslation;
 use domain::entities::genre::Genre;
-use domain::entities::image::create_image::Base64Data;
 use domain::entities::image::create_image::CreateImage;
 use domain::entities::image::Image;
 use domain::entities::image::image_data::ImageData;
@@ -56,62 +58,64 @@ use crate::controllers::user_controller::user_doc::UserDoc;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(info(title = "mycollection"),
-  nest(
-    ("/books", BookDoc),
-    ("/genres", GenreDoc),
-    ("/themes", ThemeDoc),
-    ("/people", PersonDoc),
-    ("/characters", CharacterDoc),
-    ("/roles", RoleDoc),
-    ("/users", UserDoc),
-    ("/franchises", FranchiseDoc),
-    ("/accounts", AccountDoc),
-  ),
-  components(schemas(
-    Genre,
-    Character,
-    Person,
-    Theme,
-    Book,
-    Image,
-    ImageData,
-    Franchise,
-    Role,
-    PersonRole,
-    BookInvolved,
-    BookCharacter,
-    User,
-    InvolvedId,
-    CreateAccount,
-    CreateUser,
-    CreateImage,
-    Base64Data,
-    Email,
-    Password,
-    LoginData,
-    LoginReturnData,
-    BooksTotal,
-    GenresTotal,
-    ThemesTotal,
-    PeopleTotal,
-    CharactersTotal,
-    RolesTotal,
-    BookInvolvedTotal,
-    BookCharactersTotal,
-    UsersTotal,
-    Language,
-    CreateBook,
-    CreateBookTranslation,
-    CreateCover,
-    CreatePerson,
-    CreatePersonTranslation,
-    CreateGenre,
-    CreateGenreTranslation,
-    CreateTheme,
-    CreateThemeTranslation,
-    CreateRole,
-    CreateRoleTranslation,
-    CreateFranchise,
-    CreateFranchiseTranslation
-  )))]
+    nest(
+        ("/books", BookDoc),
+        ("/genres", GenreDoc),
+        ("/themes", ThemeDoc),
+        ("/people", PersonDoc),
+        ("/characters", CharacterDoc),
+        ("/roles", RoleDoc),
+        ("/users", UserDoc),
+        ("/franchises", FranchiseDoc),
+        ("/accounts", AccountDoc),
+    ),
+    components(schemas(
+        Genre,
+        Character,
+        Person,
+        Theme,
+        Book,
+        Image,
+        ImageData,
+        Franchise,
+        Role,
+        PersonRole,
+        BookInvolved,
+        BookCharacter,
+        User,
+        InvolvedId,
+        CreateAccount,
+        CreateUser,
+        CreateImage,
+        Email,
+        Password,
+        LoginData,
+        LoginReturnData,
+        BooksTotal,
+        GenresTotal,
+        ThemesTotal,
+        PeopleTotal,
+        CharactersTotal,
+        RolesTotal,
+        BookInvolvedTotal,
+        BookCharactersTotal,
+        UsersTotal,
+        Language,
+        CreateBook,
+        BookMultiPart,
+        AccountMultiPart,
+        PersonMultiPart,
+        CreateBookTranslation,
+        CreateCover,
+        CreatePerson,
+        CreatePersonTranslation,
+        CreateGenre,
+        CreateGenreTranslation,
+        CreateTheme,
+        CreateThemeTranslation,
+        CreateRole,
+        CreateRoleTranslation,
+        CreateFranchise,
+        CreateFranchiseTranslation
+    )))]
 pub(crate) struct ApiDoc;

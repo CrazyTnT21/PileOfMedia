@@ -6,16 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-domain = { path = "../domain", features = ["utoipa", "serde"] }
+domain = { path = "../domain", features = ["utoipa", "serde", "axum-multipart"] }
 repositories = { path = "../repositories" }
 services = { path = "../services" }
 application = { path = "../application" }
 infrastructure = { path = "../infrastructure" }
+multipart = { path = "../multipart" }
 
 tower-http = { version = "0.5.2", features = ["cors"] }
 tokio-postgres = { version = "0.7.10", features = ["with-chrono-0_4"] }
 bb8-postgres = { version = "0.8.1", features = ["with-chrono-0_4"] }
-axum = { version = "0.7.5", features = ["macros", "json"] }
+axum = { version = "0.7.5", features = ["macros", "json", "multipart"] }
 serde = { version = "1.0.202", features = ["derive"] }
 tokio = "1.37.0"
 dotenvy = "0.15.7"

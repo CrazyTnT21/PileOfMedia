@@ -1,12 +1,13 @@
 [workspace]
 
 members = [
-  "domain",
-  "repositories",
-  "services",
-  "application",
-  "infrastructure",
-  "navigation"
+    "domain",
+    "repositories",
+    "services",
+    "application",
+    "infrastructure",
+    "navigation",
+    "multipart"
 ]
 [package]
 name = "my_collection"

@@ -1,8 +1,8 @@
+use multipart::MultiPartRequest;
 use crate::openapi::responses::forbidden::Forbidden;
 use std::sync::Arc;
-
 use axum::{debug_handler, Json, Router};
-use axum::extract::State;
+use axum::extract::{State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
@@ -17,7 +17,6 @@ use domain::entities::account::create_account::CreateAccount;
 use domain::entities::user::User;
 use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountService;
-
 use crate::app_state::AppState;
 use crate::controllers::{convert_error, convert_service_error};
 use crate::extractors::headers::authorization::JWTAuthorization;
@@ -43,21 +42,26 @@ pub struct LoginReturnData {
 
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
-    .route("/login", post(login))
-    .route("/register", post(register))
-    .route("/refresh", get(refresh_token))
-    .with_state(app_state)
+      .route("/login", post(login))
+      .route("/register", post(register))
+      .route("/refresh", get(refresh_token))
+      .with_state(app_state)
 }
 
+#[derive(ToSchema)]
+pub struct AccountMultiPart {
+  account: CreateAccount,
+  profile_picture: Option<Vec<u8>>,
+}
 #[utoipa::path(post, path = "/register",
-responses(
-(status = 201, description = "Returned JWT and user. Valid for a week", body = LoginReturnData), ServerError, BadRequest
-),
-request_body = CreateAccount,
-tag = "Accounts"
+  responses(
+    (status = 201, description = "Returned JWT and user. Valid for a week", body = LoginReturnData), ServerError, BadRequest
+  ),
+  request_body(content_type = ["multipart/form-data"], content = AccountMultiPart),
+  tag = "Accounts"
 )]
 #[debug_handler]
-async fn register(State(app_state): State<AppState>, Json(account): Json<CreateAccount>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
+async fn register(State(app_state): State<AppState>, MultiPartRequest(account): MultiPartRequest<CreateAccount>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
 
@@ -81,7 +85,7 @@ fn create_token(claim: Claim, secret: &[u8]) -> Result<String, (StatusCode, Stri
   let header = Header::default();
 
   jsonwebtoken::encode(&header, &claim, &key)
-    .map_err(convert_error)
+      .map_err(convert_error)
 }
 
 fn create_claim(subject: String, user_id: u32, exp: usize) -> Claim {
