@@ -40,7 +40,8 @@ impl<'a> DefaultMutPersonService<'a> {
 impl<'a> MutPersonService for DefaultMutPersonService<'a> {
   async fn create(&self, item: CreatePerson) -> Result<Person, ServiceError<MutPersonServiceError>> {
     self.validate_create(&item).await?;
-    let translations = self.transform_translations(item.translations).await?;
+    let data = item.person;
+    let translations = self.transform_translations(data.translations).await?;
     let image = match item.image {
       None => None,
       Some(value) => Some(self.mut_image_service.create(value).await
@@ -50,11 +51,11 @@ impl<'a> MutPersonService for DefaultMutPersonService<'a> {
         })?)
     };
     let partial_person = CreatePartialPerson {
-      name: item.name,
-      first_name: item.first_name,
-      last_name: item.last_name,
-      birthday: item.birthday,
-      height: item.height,
+      name: data.name,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      birthday: data.birthday,
+      height: data.height,
       image,
       translations,
     };
@@ -106,11 +107,12 @@ impl<'a> DefaultMutPersonService<'a> {
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreatePerson) -> Result<(), ServiceError<MutPersonServiceError>> {
-    if item.name.is_empty() {
-      return Err(ClientError(MutPersonServiceError::InvalidName(item.name.clone())));
+    let data = &item.person;
+    if data.name.is_empty() {
+      return Err(ClientError(MutPersonServiceError::InvalidName(data.name.clone())));
     }
 
-    self.validate_translations(&item.translations, &self.default_language).await?;
+    self.validate_translations(&data.translations, &self.default_language).await?;
     Ok(())
   }
 }

@@ -48,16 +48,11 @@ pub fn routes(app_state: AppState) -> Router {
       .with_state(app_state)
 }
 
-#[derive(ToSchema)]
-pub struct AccountMultiPart {
-  account: CreateAccount,
-  profile_picture: Option<Vec<u8>>,
-}
 #[utoipa::path(post, path = "/register",
   responses(
     (status = 201, description = "Returned JWT and user. Valid for a week", body = LoginReturnData), ServerError, BadRequest
   ),
-  request_body(content_type = ["multipart/form-data"], content = AccountMultiPart),
+  request_body(content_type = ["multipart/form-data"], content = CreateAccount),
   tag = "Accounts"
 )]
 #[debug_handler]

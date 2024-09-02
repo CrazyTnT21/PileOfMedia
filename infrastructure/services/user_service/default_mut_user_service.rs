@@ -27,6 +27,7 @@ impl<'a> DefaultMutUserService<'a> {
 #[async_trait]
 impl<'a> MutUserService for DefaultMutUserService<'a> {
   async fn create(&self, user: CreateUser) -> Result<User, ServiceError<MutUserServiceError>> {
+    let data = user.user;
     let image = match user.profile_picture {
       None => None,
       Some(value) => Some(self.mut_image_service.create(value)
@@ -37,8 +38,8 @@ impl<'a> MutUserService for DefaultMutUserService<'a> {
         })?)
     };
     let user = CreatePartialUser {
-      name: user.name,
-      description: user.description,
+      name: data.name,
+      description: data.description,
       profile_picture: image,
     };
     Ok(self.mut_user_repository.create(user).await?)

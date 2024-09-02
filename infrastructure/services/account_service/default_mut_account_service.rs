@@ -8,6 +8,7 @@ use async_trait::async_trait;
 use domain::entities::account::{Account, Password};
 use domain::entities::account::create_account::CreateAccount;
 use domain::entities::account::create_partial_account::CreatePartialAccount;
+use domain::entities::user::create_user::CreateUser;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
 use services::account_service::AccountService;
 use services::account_service::mut_account_service::{MutAccountService, MutAccountServiceError};
@@ -36,16 +37,17 @@ impl<'a> DefaultMutAccountService<'a> {
 impl<'a> MutAccountService for DefaultMutAccountService<'a> {
   async fn create(&self, account: CreateAccount) -> Result<Account, ServiceError<MutAccountServiceError>> {
     self.validate_create(&account).await?;
-
-    let user = self.mut_user_service.create(account.user).await
+    let data = account.account;
+    let user = CreateUser{ user: data.user, profile_picture: account.profile_picture };
+    let user = self.mut_user_service.create(user).await
       .map_err(|x| match x {
         ClientError(x) => ClientError(OtherError(Box::new(x))),
         ServerError(x) => ServerError(x)
       })?;
     let account = CreatePartialAccount {
       user,
-      email: account.email,
-      password: hash_password(&account.password.0)?,
+      email: data.email,
+      password: hash_password(&data.password.0)?,
     };
     Ok(self.mut_account_repository.create(account).await?)
   }
@@ -53,13 +55,14 @@ impl<'a> MutAccountService for DefaultMutAccountService<'a> {
 
 impl<'a> DefaultMutAccountService<'a> {
   async fn validate_create(&self, account: &CreateAccount) -> Result<(), ServiceError<MutAccountServiceError>> {
-    if account.email.0.is_empty() {
+    let data = &account.account;
+    if data.email.0.is_empty() {
       return Err(ClientError(MutAccountServiceError::InvalidEmail));
     };
-    if account.password.0.is_empty() {
+    if data.password.0.is_empty() {
       return Err(ClientError(MutAccountServiceError::InvalidPassword));
     }
-    let exists_email = self.account_service.get_by_email(&account.email)
+    let exists_email = self.account_service.get_by_email(&data.email)
       .await
       .map_err(|x| match x {
         ClientError(x) => ClientError(OtherError(Box::new(x))),

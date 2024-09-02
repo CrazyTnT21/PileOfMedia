@@ -116,16 +116,11 @@ async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): 
         Err(error) => Err(convert_service_error(error))
     }
 }
-#[derive(ToSchema)]
-pub struct PersonMultiPart {
-    person: CreatePerson,
-    image: Option<Vec<u8>>,
-}
 #[utoipa::path(post, path = "",
     responses(
         (status = 201, description = "Person successfully created", body = Person), ServerError, BadRequest
     ),
-    request_body(content_type = ["multipart/form-data"], content = PersonMultiPart),
+    request_body(content_type = ["multipart/form-data"], content = CreatePerson),
     tag = "People"
 )]
 async fn create_item(State(app_state): State<AppState>, MultiPartRequest(create_person): MultiPartRequest<CreatePerson>) -> impl IntoResponse {

@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use domain::entities::book::Book;
 use domain::entities::book::create_book::{CreateBook, CreateBookTranslation, CreateCover};
 use domain::entities::book::create_partial_book::{CreatePartialBook, CreatePartialBookTranslation};
+use domain::entities::image::create_image::CreateImage;
 use domain::enums::language::Language;
 use repositories::book_repository::BookRepository;
 use repositories::book_repository::mut_book_repository::MutBookRepository;
@@ -66,19 +67,21 @@ impl<'a> DefaultMutBookService<'a> {
 impl<'a> MutBookService for DefaultMutBookService<'a> {
   async fn create(&self, item: CreateBook) -> Result<Book, ServiceError<MutBookServiceError>> {
     self.validate_create(&item).await?;
-    let translations = self.transform_translations(item.translations).await?;
+    let data = item.book;
+    let covers = item.covers;
+    let translations = self.transform_translations(data.translations, covers).await?;
 
     let partial_book = CreatePartialBook {
-      chapters: item.chapters,
-      pages: item.pages,
-      words: item.words,
-      published: item.published,
-      franchise: item.franchise,
+      chapters: data.chapters,
+      pages: data.pages,
+      words: data.words,
+      published: data.published,
+      franchise: data.franchise,
       translations,
-      genres: item.genres,
-      themes: item.themes,
-      characters: item.characters,
-      involved: item.involved,
+      genres: data.genres,
+      themes: data.themes,
+      characters: data.characters,
+      involved: data.involved,
     };
     Ok(self.mut_book_repository.create(partial_book).await?)
   }
@@ -103,7 +106,7 @@ impl<'a> DefaultMutBookService<'a> {
     //TODO: Validate UserBook
     Ok(())
   }
-  async fn validate_translations(&self, translations: &HashMap<Language, CreateBookTranslation>, default_language: &Language) -> Result<(), ServiceError<MutBookServiceError>> {
+  async fn validate_translations(&self, translations: &HashMap<Language, CreateBookTranslation>, default_language: &Language, covers: &[CreateImage]) -> Result<(), ServiceError<MutBookServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutBookServiceError::NoTranslationsProvided));
     }
@@ -119,29 +122,34 @@ impl<'a> DefaultMutBookService<'a> {
           return Err(ClientError(MutBookServiceError::InvalidDescription(description.clone())));
         }
       }
-      if let CreateCover::ReuseFromLanguage(language) = item.cover {
-        let valid_reuse = match translations.get(&language) {
-          None => false,
-          Some(value) => match value.cover {
-            CreateCover::Image(_) => true,
-            CreateCover::ReuseFromLanguage(_) => false
+      match item.cover {
+        CreateCover::ImageIndex(index) => if index < 0 || index >= covers.len() {
+          return Err(ClientError(MutBookServiceError::NonExistentTranslationCover(*current_language)));
+        }
+        CreateCover::ReuseFromLanguage(language) => {
+          let valid_reuse = match translations.get(&language) {
+            None => false,
+            Some(value) => match value.cover {
+              CreateCover::ImageIndex(_) => true,
+              CreateCover::ReuseFromLanguage(_) => false
+            }
+          };
+          if *current_language == language || !valid_reuse {
+            return Err(ClientError(MutBookServiceError::NonExistentTranslationCover(language)));
           }
-        };
-        if *current_language == language || !valid_reuse {
-          return Err(ClientError(MutBookServiceError::NonExistentTranslationCover(language)));
         }
       }
     }
     Ok(())
   }
-  async fn transform_translations(&self, translations: HashMap<Language, CreateBookTranslation>) -> Result<HashMap<Language, CreatePartialBookTranslation>, ServiceError<MutBookServiceError>> {
+  async fn transform_translations(&self, translations: HashMap<Language, CreateBookTranslation>, mut covers: Vec<CreateImage>) -> Result<HashMap<Language, CreatePartialBookTranslation>, ServiceError<MutBookServiceError>> {
     let mut hash_map: HashMap<Language, CreatePartialBookTranslation> = HashMap::new();
     let mut translations: Vec<(Language, CreateBookTranslation)> = translations.into_iter().collect();
     sort_translations(&mut translations);
     for (language, translation) in translations {
       let cover = match translation.cover {
-        CreateCover::Image(image) => self.mut_image_service
-          .create(image)
+        CreateCover::ImageIndex(index) => self.mut_image_service
+          .create(covers.remove(index))
           .await
           .map_err(|x| match x {
             ClientError(x) => ClientError(OtherError(Box::new(x))),
@@ -163,34 +171,35 @@ impl<'a> DefaultMutBookService<'a> {
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateBook) -> Result<(), ServiceError<MutBookServiceError>> {
-    if let Some(franchise_id) = item.franchise {
+    let data = &item.book;
+    if let Some(franchise_id) = data.franchise {
       let ids = self.franchise_repository.filter_existing(&[franchise_id]).await?;
       if ids.is_empty() {
         return Err(ClientError(MutBookServiceError::NonExistentFranchise(franchise_id)));
       }
     }
-    if !item.themes.is_empty() {
-      let existing_themes = self.theme_repository.filter_existing(&item.themes).await?;
-      if item.themes.len() != existing_themes.len() {
-        let non_existent_themes = filter_non_existent(&item.themes, &existing_themes);
+    if !data.themes.is_empty() {
+      let existing_themes = self.theme_repository.filter_existing(&data.themes).await?;
+      if data.themes.len() != existing_themes.len() {
+        let non_existent_themes = filter_non_existent(&data.themes, &existing_themes);
         return Err(ClientError(MutBookServiceError::NonExistentThemes(non_existent_themes)));
       }
     }
-    if !item.genres.is_empty() {
-      let existing_genres = self.genre_repository.filter_existing(&item.genres).await?;
-      if item.genres.len() != existing_genres.len() {
-        let non_existent_genres = filter_non_existent(&item.genres, &existing_genres);
+    if !data.genres.is_empty() {
+      let existing_genres = self.genre_repository.filter_existing(&data.genres).await?;
+      if data.genres.len() != existing_genres.len() {
+        let non_existent_genres = filter_non_existent(&data.genres, &existing_genres);
         return Err(ClientError(MutBookServiceError::NonExistentGenres(non_existent_genres)));
       }
     }
-    if !item.characters.is_empty() {
-      let existing_characters = self.character_repository.filter_existing(&item.characters).await?;
-      if item.characters.len() != existing_characters.len() {
-        let non_existent_characters = filter_non_existent(&item.characters, &existing_characters);
+    if !data.characters.is_empty() {
+      let existing_characters = self.character_repository.filter_existing(&data.characters).await?;
+      if data.characters.len() != existing_characters.len() {
+        let non_existent_characters = filter_non_existent(&data.characters, &existing_characters);
         return Err(ClientError(MutBookServiceError::NonExistentCharacters(non_existent_characters)));
       }
     }
-    let people: Vec<u32> = item.involved.iter().map(|x| x.person_id).collect();
+    let people: Vec<u32> = data.involved.iter().map(|x| x.person_id).collect();
     if !people.is_empty() {
       let existing_people = self.person_repository.filter_existing(&people).await?;
       if people.len() != existing_people.len() {
@@ -198,7 +207,7 @@ impl<'a> DefaultMutBookService<'a> {
         return Err(ClientError(MutBookServiceError::NonExistentPeople(non_existent_people)));
       }
     }
-    let roles: Vec<u32> = item.involved.iter().map(|x| x.role_id).collect();
+    let roles: Vec<u32> = data.involved.iter().map(|x| x.role_id).collect();
     if !roles.is_empty() {
       let existing_roles = self.role_repository.filter_existing(&roles).await?;
       if roles.len() != existing_roles.len() {
@@ -206,7 +215,7 @@ impl<'a> DefaultMutBookService<'a> {
         return Err(ClientError(MutBookServiceError::NonExistentRoles(non_existent_roles)));
       }
     }
-    self.validate_translations(&item.translations, &self.default_language).await?;
+    self.validate_translations(&data.translations, &self.default_language, &item.covers).await?;
     Ok(())
   }
 }
@@ -223,11 +232,11 @@ fn filter_non_existent(items: &[u32], existing: &[u32]) -> Vec<u32> {
 fn sort_translations(translations: &mut [(Language, CreateBookTranslation)]) {
   translations.sort_by(|(_, x), (_, y)| {
     let x_reuse = match x.cover {
-      CreateCover::Image(_) => false,
+      CreateCover::ImageIndex(_) => false,
       CreateCover::ReuseFromLanguage(_) => true
     };
     let y_reuse = match y.cover {
-      CreateCover::Image(_) => false,
+      CreateCover::ImageIndex(_) => false,
       CreateCover::ReuseFromLanguage(_) => true
     };
     if x_reuse && !y_reuse {

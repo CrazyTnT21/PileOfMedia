@@ -436,16 +436,11 @@ async fn remove_involved(Path((id, person_id, role_id)): Path<(u32, u32, u32)>, 
   transaction.commit().await.map_err(convert_error)?;
   result
 }
-#[derive(ToSchema)] //TODO: Multipart header
-pub struct BookMultiPart {
-  book: CreateBook,
-  cover: Vec<Vec<u8>>,
-}
 #[utoipa::path(post, path = "",
   responses(
     (status = 201, description = "Book successfully created", body = Book), ServerError, BadRequest
   ),
-  request_body(content_type = ["multipart/form-data"], content = BookMultiPart),
+  request_body(content_type = ["multipart/form-data"], content = CreateBook),
   tag = "Books"
 )]
 async fn create_book(State(app_state): State<AppState>, MultiPartRequest(create_book): MultiPartRequest<CreateBook>) -> impl IntoResponse {
