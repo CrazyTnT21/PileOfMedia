@@ -25,7 +25,9 @@ mod role_controller;
 mod user_controller;
 mod account_controller;
 mod franchise_controller;
-
+pub fn generate_openapi_spec() -> Result<String, impl Error> {
+  doc::ApiDoc::openapi().to_pretty_json()
+}
 pub fn route_controllers(app_state: AppState) -> Router {
   let doc = doc::ApiDoc::openapi();
   Router::new()
