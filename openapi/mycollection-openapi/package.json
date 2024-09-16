@@ -1,0 +1,28 @@
+{
+  "name": "mycollection-openapi",
+  "version": "0.1.1",
+  "description": "",
+  "main": "index.js",
+  "types": "openapi.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "cargo run ../ && node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CrazyTnT21/MyCollection.git"
+  },
+  "keywords": [
+    "openapi"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CrazyTnT21/MyCollection/issues"
+  },
+  "homepage": "https://github.com/CrazyTnT21/MyCollection#readme",
+  "devDependencies": {
+    "openapi-typescript": "^7.4.0",
+    "typescript": "^5.6.2"
+  }
+}
