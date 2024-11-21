@@ -3,16 +3,16 @@ use std::io::Cursor;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use image::{DynamicImage, ImageFormat};
 use image::imageops::FilterType;
+use image::{DynamicImage, ImageFormat};
 use tokio_postgres::Transaction;
 
 use domain::entities::image::create_partial_image::CreatePartialImage;
 use domain::entities::image::Image;
-use repositories::file_repository::FileRepository;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
-use repositories::image_repository::ImageRepository;
+use repositories::file_repository::FileRepository;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
+use repositories::image_repository::ImageRepository;
 
 use crate::insert::Insert;
 use crate::schemas::db_image::DbImage;
@@ -26,22 +26,30 @@ pub struct DefaultMutImageRepository<'a> {
 }
 
 impl<'a> DefaultMutImageRepository<'a> {
-  pub fn new(transaction: &'a Transaction<'a>,
-             image_repository: Arc<dyn ImageRepository + 'a>,
-             mut_file_repository: Arc<dyn MutFileRepository + 'a>,
-             file_repository: Arc<dyn FileRepository + 'a>, ) -> DefaultMutImageRepository<'a> {
-    DefaultMutImageRepository { transaction, image_repository, mut_file_repository, file_repository }
+  pub fn new(
+    transaction: &'a Transaction<'a>,
+    image_repository: Arc<dyn ImageRepository + 'a>,
+    mut_file_repository: Arc<dyn MutFileRepository + 'a>,
+    file_repository: Arc<dyn FileRepository + 'a>,
+  ) -> DefaultMutImageRepository<'a> {
+    DefaultMutImageRepository {
+      transaction,
+      image_repository,
+      mut_file_repository,
+      file_repository,
+    }
   }
 }
-
 
 #[async_trait]
 impl<'a> MutImageRepository for DefaultMutImageRepository<'a> {
   async fn create(&self, image: CreatePartialImage<'_>) -> Result<Image, Box<dyn Error>> {
-    let id = Insert::new::<DbImage>([]).returning_transaction("id", self.transaction).await?;
+    let id = Insert::new::<DbImage>([])
+      .returning_transaction("id", self.transaction)
+      .await?;
     let image_data = self.file_repository.get(image.uri).await?;
 
-    let file_image = image::io::Reader::new(Cursor::new(image_data.clone())).with_guessed_format()?;
+    let file_image = image::ImageReader::new(Cursor::new(image_data.clone())).with_guessed_format()?;
     let format = file_image.format().ok_or("Unknown format")?;
     let file_image = file_image.decode()?;
     let original_path = combined(image.display_path.to_string(), image.file_name);
@@ -57,9 +65,13 @@ impl<'a> MutImageRepository for DefaultMutImageRepository<'a> {
 
     insert.execute_transaction(self.transaction).await?;
 
-    Ok(self.image_repository
-      .get_by_id(id as u32).await?
-      .expect("image was just created, it should exist"))
+    Ok(
+      self
+        .image_repository
+        .get_by_id(id as u32)
+        .await?
+        .expect("image was just created, it should exist"),
+    )
   }
 }
 
@@ -69,7 +81,13 @@ fn combined(mut value: String, b: &str) -> String {
 }
 
 impl<'a> DefaultMutImageRepository<'a> {
-  async fn resize(&self, factor: u32, file_image: &DynamicImage, format: &ImageFormat, image: &CreatePartialImage<'_>) -> Result<(String, i16, i16), Box<dyn Error>> {
+  async fn resize(
+    &self,
+    factor: u32,
+    file_image: &DynamicImage,
+    format: &ImageFormat,
+    image: &CreatePartialImage<'_>,
+  ) -> Result<(String, i16, i16), Box<dyn Error>> {
     let mut bytes: Vec<u8> = Vec::new();
     let (x, y) = (file_image.width() / factor, file_image.height() / factor);
     let temp_image = file_image.resize(x, y, FilterType::Triangle);

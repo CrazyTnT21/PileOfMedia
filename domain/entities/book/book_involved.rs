@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
-use crate::entities::person::Person;
 use crate::entities::person::person_role::PersonRole;
+use crate::entities::person::Person;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

@@ -10,7 +10,7 @@ use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
 use repositories::theme_repository::ThemeRepository;
 
-use crate::convert_to_sql::{to_i32};
+use crate::convert_to_sql::to_i32;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::fallback_unwrap;
 use crate::schemas::db_theme::DbTheme;
@@ -18,8 +18,8 @@ use crate::schemas::db_theme_translation::DbThemeTranslation;
 use crate::select::combined_tuple::CombinedType;
 use crate::select::conditions::column_equal::ColumnEqual;
 use crate::select::conditions::column_null::ColumnNull;
-use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
@@ -31,7 +31,10 @@ pub struct DefaultThemeRepository<'a> {
 
 impl<'a> DefaultThemeRepository<'a> {
   pub fn new(client: &'a Client, language: Language) -> DefaultThemeRepository<'a> {
-    DefaultThemeRepository { client, default_language: language.into() }
+    DefaultThemeRepository {
+      client,
+      default_language: language.into(),
+    }
   }
 }
 
@@ -43,7 +46,8 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     let total = Select::new::<DbTheme>()
       .count()
       .transform(|x| self.theme_joins(x, &language))
-      .get_single(self.client).await?
+      .get_single(self.client)
+      .await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
@@ -87,23 +91,37 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
     Ok(themes)
   }
 
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
     let name = format!("%{name}%");
 
     let total = Select::new::<DbTheme>()
       .count()
       .transform(|x| self.theme_joins(x, &language))
-      .where_expression(Expression::new(ValueILike::new(("theme_translation", "name"), &name))
-        .or(Expression::new(ValueILike::new(("theme_translation_fallback", "name"), &name))))
-      .get_single(self.client).await?
+      .where_expression(
+        Expression::new(ValueILike::new(("theme_translation", "name"), &name)).or(Expression::new(ValueILike::new(
+          ("theme_translation_fallback", "name"),
+          &name,
+        ))),
+      )
+      .get_single(self.client)
+      .await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
     let themes = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
-      .where_expression(Expression::new(ValueILike::new(("theme_translation", "name"), &name))
-        .or(Expression::new(ValueILike::new(("theme_translation_fallback", "name"), &name))))
+      .where_expression(
+        Expression::new(ValueILike::new(("theme_translation", "name"), &name)).or(Expression::new(ValueILike::new(
+          ("theme_translation_fallback", "name"),
+          &name,
+        ))),
+      )
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -123,24 +141,33 @@ impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
       .query(self.client)
       .await?
       .into_iter()
-      .map(|x| { x.0 as u32 })
+      .map(|x| x.0 as u32)
       .collect();
     Ok(count)
   }
 }
 
 impl<'a> DefaultThemeRepository<'a> {
-  fn theme_joins<T: FromRow<DbType=T> + CombinedType>(&'a self, select: Select<'a, T>, language: &'a DbLanguage) -> Select<'a, T> {
+  fn theme_joins<T: FromRow<DbType = T> + CombinedType>(
+    &'a self,
+    select: Select<'a, T>,
+    language: &'a DbLanguage,
+  ) -> Select<'a, T> {
     select
       .left_join::<DbThemeTranslation>(
         Some("theme_translation"),
-        Expression::column_equal("theme_translation", "language", language)
-          .and(Expression::new(ColumnEqual::new(("theme_translation", "fktranslation"), ("theme", "id")))),
+        Expression::column_equal("theme_translation", "language", language).and(Expression::new(ColumnEqual::new(
+          ("theme_translation", "fktranslation"),
+          ("theme", "id"),
+        ))),
       )
       .left_join::<DbThemeTranslation>(
         Some("theme_translation_fallback"),
-        Expression::column_equal("theme_translation_fallback", "language", &self.default_language)
-          .and(Expression::new(ColumnEqual::new(("theme_translation_fallback", "fktranslation"), ("theme", "id"))))
+        Expression::column_equal("theme_translation_fallback", "language", self.default_language)
+          .and(Expression::new(ColumnEqual::new(
+            ("theme_translation_fallback", "fktranslation"),
+            ("theme", "id"),
+          )))
           .and(Expression::new(ColumnNull::new(("theme_translation", "fktranslation")))),
       )
   }

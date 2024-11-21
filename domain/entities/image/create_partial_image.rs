@@ -7,4 +7,3 @@ pub struct CreatePartialImage<'a> {
   pub uri: &'a str,
   pub display_path: &'a str,
 }
-

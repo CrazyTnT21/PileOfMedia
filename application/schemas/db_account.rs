@@ -1,7 +1,7 @@
-use tokio_postgres::Row;
 use domain::entities::account::{Account, Email, Password};
 use domain::entities::user::User;
 use from_row::FromRow;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "account"]

@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter};
 use async_trait::async_trait;
+use std::fmt::{Display, Formatter};
 
 use domain::entities::account::{Account, Email, Password};
 use domain::items_total::ItemsTotal;
@@ -25,10 +25,14 @@ pub enum AccountServiceError {
 
 impl Display for AccountServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      AccountServiceError::UnknownEmail => "Unknown email",
-      AccountServiceError::InvalidEmail => "Invalid email",
-      AccountServiceError::WrongPassword => "Wrong password"
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        AccountServiceError::UnknownEmail => "Unknown email",
+        AccountServiceError::InvalidEmail => "Invalid email",
+        AccountServiceError::WrongPassword => "Wrong password",
+      }
+    )
   }
 }

@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
-use tokio_postgres::Row;
 use domain::entities::image::Image;
+use tokio_postgres::Row;
 
 use domain::entities::user::User;
 use from_row::FromRow;

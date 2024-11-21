@@ -1,7 +1,7 @@
-use tokio_postgres::Row;
+use crate::schemas::db_franchise_translation::DbFranchiseTranslation;
 use domain::entities::franchise::Franchise;
 use from_row::FromRow;
-use crate::schemas::db_franchise_translation::DbFranchiseTranslation;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "franchise"]
@@ -14,7 +14,7 @@ impl DbFranchise {
     Franchise {
       id: self.id as u32,
       name: db_franchise_translation.name,
-      language: db_franchise_translation.language.into()
+      language: db_franchise_translation.language.into(),
     }
   }
 }

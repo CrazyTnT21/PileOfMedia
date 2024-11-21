@@ -37,11 +37,17 @@ impl FromStr for AcceptLanguage {
       return Err(AcceptLanguageError::MoreThanOneValue);
     }
     match quality.and_then(|q| q.strip_prefix("q=")) {
-      None => Ok(AcceptLanguage { value: value.to_string(), quality: None }),
+      None => Ok(AcceptLanguage {
+        value: value.to_string(),
+        quality: None,
+      }),
       Some(quality) => match quality.parse::<f32>() {
-        Ok(quality) => Ok(AcceptLanguage { value: value.to_string(), quality: Some(quality) }),
-        Err(_) => Err(AcceptLanguageError::InvalidQuality)
-      }
+        Ok(quality) => Ok(AcceptLanguage {
+          value: value.to_string(),
+          quality: Some(quality),
+        }),
+        Err(_) => Err(AcceptLanguageError::InvalidQuality),
+      },
     }
   }
 }
@@ -92,15 +98,19 @@ impl FromStr for AcceptLanguageHeader {
 
 #[async_trait]
 impl<S> FromRequestParts<S> for AcceptLanguageHeader
-  where
-    S: Send + Sync,
+where
+  S: Send + Sync,
 {
   type Rejection = Infallible;
 
   async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-    Ok(parts.headers.get(ACCEPT_LANGUAGE)
-      .and_then(|x| x.to_str().ok())
-      .and_then(|x| AcceptLanguageHeader::from_str(x).ok())
-      .unwrap_or(AcceptLanguageHeader(vec![])))
+    Ok(
+      parts
+        .headers
+        .get(ACCEPT_LANGUAGE)
+        .and_then(|x| x.to_str().ok())
+        .and_then(|x| AcceptLanguageHeader::from_str(x).ok())
+        .unwrap_or(AcceptLanguageHeader(vec![])),
+    )
   }
 }

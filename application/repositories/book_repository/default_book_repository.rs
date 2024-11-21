@@ -13,7 +13,7 @@ use repositories::book_repository::BookRepository;
 use repositories::franchise_repository::FranchiseRepository;
 use repositories::image_repository::ImageRepository;
 
-use crate::convert_to_sql::{to_i32};
+use crate::convert_to_sql::to_i32;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::{fallback_unwrap, fallback_unwrap_ref};
 use crate::schemas::db_book::DbBook;
@@ -21,8 +21,8 @@ use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::select::combined_tuple::CombinedType;
 use crate::select::conditions::column_equal::ColumnEqual;
 use crate::select::conditions::column_null::ColumnNull;
-use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
@@ -35,9 +35,18 @@ pub struct DefaultBookRepository<'a> {
 }
 
 impl<'a> DefaultBookRepository<'a> {
-  pub fn new(client: &'a Client, default_language: Language, image_repository: Arc<dyn ImageRepository + 'a>,
-             franchise_repository: Arc<dyn FranchiseRepository + 'a>, ) -> DefaultBookRepository<'a> {
-    DefaultBookRepository { client, default_language: default_language.into(), image_repository, franchise_repository }
+  pub fn new(
+    client: &'a Client,
+    default_language: Language,
+    image_repository: Arc<dyn ImageRepository + 'a>,
+    franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+  ) -> DefaultBookRepository<'a> {
+    DefaultBookRepository {
+      client,
+      default_language: default_language.into(),
+      image_repository,
+      franchise_repository,
+    }
   }
 
   async fn books_from_tuple(&self, items: Vec<BookColumns>, language: Language) -> Result<Vec<Book>, Box<dyn Error>> {
@@ -50,28 +59,39 @@ impl<'a> DefaultBookRepository<'a> {
     let images = self.image_repository.get_by_ids(&image_ids).await?;
     let franchises = match franchise_ids.is_empty() {
       true => vec![],
-      false => self.franchise_repository.get_by_ids(&franchise_ids, language).await?
+      false => self.franchise_repository.get_by_ids(&franchise_ids, language).await?,
     };
 
     items
       .into_iter()
       .map(|item| {
         let book_translation = fallback_unwrap(item.1, item.2);
-        let franchise = franchises.iter().find(|y| match item.0.fk_franchise {
-          None => false,
-          Some(id) => id as u32 == y.id
-        }).map(|x| x.clone());
-        let image = images.iter().find(|y| y.id == book_translation.fk_cover as u32).unwrap().clone();
+        let franchise = franchises
+          .iter()
+          .find(|y| match item.0.fk_franchise {
+            None => false,
+            Some(id) => id as u32 == y.id,
+          })
+          .cloned();
+        let image = images
+          .iter()
+          .find(|y| y.id == book_translation.fk_cover as u32)
+          .unwrap()
+          .clone();
         Ok(item.0.to_entity(book_translation, image, franchise))
       })
       .collect()
   }
   async fn book_from_tuple(&self, item: BookColumns, language: Language) -> Result<Book, Box<dyn Error>> {
     let book_translation = fallback_unwrap(item.1, item.2);
-    let image = self.image_repository.get_by_id(book_translation.fk_cover as u32).await?.unwrap();
+    let image = self
+      .image_repository
+      .get_by_id(book_translation.fk_cover as u32)
+      .await?
+      .unwrap();
     let franchise = match item.0.fk_franchise {
       None => None,
-      Some(value) => self.franchise_repository.get_by_id(value as u32, language).await?
+      Some(value) => self.franchise_repository.get_by_id(value as u32, language).await?,
     };
     Ok(item.0.to_entity(book_translation, image, franchise))
   }
@@ -105,7 +125,8 @@ impl BookRepository for DefaultBookRepository<'_> {
     let total = Select::new::<DbBook>()
       .count()
       .transform(|x| book_joins(x, &db_language, &self.default_language))
-      .get_single(self.client).await?
+      .get_single(self.client)
+      .await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
@@ -131,23 +152,37 @@ impl BookRepository for DefaultBookRepository<'_> {
     Ok(Some(self.book_from_tuple(value, language).await?))
   }
 
-  async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
+  async fn get_by_title(
+    &self,
+    title: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
     let title = format!("%{title}%");
     let db_language = DbLanguage::from(language);
 
     let total = Select::new::<DbBook>()
       .count()
       .transform(|x| book_joins(x, &db_language, &self.default_language))
-      .where_expression(Expression::new(ValueILike::new(("book_translation", "title"), &title))
-        .or(Expression::new(ValueILike::new(("book_translation_fallback", "title"), &title))))
-      .get_single(self.client).await?
+      .where_expression(
+        Expression::new(ValueILike::new(("book_translation", "title"), &title)).or(Expression::new(ValueILike::new(
+          ("book_translation_fallback", "title"),
+          &title,
+        ))),
+      )
+      .get_single(self.client)
+      .await?
       .expect("Count should return one row");
 
     let total = total.0 as usize;
 
     let books = book_select(&db_language, &self.default_language)
-      .where_expression(Expression::new(ValueILike::new(("book_translation", "title"), &title))
-        .or(Expression::new(ValueILike::new(("book_translation_fallback", "title"), &title))))
+      .where_expression(
+        Expression::new(ValueILike::new(("book_translation", "title"), &title)).or(Expression::new(ValueILike::new(
+          ("book_translation_fallback", "title"),
+          &title,
+        ))),
+      )
       .pagination(pagination)
       .query(self.client)
       .await?;
@@ -178,25 +213,40 @@ impl BookRepository for DefaultBookRepository<'_> {
       .query(self.client)
       .await?
       .into_iter()
-      .map(|x| { x.0 as u32 })
+      .map(|x| x.0 as u32)
       .collect();
     Ok(count)
   }
 }
 
 fn book_select<'a>(language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, BookColumns> {
-  book_select_columns()
-    .transform(|x| book_joins(x, language, fallback_language))
+  book_select_columns().transform(|x| book_joins(x, language, fallback_language))
 }
 
-fn book_joins<'a, T: from_row::FromRow<DbType=T> + CombinedType>(select: Select<'a, T>, language: &'a DbLanguage, fallback_language: &'a DbLanguage) -> Select<'a, T> {
-  select.left_join::<DbBookTranslation>(Some("book_translation"),
-                                        Expression::new(ColumnEqual::new(("book_translation", "fktranslation"), ("book", "id")))
-                                          .and(Expression::new(ValueEqual::new(("book_translation", "language"), language))))
-    .left_join::<DbBookTranslation>(Some("book_translation_fallback"),
-                                    Expression::new(ColumnEqual::new(("book", "id"), ("book_translation_fallback", "fktranslation")))
-                                      .and(Expression::new(ColumnNull::new(("book_translation", "fktranslation"))))
-                                      .and(Expression::new(ValueEqual::new(("book_translation_fallback", "language"), fallback_language))))
+fn book_joins<'a, T: from_row::FromRow<DbType = T> + CombinedType>(
+  select: Select<'a, T>,
+  language: &'a DbLanguage,
+  fallback_language: &'a DbLanguage,
+) -> Select<'a, T> {
+  select
+    .left_join::<DbBookTranslation>(
+      Some("book_translation"),
+      Expression::new(ColumnEqual::new(("book_translation", "fktranslation"), ("book", "id"))).and(Expression::new(
+        ValueEqual::new(("book_translation", "language"), language),
+      )),
+    )
+    .left_join::<DbBookTranslation>(
+      Some("book_translation_fallback"),
+      Expression::new(ColumnEqual::new(
+        ("book", "id"),
+        ("book_translation_fallback", "fktranslation"),
+      ))
+      .and(Expression::new(ColumnNull::new(("book_translation", "fktranslation"))))
+      .and(Expression::new(ValueEqual::new(
+        ("book_translation_fallback", "language"),
+        fallback_language,
+      ))),
+    )
 }
 
 fn book_select_columns<'a>() -> Select<'a, BookColumns> {

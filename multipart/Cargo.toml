@@ -4,8 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { version = "0.7.5", features = ["multipart"] }
+axum = { version = "0.7.9", features = ["multipart"] }
 
 [lib]
 name = "multipart"
 path = "lib.rs"
+
+[lints]
+workspace = true

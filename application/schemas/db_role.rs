@@ -1,7 +1,7 @@
-use tokio_postgres::Row;
+use crate::schemas::db_role_translation::DbRoleTranslation;
 use domain::entities::role::Role;
 use from_row::FromRow;
-use crate::schemas::db_role_translation::DbRoleTranslation;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "role"]

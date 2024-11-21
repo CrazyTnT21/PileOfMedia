@@ -22,13 +22,19 @@ pub enum MutBookGenreServiceError {
 
 impl Display for MutBookGenreServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      MutBookGenreServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
-      MutBookGenreServiceError::AlreadyAssociated(x) => format!("The following genres already have an association: [{}]", x.join_comma()),
-      MutBookGenreServiceError::NotAssociated(x) => format!("The following genres do not have an association: [{}]", x.join_comma()),
-      MutBookGenreServiceError::NonExistent(x) => format!("The following genres do not exist: [{}]", x.join_comma()),
-      MutBookGenreServiceError::NoGenresProvided => "No genres provided".to_string(),
-      MutBookGenreServiceError::OtherError(x) => x.to_string()
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        MutBookGenreServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
+        MutBookGenreServiceError::AlreadyAssociated(x) =>
+          format!("The following genres already have an association: [{}]", x.join_comma()),
+        MutBookGenreServiceError::NotAssociated(x) =>
+          format!("The following genres do not have an association: [{}]", x.join_comma()),
+        MutBookGenreServiceError::NonExistent(x) => format!("The following genres do not exist: [{}]", x.join_comma()),
+        MutBookGenreServiceError::NoGenresProvided => "No genres provided".to_string(),
+        MutBookGenreServiceError::OtherError(x) => x.to_string(),
+      }
+    )
   }
 }

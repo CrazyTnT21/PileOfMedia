@@ -15,16 +15,16 @@ use crate::app_state::AppState;
 use crate::extractors::headers::accept_language::AcceptLanguage;
 use crate::extractors::query_pagination::QueryPagination;
 
-mod doc;
-mod book_controller;
-mod genre_controller;
-mod theme_controller;
-mod person_controller;
-mod character_controller;
-mod role_controller;
-mod user_controller;
 mod account_controller;
+mod book_controller;
+mod character_controller;
+mod doc;
 mod franchise_controller;
+mod genre_controller;
+mod person_controller;
+mod role_controller;
+mod theme_controller;
+mod user_controller;
 pub fn generate_openapi_spec() -> Result<String, impl Error> {
   doc::ApiDoc::openapi().to_pretty_json()
 }
@@ -40,8 +40,7 @@ pub fn route_controllers(app_state: AppState) -> Router {
     .nest("/users", user_controller::routes(app_state.clone()))
     .nest("/franchises", franchise_controller::routes(app_state.clone()))
     .nest("/accounts", account_controller::routes(app_state))
-    .merge(SwaggerUi::new("/swagger-ui")
-      .url("/api-docs/openapi.json", doc))
+    .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", doc))
 }
 
 fn convert_to_language(value: Option<&AcceptLanguage>) -> Option<Language> {
@@ -95,4 +94,3 @@ fn set_pagination_limit(pagination: &mut QueryPagination) {
     pagination.count = 50;
   }
 }
-

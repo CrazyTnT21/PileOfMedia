@@ -4,12 +4,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::role::Role;
 use domain::entities::role::create_partial_role::CreatePartialRole;
+use domain::entities::role::Role;
 use domain::enums::language::Language;
 use from_row::Table;
-use repositories::role_repository::RoleRepository;
 use repositories::role_repository::mut_role_repository::MutRoleRepository;
+use repositories::role_repository::RoleRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;
@@ -27,9 +27,11 @@ pub struct DefaultMutRoleRepository<'a> {
 }
 
 impl<'a> DefaultMutRoleRepository<'a> {
-  pub fn new(transaction: &'a Transaction<'a>,
-             default_language: Language,
-             role_repository: Arc<dyn RoleRepository + 'a>, ) -> DefaultMutRoleRepository<'a> {
+  pub fn new(
+    transaction: &'a Transaction<'a>,
+    default_language: Language,
+    role_repository: Arc<dyn RoleRepository + 'a>,
+  ) -> DefaultMutRoleRepository<'a> {
     DefaultMutRoleRepository {
       transaction,
       default_language,
@@ -44,7 +46,8 @@ impl MutRoleRepository for DefaultMutRoleRepository<'_> {
     let id = self.insert_role(&item).await? as u32;
     self.insert_translation(&item, id).await?;
 
-    let role = self.role_repository
+    let role = self
+      .role_repository
       .get_by_id(id, self.default_language)
       .await?
       .expect("Role was just created");
@@ -54,9 +57,12 @@ impl MutRoleRepository for DefaultMutRoleRepository<'_> {
   async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let ids = to_i32(ids);
 
-    Delete::new::<DbRoleTranslation>(Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "fktranslation"), &ids)))
-      .execute_transaction(self.transaction)
-      .await?;
+    Delete::new::<DbRoleTranslation>(Expression::new(ValueIn::new(
+      (DbRoleTranslation::TABLE_NAME, "fktranslation"),
+      &ids,
+    )))
+    .execute_transaction(self.transaction)
+    .await?;
 
     Delete::new::<DbRole>(Expression::new(ValueIn::new((DbRole::TABLE_NAME, "id"), &ids)))
       .execute_transaction(self.transaction)
@@ -68,12 +74,14 @@ impl MutRoleRepository for DefaultMutRoleRepository<'_> {
 impl DefaultMutRoleRepository<'_> {
   async fn insert_role(&self, _item: &CreatePartialRole) -> Result<i32, Box<dyn Error>> {
     let id = Insert::new::<DbRole>([])
-      .returning_transaction("id", self.transaction).await?;
+      .returning_transaction("id", self.transaction)
+      .await?;
     Ok(id)
   }
   async fn insert_translation(&self, item: &CreatePartialRole, id: u32) -> Result<(), Box<dyn Error>> {
     let id = id as i32;
-    let translations: Vec<(&String, DbLanguage)> = item.translations
+    let translations: Vec<(&String, DbLanguage)> = item
+      .translations
       .iter()
       .map(|x| (&x.1.name, DbLanguage::from(*x.0)))
       .collect();

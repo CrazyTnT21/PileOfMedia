@@ -1,6 +1,6 @@
-use std::error::Error;
 use async_trait::async_trait;
 use domain::entities::book::book_involved::InvolvedId;
+use std::error::Error;
 
 #[async_trait]
 pub trait MutBookInvolvedRepository: Send + Sync {

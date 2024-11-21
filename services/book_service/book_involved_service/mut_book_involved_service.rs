@@ -10,7 +10,11 @@ use crate::traits::service_error::ServiceError;
 #[async_trait]
 pub trait MutBookInvolvedService: Send + Sync {
   async fn add(&self, book_id: u32, involved: &[InvolvedId]) -> Result<(), ServiceError<MutBookInvolvedServiceError>>;
-  async fn remove(&self, book_id: u32, involved: &[InvolvedId]) -> Result<(), ServiceError<MutBookInvolvedServiceError>>;
+  async fn remove(
+    &self,
+    book_id: u32,
+    involved: &[InvolvedId],
+  ) -> Result<(), ServiceError<MutBookInvolvedServiceError>>;
 }
 
 pub enum MutBookInvolvedServiceError {
@@ -25,14 +29,26 @@ pub enum MutBookInvolvedServiceError {
 
 impl Display for MutBookInvolvedServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      MutBookInvolvedServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
-      MutBookInvolvedServiceError::AlreadyAssociated(x) => format!("The following people with roles already have an association: [{}]", x.join_comma()),
-      MutBookInvolvedServiceError::NonExistentAssociation(x) => format!("The following people with roles do not have an association: [{}]", x.join_comma()),
-      MutBookInvolvedServiceError::NonExistentPeople(x) => format!("The following people do not exist: [{}]", x.join_comma()),
-      MutBookInvolvedServiceError::NonExistentRoles(x) => format!("The following roles do not exist: [{}]", x.join_comma()),
-      MutBookInvolvedServiceError::NoInvolvedProvided => "No involved provided".to_string(),
-      MutBookInvolvedServiceError::OtherError(x) => x.to_string(),
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        MutBookInvolvedServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
+        MutBookInvolvedServiceError::AlreadyAssociated(x) => format!(
+          "The following people with roles already have an association: [{}]",
+          x.join_comma()
+        ),
+        MutBookInvolvedServiceError::NonExistentAssociation(x) => format!(
+          "The following people with roles do not have an association: [{}]",
+          x.join_comma()
+        ),
+        MutBookInvolvedServiceError::NonExistentPeople(x) =>
+          format!("The following people do not exist: [{}]", x.join_comma()),
+        MutBookInvolvedServiceError::NonExistentRoles(x) =>
+          format!("The following roles do not exist: [{}]", x.join_comma()),
+        MutBookInvolvedServiceError::NoInvolvedProvided => "No involved provided".to_string(),
+        MutBookInvolvedServiceError::OtherError(x) => x.to_string(),
+      }
+    )
   }
 }

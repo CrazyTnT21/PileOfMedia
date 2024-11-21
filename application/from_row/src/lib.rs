@@ -1,7 +1,7 @@
 use tokio_postgres::Row;
 
-pub use from_row_macros::FromRow;
 pub use from_row_macros::query_row;
+pub use from_row_macros::FromRow;
 
 pub trait FromRow {
   type DbType;
@@ -21,7 +21,7 @@ pub trait FromRowOption<T: FromRow = Self> {
   fn from_row_optional(row: &Row, from: usize) -> Option<T::DbType>;
 }
 
-impl<T: FromRow<DbType=T> + FromRowOption> FromRow for Option<T> {
+impl<T: FromRow<DbType = T> + FromRowOption> FromRow for Option<T> {
   type DbType = Option<T>;
   const COLUMN_COUNT: usize = T::COLUMN_COUNT;
 
@@ -58,40 +58,38 @@ impl FromRow for () {
   fn from_row(_: &Row, _: usize) -> Self::DbType {}
 }
 
-impl<T: FromRow<DbType=T> + RowColumns + FromRowOption> RowColumns for Option<T> {
+impl<T: FromRow<DbType = T> + RowColumns + FromRowOption> RowColumns for Option<T> {
   fn columns() -> Vec<&'static str> {
     T::columns()
   }
 }
 from_row_tuple!(T,);
-from_row_tuple!(T,T1);
-from_row_tuple!(T,T1,T2);
-from_row_tuple!(T,T1,T2,T3);
-from_row_tuple!(T,T1,T2,T3,T4);
-from_row_tuple!(T,T1,T2,T3,T4,T5);
-from_row_tuple!(T,T1,T2,T3,T4,T5,T6);
-from_row_tuple!(T,T1,T2,T3,T4,T5,T6,T7);
-from_row_tuple!(T,T1,T2,T3,T4,T5,T6,T7,T8);
+from_row_tuple!(T, T1);
+from_row_tuple!(T, T1, T2);
+from_row_tuple!(T, T1, T2, T3);
+from_row_tuple!(T, T1, T2, T3, T4);
+from_row_tuple!(T, T1, T2, T3, T4, T5);
+from_row_tuple!(T, T1, T2, T3, T4, T5, T6);
+from_row_tuple!(T, T1, T2, T3, T4, T5, T6, T7);
+from_row_tuple!(T, T1, T2, T3, T4, T5, T6, T7, T8);
 
 #[macro_export]
 macro_rules! from_row_impl {
-    ($x: tt) =>
-  {
+  ($x: tt) => {
     impl FromRow for $x {
-  type DbType = $x;
-  const COLUMN_COUNT: usize = 1;
+      type DbType = $x;
+      const COLUMN_COUNT: usize = 1;
 
-  fn from_row(row: &tokio_postgres::Row, from: usize) -> Self::DbType
-  {
-    row.get(from)
-  }
+      fn from_row(row: &tokio_postgres::Row, from: usize) -> Self::DbType {
+        row.get(from)
+      }
     }
-    impl FromRowOption for $x{
-      fn from_row_optional(row: &tokio_postgres::Row, from: usize) -> Option<<$x as FromRow>::DbType>{
+    impl FromRowOption for $x {
+      fn from_row_optional(row: &tokio_postgres::Row, from: usize) -> Option<<$x as FromRow>::DbType> {
         row.try_get(from).ok()
       }
     }
-  }
+  };
 }
 
 from_row_impl!(i8);
@@ -104,13 +102,12 @@ from_row_impl!(f64);
 from_row_impl!(bool);
 from_row_impl!(String);
 
-
 #[cfg(feature = "chrono")]
 mod chrono_from {
   use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
-  use crate::{from_row_impl, FromRow};
   use crate::FromRowOption;
+  use crate::{from_row_impl, FromRow};
 
   from_row_impl!(NaiveDate);
   from_row_impl!(NaiveTime);

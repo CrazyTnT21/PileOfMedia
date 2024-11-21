@@ -1,22 +1,27 @@
 services:
   web:
-    build: MyCollectionSite
-    platform: linux/arm64/v8
+    build:
+      context: MyCollectionSite
+      platforms:
+        - linux/arm64/v8
     ports:
       - "443:443"
     volumes:
       - content:/usr/share/nginx/mycollection/content
   backend:
-    build: .
-    platform: linux/arm64/v8
+    build:
+      context: .
+      platforms:
+        - linux/arm64/v8
     volumes:
       - content:/content/
   db:
-    build: Database
-    platform: linux/arm64/v8
+    build:
+      context: Database
+      platforms:
+        - linux/arm64/v8
     volumes:
       - pg-data:/var/lib/postgresql/data
-
 volumes:
   content:
   pg-data:

@@ -1,30 +1,34 @@
-use multipart::MultiPartRequest;
 use crate::openapi::responses::forbidden::Forbidden;
-use std::sync::Arc;
-use axum::{debug_handler, Json, Router};
-use axum::extract::{State};
+use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
+use axum::{debug_handler, Json, Router};
 use chrono::Utc;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
+use multipart::MultiPartRequest;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tokio_postgres::{Client, Transaction};
 use utoipa::ToSchema;
 
-use domain::entities::account::{Email, Password};
-use domain::entities::account::create_account::CreateAccount;
-use domain::entities::user::User;
-use services::account_service::AccountService;
-use services::account_service::mut_account_service::MutAccountService;
 use crate::app_state::AppState;
 use crate::controllers::{convert_error, convert_service_error};
 use crate::extractors::headers::authorization::JWTAuthorization;
-use crate::implementations::{get_account_repository, get_account_service, get_file_repository, get_image_repository, get_mut_account_repository, get_mut_account_service, get_mut_file_repository, get_mut_file_service, get_mut_image_repository, get_mut_image_service, get_mut_user_repository, get_mut_user_service, get_user_repository};
+use crate::implementations::{
+  get_account_repository, get_account_service, get_file_repository, get_image_repository, get_mut_account_repository,
+  get_mut_account_service, get_mut_file_repository, get_mut_file_service, get_mut_image_repository,
+  get_mut_image_service, get_mut_user_repository, get_mut_user_service, get_user_repository,
+};
 use crate::openapi::params::header::json_web_token::JsonWebTokenParam;
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_authorized::NotAuthorized;
 use crate::openapi::responses::server_error::ServerError;
+use domain::entities::account::create_account::CreateAccount;
+use domain::entities::account::{Email, Password};
+use domain::entities::user::User;
+use services::account_service::mut_account_service::MutAccountService;
+use services::account_service::AccountService;
 
 pub mod account_doc;
 
@@ -42,10 +46,10 @@ pub struct LoginReturnData {
 
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
-      .route("/login", post(login))
-      .route("/register", post(register))
-      .route("/refresh", get(refresh_token))
-      .with_state(app_state)
+    .route("/login", post(login))
+    .route("/register", post(register))
+    .route("/refresh", get(refresh_token))
+    .with_state(app_state)
 }
 
 #[utoipa::path(post, path = "/register",
@@ -56,7 +60,10 @@ pub fn routes(app_state: AppState) -> Router {
   tag = "Accounts"
 )]
 #[debug_handler]
-async fn register(State(app_state): State<AppState>, MultiPartRequest(account): MultiPartRequest<CreateAccount>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
+async fn register(
+  State(app_state): State<AppState>,
+  MultiPartRequest(account): MultiPartRequest<CreateAccount>,
+) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
 
@@ -68,7 +75,7 @@ async fn register(State(app_state): State<AppState>, MultiPartRequest(account): 
 
   let user_id = account.user.id;
 
-  let in_a_week = (Utc::now().timestamp() + 604800) as usize;
+  let in_a_week = (Utc::now().timestamp() + 604_800) as usize;
   let claim = create_claim("Register".to_string(), user_id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
   let user = account.user;
@@ -79,8 +86,7 @@ fn create_token(claim: Claim, secret: &[u8]) -> Result<String, (StatusCode, Stri
   let key = EncodingKey::from_secret(secret);
   let header = Header::default();
 
-  jsonwebtoken::encode(&header, &claim, &key)
-      .map_err(convert_error)
+  jsonwebtoken::encode(&header, &claim, &key).map_err(convert_error)
 }
 
 fn create_claim(subject: String, user_id: u32, exp: usize) -> Claim {
@@ -100,7 +106,10 @@ responses(
 request_body = LoginData,
 tag = "Accounts"
 )]
-async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginData>) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
+async fn login(
+  State(app_state): State<AppState>,
+  Json(login_data): Json<LoginData>,
+) -> Result<(StatusCode, Json<LoginReturnData>), (StatusCode, String)> {
   let pooled = app_state.pool.get().await.unwrap();
 
   let password = login_data.password;
@@ -108,9 +117,12 @@ async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginDa
 
   let account = {
     let service = get_service(&pooled);
-    service.login(&Email(email), &Password(password)).await.map_err(convert_service_error)?
+    service
+      .login(&Email(email), &Password(password))
+      .await
+      .map_err(convert_service_error)?
   };
-  let in_a_week = (Utc::now().timestamp() + 604800) as usize;
+  let in_a_week = (Utc::now().timestamp() + 604_800) as usize;
   let claim = create_claim("Login".to_string(), account.user.id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
   let user = account.user;
@@ -125,7 +137,11 @@ async fn login(State(app_state): State<AppState>, Json(login_data): Json<LoginDa
   tag = "Accounts"
 )]
 async fn refresh_token(auth: JWTAuthorization, State(app_state): State<AppState>) -> impl IntoResponse {
-  let claim = jsonwebtoken::decode::<Claim>(&auth.token, &DecodingKey::from_secret(app_state.secret.as_bytes()), &Validation::default());
+  let claim = jsonwebtoken::decode::<Claim>(
+    &auth.token,
+    &DecodingKey::from_secret(app_state.secret.as_bytes()),
+    &Validation::default(),
+  );
   let Ok(claim) = claim else {
     return Err((StatusCode::FORBIDDEN, "Invalid JWT".to_string()));
   };
@@ -144,18 +160,40 @@ struct Claim {
   iss: String,
 }
 
-fn get_mut_service<'a>(transaction: &'a Transaction, display_path: &'a str, path: &'a str) -> impl MutAccountService + 'a {
+fn get_mut_service<'a>(
+  transaction: &'a Transaction,
+  display_path: &'a str,
+  path: &'a str,
+) -> impl MutAccountService + 'a {
   let image_repository = Arc::new(get_image_repository(transaction.client()));
   let user_repository = Arc::new(get_user_repository(transaction.client(), image_repository.clone()));
   let account_repository = Arc::new(get_account_repository(transaction.client(), user_repository.clone()));
-  let mut_account_repository = Arc::new(get_mut_account_repository(transaction, account_repository.clone(), user_repository.clone()));
-  let mut_user_repository = Arc::new(get_mut_user_repository(transaction, user_repository, image_repository.clone()));
+  let mut_account_repository = Arc::new(get_mut_account_repository(
+    transaction,
+    account_repository.clone(),
+    user_repository.clone(),
+  ));
+  let mut_user_repository = Arc::new(get_mut_user_repository(
+    transaction,
+    user_repository,
+    image_repository.clone(),
+  ));
   let mut_file_repository = Arc::new(get_mut_file_repository());
   let file_repository = Arc::new(get_file_repository());
-  let mut_image_repository = Arc::new(get_mut_image_repository(transaction, image_repository, mut_file_repository.clone(), file_repository));
+  let mut_image_repository = Arc::new(get_mut_image_repository(
+    transaction,
+    image_repository,
+    mut_file_repository.clone(),
+    file_repository,
+  ));
   let mut_file_service = Arc::new(get_mut_file_service(mut_file_repository));
   //TODO: Make configurable
-  let mut_image_service = Arc::new(get_mut_image_service(mut_image_repository, mut_file_service, display_path, path));
+  let mut_image_service = Arc::new(get_mut_image_service(
+    mut_image_repository,
+    mut_file_service,
+    display_path,
+    path,
+  ));
   let mut_user_service = Arc::new(get_mut_user_service(mut_user_repository, mut_image_service));
   let account_service = Arc::new(get_account_service(account_repository));
   let mut_account_service = get_mut_account_service(mut_account_repository, account_service, mut_user_service);

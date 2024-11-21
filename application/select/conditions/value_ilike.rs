@@ -8,7 +8,10 @@ pub struct ValueILike<'a> {
 
 impl<'a> ValueILike<'a> {
   pub fn new(selector: impl Selector + 'a, value: &'a String) -> ValueILike<'a> {
-    ValueILike { selector: Box::new(selector), value }
+    ValueILike {
+      selector: Box::new(selector),
+      value,
+    }
   }
 }
 

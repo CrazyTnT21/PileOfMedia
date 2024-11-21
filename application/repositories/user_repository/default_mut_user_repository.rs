@@ -20,8 +20,16 @@ pub struct DefaultMutUserRepository<'a> {
 }
 
 impl<'a> DefaultMutUserRepository<'a> {
-  pub fn new(transaction: &'a Transaction<'a>, user_repository: Arc<dyn UserRepository + 'a>, image_repository: Arc<dyn ImageRepository + 'a>) -> DefaultMutUserRepository<'a> {
-    DefaultMutUserRepository { transaction, user_repository, image_repository }
+  pub fn new(
+    transaction: &'a Transaction<'a>,
+    user_repository: Arc<dyn UserRepository + 'a>,
+    image_repository: Arc<dyn ImageRepository + 'a>,
+  ) -> DefaultMutUserRepository<'a> {
+    DefaultMutUserRepository {
+      transaction,
+      user_repository,
+      image_repository,
+    }
   }
 }
 
@@ -29,10 +37,19 @@ impl<'a> DefaultMutUserRepository<'a> {
 impl<'a> MutUserRepository for DefaultMutUserRepository<'a> {
   async fn create(&self, user: CreatePartialUser) -> Result<User, Box<dyn Error>> {
     let id = Insert::new::<DbUser>(["name", "description", "fkprofilepicture"])
-      .values([&user.name, &user.description, &user.profile_picture.map(|x| x.id as i32)])
+      .values([
+        &user.name,
+        &user.description,
+        &user.profile_picture.map(|x| x.id as i32),
+      ])
       .returning_transaction("id", self.transaction)
       .await?;
-    Ok(self.user_repository.get_by_id(id as u32).await?
-      .expect("User was just created, they should exist"))
+    Ok(
+      self
+        .user_repository
+        .get_by_id(id as u32)
+        .await?
+        .expect("User was just created, they should exist"),
+    )
   }
 }

@@ -22,7 +22,12 @@ impl<'a> DefaultBookThemeService<'a> {
 
 #[async_trait]
 impl<'a> BookThemeService for DefaultBookThemeService<'a> {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, ServiceError<BookThemeServiceError>> {
+  async fn get(
+    &self,
+    book_id: u32,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Theme>, ServiceError<BookThemeServiceError>> {
     Ok(self.book_theme_repository.get(book_id, language, pagination).await?)
   }
 }

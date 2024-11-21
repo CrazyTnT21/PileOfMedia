@@ -1,10 +1,10 @@
-pub mod person_role;
-pub mod create_person;
 pub mod create_partial_person;
+pub mod create_person;
+pub mod person_role;
 
-use chrono::NaiveDate;
 use crate::entities::image::Image;
 use crate::enums::language::Language;
+use chrono::NaiveDate;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

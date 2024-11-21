@@ -1,4 +1,4 @@
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct Pagination {
   pub page: u32,
   pub count: u32,

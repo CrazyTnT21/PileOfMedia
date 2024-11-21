@@ -61,27 +61,27 @@ use infrastructure::services::theme_service::default_mut_theme_service::DefaultM
 use infrastructure::services::theme_service::default_theme_service::DefaultThemeService;
 use infrastructure::services::user_service::default_mut_user_service::DefaultMutUserService;
 use infrastructure::services::user_service::default_user_service::DefaultUserService;
-use repositories::account_repository::AccountRepository;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
-use repositories::book_repository::book_character_repository::BookCharacterRepository;
+use repositories::account_repository::AccountRepository;
 use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
-use repositories::book_repository::book_genre_repository::BookGenreRepository;
+use repositories::book_repository::book_character_repository::BookCharacterRepository;
 use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
-use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
+use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
-use repositories::book_repository::book_theme_repository::BookThemeRepository;
+use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
 use repositories::book_repository::book_theme_repository::mut_book_theme_repository::MutBookThemeRepository;
-use repositories::book_repository::BookRepository;
+use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::mut_book_repository::MutBookRepository;
+use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
-use repositories::file_repository::FileRepository;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
-use repositories::franchise_repository::FranchiseRepository;
+use repositories::file_repository::FileRepository;
 use repositories::franchise_repository::mut_franchise_repository::MutFranchiseRepository;
-use repositories::genre_repository::GenreRepository;
+use repositories::franchise_repository::FranchiseRepository;
 use repositories::genre_repository::mut_genre_repository::MutGenreRepository;
-use repositories::image_repository::ImageRepository;
+use repositories::genre_repository::GenreRepository;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
+use repositories::image_repository::ImageRepository;
 use repositories::person_repository::mut_person_repository::MutPersonRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::mut_role_repository::MutRoleRepository;
@@ -90,27 +90,27 @@ use repositories::theme_repository::mut_theme_repository::MutThemeRepository;
 use repositories::theme_repository::ThemeRepository;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
 use repositories::user_repository::UserRepository;
-use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountService;
-use services::book_service::book_character_service::BookCharacterService;
+use services::account_service::AccountService;
 use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
-use services::book_service::book_genre_service::BookGenreService;
+use services::book_service::book_character_service::BookCharacterService;
 use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
-use services::book_service::book_involved_service::BookInvolvedService;
+use services::book_service::book_genre_service::BookGenreService;
 use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
-use services::book_service::book_theme_service::BookThemeService;
+use services::book_service::book_involved_service::BookInvolvedService;
 use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
-use services::book_service::BookService;
+use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::mut_book_service::MutBookService;
+use services::book_service::BookService;
 use services::character_service::CharacterService;
-use services::file_service::FileService;
 use services::file_service::mut_file_service::MutFileService;
-use services::franchise_service::FranchiseService;
+use services::file_service::FileService;
 use services::franchise_service::mut_franchise_service::MutFranchiseService;
-use services::genre_service::GenreService;
+use services::franchise_service::FranchiseService;
 use services::genre_service::mut_genre_service::MutGenreService;
-use services::image_service::ImageService;
+use services::genre_service::GenreService;
 use services::image_service::mut_image_service::MutImageService;
+use services::image_service::ImageService;
 use services::person_service::mut_person_service::MutPersonService;
 use services::person_service::PersonService;
 use services::role_service::mut_role_service::MutRoleService;
@@ -124,7 +124,12 @@ pub fn get_book_service<'a>(book_repository: Arc<dyn BookRepository + 'a>) -> im
   DefaultBookService::new(book_repository)
 }
 
-pub fn get_book_repository<'a>(client: &'a Client, language: Language, image_repository: Arc<dyn ImageRepository + 'a>, franchise_repository: Arc<dyn FranchiseRepository + 'a>) -> impl BookRepository + 'a {
+pub fn get_book_repository<'a>(
+  client: &'a Client,
+  language: Language,
+  image_repository: Arc<dyn ImageRepository + 'a>,
+  franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+) -> impl BookRepository + 'a {
   DefaultBookRepository::new(client, language, image_repository, franchise_repository)
 }
 
@@ -136,7 +141,9 @@ pub fn get_franchise_repository(client: &Client, language: Language) -> impl Fra
   DefaultFranchiseRepository::new(client, language)
 }
 
-pub fn get_franchise_service<'a>(franchise_repository: Arc<dyn FranchiseRepository + 'a>) -> impl FranchiseService + 'a {
+pub fn get_franchise_service<'a>(
+  franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+) -> impl FranchiseService + 'a {
   DefaultFranchiseService::new(franchise_repository)
 }
 
@@ -164,84 +171,140 @@ pub fn get_person_service<'a>(person_repository: Arc<dyn PersonRepository + 'a>)
   DefaultPersonService::new(person_repository)
 }
 
-pub fn get_person_repository<'a>(client: &'a Client, language: Language, image_repository: Arc<dyn ImageRepository + 'a>) -> impl PersonRepository + 'a {
+pub fn get_person_repository<'a>(
+  client: &'a Client,
+  language: Language,
+  image_repository: Arc<dyn ImageRepository + 'a>,
+) -> impl PersonRepository + 'a {
   DefaultPersonRepository::new(client, language, image_repository)
 }
 
-pub fn get_character_service<'a>(character_repository: Arc<dyn CharacterRepository + 'a>) -> impl CharacterService + 'a {
+pub fn get_character_service<'a>(
+  character_repository: Arc<dyn CharacterRepository + 'a>,
+) -> impl CharacterService + 'a {
   DefaultCharacterService::new(character_repository)
 }
 
-pub fn get_character_repository<'a>(client: &'a Client, language: Language, image_repository: Arc<dyn ImageRepository + 'a>) -> impl CharacterRepository + 'a {
+pub fn get_character_repository<'a>(
+  client: &'a Client,
+  language: Language,
+  image_repository: Arc<dyn ImageRepository + 'a>,
+) -> impl CharacterRepository + 'a {
   DefaultCharacterRepository::new(client, language, image_repository)
 }
 
-pub fn get_book_genre_service<'a>(book_genre_repository: Arc<dyn BookGenreRepository + 'a>) -> impl BookGenreService + 'a {
+pub fn get_book_genre_service<'a>(
+  book_genre_repository: Arc<dyn BookGenreRepository + 'a>,
+) -> impl BookGenreService + 'a {
   DefaultBookGenreService::new(book_genre_repository)
 }
 
-pub fn get_book_genre_repository<'a>(client: &'a Client,
-                                     language: Language,
-                                     book_repository: Arc<dyn BookRepository + 'a>,
-                                     genre_repository: Arc<dyn GenreRepository + 'a>) -> impl BookGenreRepository + 'a {
+pub fn get_book_genre_repository<'a>(
+  client: &'a Client,
+  language: Language,
+  book_repository: Arc<dyn BookRepository + 'a>,
+  genre_repository: Arc<dyn GenreRepository + 'a>,
+) -> impl BookGenreRepository + 'a {
   DefaultBookGenreRepository::new(client, language, book_repository, genre_repository)
 }
 
-pub fn get_book_theme_service<'a>(book_theme_repository: Arc<dyn BookThemeRepository + 'a>) -> impl BookThemeService + 'a {
+pub fn get_book_theme_service<'a>(
+  book_theme_repository: Arc<dyn BookThemeRepository + 'a>,
+) -> impl BookThemeService + 'a {
   DefaultBookThemeService::new(book_theme_repository)
 }
 
-pub fn get_book_theme_repository<'a>(client: &'a Client,
-                                     language: Language,
-                                     book_repository: Arc<dyn BookRepository + 'a>,
-                                     theme_repository: Arc<dyn ThemeRepository + 'a>) -> impl BookThemeRepository + 'a {
+pub fn get_book_theme_repository<'a>(
+  client: &'a Client,
+  language: Language,
+  book_repository: Arc<dyn BookRepository + 'a>,
+  theme_repository: Arc<dyn ThemeRepository + 'a>,
+) -> impl BookThemeRepository + 'a {
   DefaultBookThemeRepository::new(client, language, book_repository, theme_repository)
 }
 
-pub fn get_book_character_service<'a>(book_character_repository: Arc<dyn BookCharacterRepository + 'a>) -> impl BookCharacterService + 'a {
+pub fn get_book_character_service<'a>(
+  book_character_repository: Arc<dyn BookCharacterRepository + 'a>,
+) -> impl BookCharacterService + 'a {
   DefaultBookCharacterService::new(book_character_repository)
 }
 
-pub fn get_book_character_repository<'a>(client: &'a Client,
-                                         language: Language,
-                                         book_repository: Arc<dyn BookRepository + 'a>,
-                                         character_repository: Arc<dyn CharacterRepository + 'a>) -> impl BookCharacterRepository + 'a {
+pub fn get_book_character_repository<'a>(
+  client: &'a Client,
+  language: Language,
+  book_repository: Arc<dyn BookRepository + 'a>,
+  character_repository: Arc<dyn CharacterRepository + 'a>,
+) -> impl BookCharacterRepository + 'a {
   DefaultBookCharacterRepository::new(client, language, book_repository, character_repository)
 }
 
-pub fn get_mut_book_theme_service<'a>(book_repository: Arc<dyn BookRepository + 'a>, book_theme_repository: Arc<dyn BookThemeRepository + 'a>, mut_book_theme_repository: Arc<dyn MutBookThemeRepository + 'a>, theme_repository: Arc<dyn ThemeRepository + 'a>) -> impl MutBookThemeService + 'a {
-  DefaultMutBookThemeService::new(book_repository, book_theme_repository, mut_book_theme_repository, theme_repository)
+pub fn get_mut_book_theme_service<'a>(
+  book_repository: Arc<dyn BookRepository + 'a>,
+  book_theme_repository: Arc<dyn BookThemeRepository + 'a>,
+  mut_book_theme_repository: Arc<dyn MutBookThemeRepository + 'a>,
+  theme_repository: Arc<dyn ThemeRepository + 'a>,
+) -> impl MutBookThemeService + 'a {
+  DefaultMutBookThemeService::new(
+    book_repository,
+    book_theme_repository,
+    mut_book_theme_repository,
+    theme_repository,
+  )
 }
 
 pub fn get_mut_book_theme_repository<'a>(transaction: &'a Transaction) -> impl MutBookThemeRepository + 'a {
   DefaultMutBookThemeRepository::new(transaction)
 }
 
-pub fn get_mut_book_genre_service<'a>(book_repository: Arc<dyn BookRepository + 'a>, book_genre_repository: Arc<dyn BookGenreRepository + 'a>, mut_book_genre_repository: Arc<dyn MutBookGenreRepository + 'a>, genre_repository: Arc<dyn GenreRepository + 'a>) -> impl MutBookGenreService + 'a {
-  DefaultMutBookGenreService::new(book_repository, book_genre_repository, mut_book_genre_repository, genre_repository)
+pub fn get_mut_book_genre_service<'a>(
+  book_repository: Arc<dyn BookRepository + 'a>,
+  book_genre_repository: Arc<dyn BookGenreRepository + 'a>,
+  mut_book_genre_repository: Arc<dyn MutBookGenreRepository + 'a>,
+  genre_repository: Arc<dyn GenreRepository + 'a>,
+) -> impl MutBookGenreService + 'a {
+  DefaultMutBookGenreService::new(
+    book_repository,
+    book_genre_repository,
+    mut_book_genre_repository,
+    genre_repository,
+  )
 }
 
 pub fn get_mut_book_genre_repository<'a>(transaction: &'a Transaction) -> impl MutBookGenreRepository + 'a {
   DefaultMutBookGenreRepository::new(transaction)
 }
 
-pub fn get_mut_book_character_service<'a>(book_repository: Arc<dyn BookRepository + 'a>, book_character_repository: Arc<dyn BookCharacterRepository + 'a>, mut_book_character_repository: Arc<dyn MutBookCharacterRepository + 'a>, character_repository: Arc<dyn CharacterRepository + 'a>) -> impl MutBookCharacterService + 'a {
-  DefaultMutBookCharacterService::new(book_repository, book_character_repository, mut_book_character_repository, character_repository)
+pub fn get_mut_book_character_service<'a>(
+  book_repository: Arc<dyn BookRepository + 'a>,
+  book_character_repository: Arc<dyn BookCharacterRepository + 'a>,
+  mut_book_character_repository: Arc<dyn MutBookCharacterRepository + 'a>,
+  character_repository: Arc<dyn CharacterRepository + 'a>,
+) -> impl MutBookCharacterService + 'a {
+  DefaultMutBookCharacterService::new(
+    book_repository,
+    book_character_repository,
+    mut_book_character_repository,
+    character_repository,
+  )
 }
 
 pub fn get_mut_book_character_repository<'a>(transaction: &'a Transaction) -> impl MutBookCharacterRepository + 'a {
   DefaultMutBookCharacterRepository::new(transaction)
 }
 
-pub fn get_book_involved_service<'a>(book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>) -> impl BookInvolvedService + 'a {
+pub fn get_book_involved_service<'a>(
+  book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>,
+) -> impl BookInvolvedService + 'a {
   DefaultBookInvolvedService::new(book_involved_repository)
 }
 
-pub fn get_book_involved_repository<'a>(client: &'a Client,
-                                        language: Language,
-                                        book_repository: Arc<dyn BookRepository + 'a>,
-                                        person_repository: Arc<dyn PersonRepository + 'a>,
-                                        role_repository: Arc<dyn RoleRepository + 'a>, ) -> impl BookInvolvedRepository + 'a {
+pub fn get_book_involved_repository<'a>(
+  client: &'a Client,
+  language: Language,
+  book_repository: Arc<dyn BookRepository + 'a>,
+  person_repository: Arc<dyn PersonRepository + 'a>,
+  role_repository: Arc<dyn RoleRepository + 'a>,
+) -> impl BookInvolvedRepository + 'a {
   DefaultBookInvolvedRepository::new(client, language, book_repository, person_repository, role_repository)
 }
 
@@ -269,11 +332,21 @@ pub fn get_mut_file_repository<'a>() -> impl MutFileRepository + 'a {
   DefaultMutFileRepository::new()
 }
 
-pub fn get_mut_image_service<'a>(mut_image_repository: Arc<dyn MutImageRepository + 'a>, mut_file_service: Arc<dyn MutFileService + 'a>, display_path: &'a str, path: &'a str) -> impl MutImageService + 'a {
+pub fn get_mut_image_service<'a>(
+  mut_image_repository: Arc<dyn MutImageRepository + 'a>,
+  mut_file_service: Arc<dyn MutFileService + 'a>,
+  display_path: &'a str,
+  path: &'a str,
+) -> impl MutImageService + 'a {
   DefaultMutImageService::new(mut_image_repository, mut_file_service, display_path, path)
 }
 
-pub fn get_mut_image_repository<'a>(transaction: &'a Transaction, image_repository: Arc<dyn ImageRepository + 'a>, mut_file_repository: Arc<dyn MutFileRepository + 'a>, file_repository: Arc<dyn FileRepository + 'a>) -> impl MutImageRepository + 'a {
+pub fn get_mut_image_repository<'a>(
+  transaction: &'a Transaction,
+  image_repository: Arc<dyn ImageRepository + 'a>,
+  mut_file_repository: Arc<dyn MutFileRepository + 'a>,
+  file_repository: Arc<dyn FileRepository + 'a>,
+) -> impl MutImageRepository + 'a {
   DefaultMutImageRepository::new(transaction, image_repository, mut_file_repository, file_repository)
 }
 
@@ -281,23 +354,41 @@ pub fn get_user_service<'a>(user_repository: Arc<dyn UserRepository + 'a>) -> im
   DefaultUserService::new(user_repository)
 }
 
-pub fn get_user_repository<'a>(connection: &'a Client, image_repository: Arc<dyn ImageRepository + 'a>) -> impl UserRepository + 'a {
+pub fn get_user_repository<'a>(
+  connection: &'a Client,
+  image_repository: Arc<dyn ImageRepository + 'a>,
+) -> impl UserRepository + 'a {
   DefaultUserRepository::new(connection, image_repository)
 }
 
-pub fn get_mut_user_service<'a>(mut_user_repository: Arc<dyn MutUserRepository + 'a>, mut_image_service: Arc<dyn MutImageService + 'a>) -> impl MutUserService + 'a {
+pub fn get_mut_user_service<'a>(
+  mut_user_repository: Arc<dyn MutUserRepository + 'a>,
+  mut_image_service: Arc<dyn MutImageService + 'a>,
+) -> impl MutUserService + 'a {
   DefaultMutUserService::new(mut_user_repository, mut_image_service)
 }
 
-pub fn get_mut_user_repository<'a>(transaction: &'a Transaction, user_repository: Arc<dyn UserRepository + 'a>, image_repository: Arc<dyn ImageRepository + 'a>) -> impl MutUserRepository + 'a {
+pub fn get_mut_user_repository<'a>(
+  transaction: &'a Transaction,
+  user_repository: Arc<dyn UserRepository + 'a>,
+  image_repository: Arc<dyn ImageRepository + 'a>,
+) -> impl MutUserRepository + 'a {
   DefaultMutUserRepository::new(transaction, user_repository, image_repository)
 }
 
-pub fn get_mut_account_repository<'a>(transaction: &'a Transaction, account_repository: Arc<dyn AccountRepository + 'a>, user_repository: Arc<dyn UserRepository + 'a>) -> impl MutAccountRepository + 'a {
+pub fn get_mut_account_repository<'a>(
+  transaction: &'a Transaction,
+  account_repository: Arc<dyn AccountRepository + 'a>,
+  user_repository: Arc<dyn UserRepository + 'a>,
+) -> impl MutAccountRepository + 'a {
   DefaultMutAccountRepository::new(transaction, account_repository, user_repository)
 }
 
-pub fn get_mut_account_service<'a>(mut_account_repository: Arc<dyn MutAccountRepository + 'a>, account_service: Arc<dyn AccountService + 'a>, mut_user_service: Arc<dyn MutUserService + 'a>) -> impl MutAccountService + 'a {
+pub fn get_mut_account_service<'a>(
+  mut_account_repository: Arc<dyn MutAccountRepository + 'a>,
+  account_service: Arc<dyn AccountService + 'a>,
+  mut_user_service: Arc<dyn MutUserService + 'a>,
+) -> impl MutAccountService + 'a {
   DefaultMutAccountService::new(mut_account_repository, account_service, mut_user_service)
 }
 
@@ -305,33 +396,57 @@ pub fn get_account_service<'a>(account_repository: Arc<dyn AccountRepository + '
   DefaultAccountService::new(account_repository)
 }
 
-pub fn get_account_repository<'a>(connection: &'a Client, user_repository: Arc<dyn UserRepository + 'a>) -> impl AccountRepository + 'a {
+pub fn get_account_repository<'a>(
+  connection: &'a Client,
+  user_repository: Arc<dyn UserRepository + 'a>,
+) -> impl AccountRepository + 'a {
   DefaultAccountRepository::new(connection, user_repository)
 }
 
-pub fn get_mut_book_involved_service<'a>(book_repository: Arc<dyn BookRepository + 'a>,
-                                         book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>,
-                                         mut_book_involved_repository: Arc<dyn MutBookInvolvedRepository + 'a>,
-                                         person_repository: Arc<dyn PersonRepository + 'a>,
-                                         role_repository: Arc<dyn RoleRepository + 'a>) -> impl MutBookInvolvedService + 'a {
-  DefaultMutBookInvolvedService::new(book_repository, book_involved_repository, mut_book_involved_repository, person_repository, role_repository)
+pub fn get_mut_book_involved_service<'a>(
+  book_repository: Arc<dyn BookRepository + 'a>,
+  book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>,
+  mut_book_involved_repository: Arc<dyn MutBookInvolvedRepository + 'a>,
+  person_repository: Arc<dyn PersonRepository + 'a>,
+  role_repository: Arc<dyn RoleRepository + 'a>,
+) -> impl MutBookInvolvedService + 'a {
+  DefaultMutBookInvolvedService::new(
+    book_repository,
+    book_involved_repository,
+    mut_book_involved_repository,
+    person_repository,
+    role_repository,
+  )
 }
 
 pub fn get_mut_book_involved_repository<'a>(transaction: &'a Transaction) -> impl MutBookInvolvedRepository + 'a {
   DefaultMutBookInvolvedRepository::new(transaction)
 }
 
-pub fn get_mut_book_service<'a>(language: Language,
-                                book_repository: Arc<dyn BookRepository + 'a>,
-                                mut_book_repository: Arc<dyn MutBookRepository + 'a>,
-                                mut_image_service: Arc<dyn MutImageService + 'a>,
-                                franchise_repository: Arc<dyn FranchiseRepository + 'a>,
-                                theme_repository: Arc<dyn ThemeRepository + 'a>,
-                                genre_repository: Arc<dyn GenreRepository + 'a>,
-                                character_repository: Arc<dyn CharacterRepository + 'a>,
-                                person_repository: Arc<dyn PersonRepository + 'a>,
-                                role_repository: Arc<dyn RoleRepository + 'a>) -> impl MutBookService + 'a {
-  DefaultMutBookService::new(language, book_repository, mut_book_repository, mut_image_service, franchise_repository, theme_repository, genre_repository, character_repository, person_repository, role_repository)
+pub fn get_mut_book_service<'a>(
+  language: Language,
+  book_repository: Arc<dyn BookRepository + 'a>,
+  mut_book_repository: Arc<dyn MutBookRepository + 'a>,
+  mut_image_service: Arc<dyn MutImageService + 'a>,
+  franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+  theme_repository: Arc<dyn ThemeRepository + 'a>,
+  genre_repository: Arc<dyn GenreRepository + 'a>,
+  character_repository: Arc<dyn CharacterRepository + 'a>,
+  person_repository: Arc<dyn PersonRepository + 'a>,
+  role_repository: Arc<dyn RoleRepository + 'a>,
+) -> impl MutBookService + 'a {
+  DefaultMutBookService::new(
+    language,
+    book_repository,
+    mut_book_repository,
+    mut_image_service,
+    franchise_repository,
+    theme_repository,
+    genre_repository,
+    character_repository,
+    person_repository,
+    role_repository,
+  )
 }
 
 pub fn get_mut_book_repository<'a>(
@@ -343,44 +458,98 @@ pub fn get_mut_book_repository<'a>(
   mut_book_involved_repository: Arc<dyn MutBookInvolvedRepository + 'a>,
   book_repository: Arc<dyn BookRepository + 'a>,
 ) -> impl MutBookRepository + 'a {
-  DefaultMutBookRepository::new(transaction, default_language, mut_book_genre_repository, mut_book_character_repository, mut_book_theme_repository, mut_book_involved_repository, book_repository)
+  DefaultMutBookRepository::new(
+    transaction,
+    default_language,
+    mut_book_genre_repository,
+    mut_book_character_repository,
+    mut_book_theme_repository,
+    mut_book_involved_repository,
+    book_repository,
+  )
 }
 
-pub fn get_mut_person_service<'a>(default_language: Language, person_repository: Arc<dyn PersonRepository + 'a>, mut_person_repository: Arc<dyn MutPersonRepository + 'a>, mut_image_service: Arc<dyn MutImageService + 'a>) -> impl MutPersonService + 'a {
-  DefaultMutPersonService::new(default_language, person_repository, mut_person_repository, mut_image_service)
+pub fn get_mut_person_service<'a>(
+  default_language: Language,
+  person_repository: Arc<dyn PersonRepository + 'a>,
+  mut_person_repository: Arc<dyn MutPersonRepository + 'a>,
+  mut_image_service: Arc<dyn MutImageService + 'a>,
+) -> impl MutPersonService + 'a {
+  DefaultMutPersonService::new(
+    default_language,
+    person_repository,
+    mut_person_repository,
+    mut_image_service,
+  )
 }
 
-pub fn get_mut_person_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, person_repository: Arc<dyn PersonRepository + 'a>) -> impl MutPersonRepository + 'a {
+pub fn get_mut_person_repository<'a>(
+  transaction: &'a Transaction<'a>,
+  default_language: Language,
+  person_repository: Arc<dyn PersonRepository + 'a>,
+) -> impl MutPersonRepository + 'a {
   DefaultMutPersonRepository::new(transaction, default_language, person_repository)
 }
 
-pub fn get_mut_genre_service<'a>(default_language: Language, genre_repository: Arc<dyn GenreRepository + 'a>, mut_genre_repository: Arc<dyn MutGenreRepository + 'a>) -> impl MutGenreService + 'a {
+pub fn get_mut_genre_service<'a>(
+  default_language: Language,
+  genre_repository: Arc<dyn GenreRepository + 'a>,
+  mut_genre_repository: Arc<dyn MutGenreRepository + 'a>,
+) -> impl MutGenreService + 'a {
   DefaultMutGenreService::new(default_language, genre_repository, mut_genre_repository)
 }
 
-pub fn get_mut_genre_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, genre_repository: Arc<dyn GenreRepository + 'a>) -> impl MutGenreRepository + 'a {
+pub fn get_mut_genre_repository<'a>(
+  transaction: &'a Transaction<'a>,
+  default_language: Language,
+  genre_repository: Arc<dyn GenreRepository + 'a>,
+) -> impl MutGenreRepository + 'a {
   DefaultMutGenreRepository::new(transaction, default_language, genre_repository)
 }
 
-pub fn get_mut_theme_service<'a>(default_language: Language, theme_repository: Arc<dyn ThemeRepository + 'a>, mut_theme_repository: Arc<dyn MutThemeRepository + 'a>) -> impl MutThemeService + 'a {
+pub fn get_mut_theme_service<'a>(
+  default_language: Language,
+  theme_repository: Arc<dyn ThemeRepository + 'a>,
+  mut_theme_repository: Arc<dyn MutThemeRepository + 'a>,
+) -> impl MutThemeService + 'a {
   DefaultMutThemeService::new(default_language, theme_repository, mut_theme_repository)
 }
 
-pub fn get_mut_theme_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, theme_repository: Arc<dyn ThemeRepository + 'a>) -> impl MutThemeRepository + 'a {
+pub fn get_mut_theme_repository<'a>(
+  transaction: &'a Transaction<'a>,
+  default_language: Language,
+  theme_repository: Arc<dyn ThemeRepository + 'a>,
+) -> impl MutThemeRepository + 'a {
   DefaultMutThemeRepository::new(transaction, default_language, theme_repository)
 }
 
-pub fn get_mut_role_service<'a>(default_language: Language, role_repository: Arc<dyn RoleRepository + 'a>, mut_role_repository: Arc<dyn MutRoleRepository + 'a>) -> impl MutRoleService + 'a {
+pub fn get_mut_role_service<'a>(
+  default_language: Language,
+  role_repository: Arc<dyn RoleRepository + 'a>,
+  mut_role_repository: Arc<dyn MutRoleRepository + 'a>,
+) -> impl MutRoleService + 'a {
   DefaultMutRoleService::new(default_language, role_repository, mut_role_repository)
 }
 
-pub fn get_mut_role_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, role_repository: Arc<dyn RoleRepository + 'a>) -> impl MutRoleRepository + 'a {
+pub fn get_mut_role_repository<'a>(
+  transaction: &'a Transaction<'a>,
+  default_language: Language,
+  role_repository: Arc<dyn RoleRepository + 'a>,
+) -> impl MutRoleRepository + 'a {
   DefaultMutRoleRepository::new(transaction, default_language, role_repository)
 }
-pub fn get_mut_franchise_service<'a>(default_language: Language, franchise_repository: Arc<dyn FranchiseRepository + 'a>, mut_franchise_repository: Arc<dyn MutFranchiseRepository + 'a>) -> impl MutFranchiseService + 'a {
+pub fn get_mut_franchise_service<'a>(
+  default_language: Language,
+  franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+  mut_franchise_repository: Arc<dyn MutFranchiseRepository + 'a>,
+) -> impl MutFranchiseService + 'a {
   DefaultMutFranchiseService::new(default_language, franchise_repository, mut_franchise_repository)
 }
 
-pub fn get_mut_franchise_repository<'a>(transaction: &'a Transaction<'a>, default_language: Language, franchise_repository: Arc<dyn FranchiseRepository + 'a>) -> impl MutFranchiseRepository + 'a {
+pub fn get_mut_franchise_repository<'a>(
+  transaction: &'a Transaction<'a>,
+  default_language: Language,
+  franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+) -> impl MutFranchiseRepository + 'a {
   DefaultMutFranchiseRepository::new(transaction, default_language, franchise_repository)
 }

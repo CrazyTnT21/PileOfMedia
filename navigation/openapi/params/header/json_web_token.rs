@@ -3,5 +3,5 @@
 //TODO: Fix
 pub struct JsonWebTokenParam(
   ///JWT
-  String
+  String,
 );

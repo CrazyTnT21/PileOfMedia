@@ -5,7 +5,6 @@ use std::io::Write;
 use std::path::Path;
 
 use async_trait::async_trait;
-use base64::Engine;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 
@@ -15,21 +14,24 @@ use repositories::file_repository::mut_file_repository::MutFileRepository;
 pub struct DefaultMutFileRepository {}
 
 impl DefaultMutFileRepository {
-  pub fn new() -> DefaultMutFileRepository {
+  pub const fn new() -> DefaultMutFileRepository {
     DefaultMutFileRepository {}
+  }
+}
+impl Default for DefaultMutFileRepository {
+  fn default() -> Self {
+    Self::new()
   }
 }
 
 #[async_trait]
 impl MutFileRepository for DefaultMutFileRepository {
   async fn create(&self, data: &[u8], file_path: &str, file_name: Option<&str>) -> Result<FileName, Box<dyn Error>> {
-    let file_name: String = file_name.map(|x| x.to_string())
-      .unwrap_or_else(|| random_string(8));
-
+    let file_name: String = file_name.map_or_else(|| random_string(8), ToString::to_string);
     let file_extension = infer::get(data);
     let file_name = match file_extension {
       Some(value) => Path::new(&file_name).with_extension(value.extension()),
-      None => Path::new(&file_name).to_path_buf()
+      None => Path::new(&file_name).to_path_buf(),
     };
     let file_path = Path::new(file_path).join(&file_name);
     let uri = file_path.to_str().ok_or("failed to get file path")?.to_string();
@@ -39,11 +41,6 @@ impl MutFileRepository for DefaultMutFileRepository {
       name: file_name.to_str().ok_or("failed to get file name")?.to_string(),
       uri,
     })
-  }
-
-  async fn create_base64(&self, data: &str, file_path: &str, file_name: Option<&str>) -> Result<FileName, Box<dyn Error>> {
-    let bytes = base64::engine::general_purpose::STANDARD.decode(data)?;
-    self.create(&bytes, file_path, file_name).await
   }
 
   async fn delete(&self, uri: &str) -> Result<(), Box<dyn Error>> {

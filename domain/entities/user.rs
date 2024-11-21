@@ -1,8 +1,8 @@
-pub mod create_user;
 pub mod create_partial_user;
+pub mod create_user;
 
-use chrono::NaiveDate;
 use crate::entities::image::Image;
+use chrono::NaiveDate;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

@@ -12,7 +12,7 @@ use from_row::Table;
 use repositories::account_repository::AccountRepository;
 use repositories::user_repository::UserRepository;
 
-use crate::convert_to_sql::{to_i32};
+use crate::convert_to_sql::to_i32;
 use crate::schemas::db_account::DbAccount;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_in::ValueIn;
@@ -26,7 +26,10 @@ pub struct DefaultAccountRepository<'a> {
 
 impl<'a> DefaultAccountRepository<'a> {
   pub fn new(client: &'a Client, user_repository: Arc<dyn UserRepository + 'a>) -> DefaultAccountRepository<'a> {
-    DefaultAccountRepository { client, user_repository }
+    DefaultAccountRepository {
+      client,
+      user_repository,
+    }
   }
 }
 
@@ -35,7 +38,8 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, Box<dyn Error>> {
     let total = Select::new::<DbAccount>()
       .count()
-      .get_single(self.client).await?
+      .get_single(self.client)
+      .await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
@@ -45,7 +49,10 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
       .query(self.client)
       .await?;
 
-    Ok(ItemsTotal { items: self.to_entities(accounts).await?, total })
+    Ok(ItemsTotal {
+      items: self.to_entities(accounts).await?,
+      total,
+    })
   }
 
   async fn get_by_user_id(&self, id: u32) -> Result<Option<Account>, Box<dyn Error>> {
@@ -60,7 +67,11 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
       None => Ok(None),
       Some(value) => {
         let fk_user = value.0.fk_user;
-        let user = self.user_repository.get_by_id(fk_user as u32).await?.expect("Associated user has to exist");
+        let user = self
+          .user_repository
+          .get_by_id(fk_user as u32)
+          .await?
+          .expect("Associated user has to exist");
         Ok(Some(to_entity(value, user)))
       }
     }
@@ -82,7 +93,10 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
     let email = &email.0;
     let account = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
-      .where_expression(Expression::new(ValueEqual::new((DbAccount::TABLE_NAME, "email"), email)))
+      .where_expression(Expression::new(ValueEqual::new(
+        (DbAccount::TABLE_NAME, "email"),
+        email,
+      )))
       .get_single(self.client)
       .await?;
 
@@ -90,7 +104,11 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
       None => Ok(None),
       Some(value) => {
         let fk_user = value.0.fk_user;
-        let user = self.user_repository.get_by_id(fk_user as u32).await?.expect("Associated user has to exist");
+        let user = self
+          .user_repository
+          .get_by_id(fk_user as u32)
+          .await?
+          .expect("Associated user has to exist");
         Ok(Some(to_entity(value, user)))
       }
     }
@@ -105,35 +123,37 @@ impl<'a> AccountRepository for DefaultAccountRepository<'a> {
       .query(self.client)
       .await?
       .into_iter()
-      .map(|x| { x.0 as u32 })
+      .map(|x| x.0 as u32)
       .collect();
     Ok(count)
   }
 }
 
-fn to_entity(account: (DbAccount, ), user: User) -> Account {
+fn to_entity(account: (DbAccount,), user: User) -> Account {
   account.0.to_entity(user)
 }
 
 impl<'a> DefaultAccountRepository<'a> {
-  async fn to_entities(&self, items: Vec<(DbAccount, )>) -> Result<Vec<Account>, Box<dyn Error>> {
-    let user_ids: Vec<u32> = items.iter()
-      .map(|x| x.0.fk_user as u32)
-      .collect();
+  async fn to_entities(&self, items: Vec<(DbAccount,)>) -> Result<Vec<Account>, Box<dyn Error>> {
+    let user_ids: Vec<u32> = items.iter().map(|x| x.0.fk_user as u32).collect();
 
     let mut users = match user_ids.is_empty() {
       true => vec![],
-      false => self.user_repository.get_by_ids(&user_ids).await?
+      false => self.user_repository.get_by_ids(&user_ids).await?,
     };
-    Ok(items.into_iter().map(|x| {
-      let user_index = users
-        .iter()
-        .position(|y| y.id == x.0.fk_user as u32)
-        .expect("Associated user should exist");
+    Ok(
+      items
+        .into_iter()
+        .map(|x| {
+          let user_index = users
+            .iter()
+            .position(|y| y.id == x.0.fk_user as u32)
+            .expect("Associated user should exist");
 
-      let user = users.swap_remove(user_index);
-      x.0.to_entity(user)
-    })
-      .collect())
+          let user = users.swap_remove(user_index);
+          x.0.to_entity(user)
+        })
+        .collect(),
+    )
   }
 }

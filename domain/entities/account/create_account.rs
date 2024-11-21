@@ -44,14 +44,17 @@ pub mod create_book_part {
 
   impl Display for CreateAccountPartError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-      write!(f, "{}",
-             match self {
-               CreateAccountPartError::InvalidFormat => "Invalid part format".to_string(),
-               CreateAccountPartError::UnknownPart(value) => format!("Unknown part '{}'", value),
-               CreateAccountPartError::AccountMissing => "Account missing".to_string(),
-               CreateAccountPartError::MissingPart => "Missing part value".to_string(),
-               CreateAccountPartError::OtherError(value) => value.to_string(),
-             })
+      write!(
+        f,
+        "{}",
+        match self {
+          CreateAccountPartError::InvalidFormat => "Invalid part format".to_string(),
+          CreateAccountPartError::UnknownPart(value) => format!("Unknown part '{}'", value),
+          CreateAccountPartError::AccountMissing => "Account missing".to_string(),
+          CreateAccountPartError::MissingPart => "Missing part value".to_string(),
+          CreateAccountPartError::OtherError(value) => value.to_string(),
+        }
+      )
     }
   }
 
@@ -65,7 +68,7 @@ pub mod create_book_part {
       let result = match value.to_lowercase().as_str() {
         "account" => CreateAccountPart::Account,
         "profile_picture" => CreateAccountPart::ProfilePicture,
-        _ => Err(CreateAccountPartError::UnknownPart(value.to_string()))?
+        _ => Err(CreateAccountPartError::UnknownPart(value.to_string()))?,
       };
       Ok(result)
     }
@@ -76,28 +79,43 @@ pub mod create_book_part {
     type Error = CreateAccountPartError;
 
     async fn from_multi_part(mut multipart: multipart::axum::extract::Multipart) -> Result<Self, Self::Error>
-      where
-        Self: Sized,
+    where
+      Self: Sized,
     {
       let mut data: Option<CreateAccountData> = None;
       let mut image = None;
-      while let Some(a) = multipart.next_field().await.map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))? {
+      while let Some(a) = multipart
+        .next_field()
+        .await
+        .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?
+      {
         let part = CreateAccountPart::from_header(a.name().ok_or(CreateAccountPartError::MissingPart)?)?;
         match part {
           CreateAccountPart::Account => {
-            let create_account = serde_json::from_slice::<CreateAccountData>(&a.bytes()
-              .await
-              .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?)
-              .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?;
+            let create_account = serde_json::from_slice::<CreateAccountData>(
+              &a.bytes()
+                .await
+                .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?,
+            )
+            .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?;
             data = Some(create_account);
           }
-          CreateAccountPart::ProfilePicture => { image = Some(a.bytes().await.map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?); }
+          CreateAccountPart::ProfilePicture => {
+            image = Some(
+              a.bytes()
+                .await
+                .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?,
+            );
+          }
         }
       }
       let data = data.ok_or(CreateAccountPartError::AccountMissing)?;
-      let profile_picture = image.map(|x| CreateImage { 0: x.to_vec() });
+      let profile_picture = image.map(|x| CreateImage(x.to_vec()));
 
-      let account = CreateAccount { account: data, profile_picture };
+      let account = CreateAccount {
+        account: data,
+        profile_picture,
+      };
       Ok(account)
     }
   }

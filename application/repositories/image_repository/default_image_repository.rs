@@ -3,13 +3,13 @@ use std::error::Error;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
-use domain::entities::image::Image;
 use domain::entities::image::image_data::ImageData;
+use domain::entities::image::Image;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::image_repository::ImageRepository;
 
-use crate::convert_to_sql::{to_i32};
+use crate::convert_to_sql::to_i32;
 use crate::schemas::db_image::DbImage;
 use crate::schemas::db_image_data::DbImageData;
 use crate::select::conditions::value_equal::ValueEqual;
@@ -22,7 +22,7 @@ pub struct DefaultImageRepository<'a> {
 }
 
 impl<'a> DefaultImageRepository<'a> {
-  pub fn new(client: &'a Client) -> DefaultImageRepository<'a> {
+  pub const fn new(client: &'a Client) -> DefaultImageRepository<'a> {
     DefaultImageRepository { client }
   }
 }
@@ -32,7 +32,8 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, Box<dyn Error>> {
     let total = Select::new::<DbImage>()
       .count()
-      .get_single(self.client).await?
+      .get_single(self.client)
+      .await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
@@ -72,7 +73,6 @@ impl<'a> ImageRepository for DefaultImageRepository<'a> {
   async fn get_by_ids(&self, ids: &[u32]) -> Result<Vec<Image>, Box<dyn Error>> {
     let ids = to_i32(ids);
 
-
     let images = Select::new::<DbImage>()
       .columns::<DbImage>("image")
       .where_expression(Expression::new(ValueIn::new(("image", "id"), &ids)))
@@ -94,7 +94,7 @@ fn get_versions(id: u32, image_data: &mut Vec<DbImageData>) -> Vec<ImageData> {
   let mut indices: Vec<usize> = vec![];
   for (i, x) in image_data.iter().enumerate() {
     if x.fk_image as u32 == id {
-      indices.push(i)
+      indices.push(i);
     }
   }
   indices.reverse();
@@ -105,10 +105,7 @@ fn get_versions(id: u32, image_data: &mut Vec<DbImageData>) -> Vec<ImageData> {
 }
 
 fn to_entities(images: Vec<DbImage>, mut versions: Vec<DbImageData>) -> Vec<Image> {
-  images
-    .into_iter()
-    .map(|x| to_entity(x, &mut versions))
-    .collect()
+  images.into_iter().map(|x| to_entity(x, &mut versions)).collect()
 }
 
 fn to_entity(image: DbImage, versions: &mut Vec<DbImageData>) -> Image {
@@ -120,14 +117,16 @@ impl<'a> DefaultImageRepository<'a> {
   async fn get_image_data(&self, image_ids: &[u32]) -> Result<Vec<DbImageData>, Box<dyn Error>> {
     let image_ids = to_i32(image_ids);
 
-    Ok(Select::new::<DbImageData>()
-      .columns::<DbImageData>("imagedata")
-      .where_expression(Expression::new(ValueIn::new(("imagedata", "fkimage"), &image_ids)))
-      .query(self.client)
-      .await?
-      .into_iter()
-      .map(|x| x.0)
-      .collect())
+    Ok(
+      Select::new::<DbImageData>()
+        .columns::<DbImageData>("imagedata")
+        .where_expression(Expression::new(ValueIn::new(("imagedata", "fkimage"), &image_ids)))
+        .query(self.client)
+        .await?
+        .into_iter()
+        .map(|x| x.0)
+        .collect(),
+    )
   }
 }
 

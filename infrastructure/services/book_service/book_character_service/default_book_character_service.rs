@@ -16,13 +16,25 @@ pub struct DefaultBookCharacterService<'a> {
 
 impl<'a> DefaultBookCharacterService<'a> {
   pub fn new(book_character_repository: Arc<dyn BookCharacterRepository + 'a>) -> DefaultBookCharacterService<'a> {
-    DefaultBookCharacterService { book_character_repository }
+    DefaultBookCharacterService {
+      book_character_repository,
+    }
   }
 }
 
 #[async_trait]
 impl<'a> BookCharacterService for DefaultBookCharacterService<'a> {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<BookCharacter>, ServiceError<BookCharacterServiceError>> {
-    Ok(self.book_character_repository.get(book_id, language, pagination).await?)
+  async fn get(
+    &self,
+    book_id: u32,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<BookCharacter>, ServiceError<BookCharacterServiceError>> {
+    Ok(
+      self
+        .book_character_repository
+        .get(book_id, language, pagination)
+        .await?,
+    )
   }
 }

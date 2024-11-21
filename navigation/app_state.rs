@@ -7,5 +7,5 @@ pub struct AppState {
   pub pool: Pool<PostgresConnectionManager<NoTls>>,
   pub display_path: String,
   pub content_path: String,
-  pub secret: String
+  pub secret: String,
 }

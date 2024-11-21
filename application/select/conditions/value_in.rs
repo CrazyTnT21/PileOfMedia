@@ -1,6 +1,6 @@
 use crate::select::expression::{ConditionTrait, IntoSql};
 use crate::select::selector::Selector;
-use crate::select::to_sql_value::{ToSqlValue};
+use crate::select::to_sql_value::ToSqlValue;
 
 pub struct ValueIn<'a> {
   selector: Box<dyn Selector + 'a>,
@@ -9,7 +9,10 @@ pub struct ValueIn<'a> {
 
 impl<'a> ValueIn<'a> {
   pub fn new(selector: impl Selector + 'a, values: impl ToSqlValue<'a> + 'a) -> ValueIn<'a> {
-    ValueIn { selector: Box::new(selector), values: Box::new(values) }
+    ValueIn {
+      selector: Box::new(selector),
+      values: Box::new(values),
+    }
   }
 }
 

@@ -22,13 +22,19 @@ pub enum MutBookThemeServiceError {
 
 impl Display for MutBookThemeServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      MutBookThemeServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
-      MutBookThemeServiceError::AlreadyAssociated(x) => format!("The following themes already have an association: [{}]", x.join_comma()),
-      MutBookThemeServiceError::NotAssociated(x) => format!("The following themes do not have an association: [{}]", x.join_comma()),
-      MutBookThemeServiceError::NonExistent(x) => format!("The following themes do not exist: [{}]", x.join_comma()),
-      MutBookThemeServiceError::NoThemesProvided => "No themes provided".to_string(),
-      MutBookThemeServiceError::OtherError(x) => x.to_string()
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        MutBookThemeServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
+        MutBookThemeServiceError::AlreadyAssociated(x) =>
+          format!("The following themes already have an association: [{}]", x.join_comma()),
+        MutBookThemeServiceError::NotAssociated(x) =>
+          format!("The following themes do not have an association: [{}]", x.join_comma()),
+        MutBookThemeServiceError::NonExistent(x) => format!("The following themes do not exist: [{}]", x.join_comma()),
+        MutBookThemeServiceError::NoThemesProvided => "No themes provided".to_string(),
+        MutBookThemeServiceError::OtherError(x) => x.to_string(),
+      }
+    )
   }
 }

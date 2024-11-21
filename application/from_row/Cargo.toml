@@ -12,4 +12,3 @@ chrono = { version = "0.4.38", optional = true}
 
 [features]
 macros = ["from-row-macros"]
-macros-validation = ["from-row-macros/validate"]

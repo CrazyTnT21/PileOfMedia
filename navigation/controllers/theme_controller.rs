@@ -1,21 +1,26 @@
 use std::sync::Arc;
 
-use axum::{Json, Router};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
-use tokio_postgres::{Client, Transaction};
+use axum::{Json, Router};
 use domain::entities::theme::create_theme::CreateTheme;
+use tokio_postgres::{Client, Transaction};
 
 use services::theme_service::mut_theme_service::MutThemeService;
 use services::theme_service::ThemeService;
 
 use crate::app_state::AppState;
-use crate::controllers::{append_content_language_header, content_language_header, convert_error, convert_service_error, DEFAULT_LANGUAGE, get_language, set_pagination_limit};
+use crate::controllers::{
+  append_content_language_header, content_language_header, convert_error, convert_service_error, get_language,
+  set_pagination_limit, DEFAULT_LANGUAGE,
+};
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
-use crate::implementations::{get_mut_theme_repository, get_mut_theme_service, get_theme_repository, get_theme_service};
+use crate::implementations::{
+  get_mut_theme_repository, get_mut_theme_service, get_theme_repository, get_theme_service,
+};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::name::NameParam;
@@ -29,12 +34,12 @@ pub mod theme_doc;
 
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
-      .route("/", get(get_items))
-      .route("/", post(create_item))
-      .route("/:id", get(get_by_id))
-      .route("/:id", delete(delete_item))
-      .route("/name/:name", get(get_by_name))
-      .with_state(app_state)
+    .route("/", get(get_items))
+    .route("/", post(create_item))
+    .route("/:id", get(get_by_id))
+    .route("/:id", delete(delete_item))
+    .route("/name/:name", get(get_by_name))
+    .with_state(app_state)
 }
 
 #[utoipa::path(get, path = "",
@@ -43,7 +48,11 @@ pub fn routes(app_state: AppState) -> Router {
   params(AcceptLanguageParam, PageParam, CountParam),
   tag = "Themes"
 )]
-async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+async fn get_items(
+  AcceptLanguageHeader(languages): AcceptLanguageHeader,
+  State(app_state): State<AppState>,
+  Query(mut pagination): Query<QueryPagination>,
+) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
@@ -57,7 +66,7 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, State(
 
   match service.get(language, pagination.into()).await {
     Ok(themes) => Ok((StatusCode::OK, content_language, Json(themes))),
-    Err(error) => Err(convert_service_error(error))
+    Err(error) => Err(convert_service_error(error)),
   }
 }
 
@@ -68,7 +77,11 @@ async fn get_items(AcceptLanguageHeader(languages): AcceptLanguageHeader, State(
   params(IdParam, AcceptLanguageParam),
   tag = "Themes"
 )]
-async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>) -> impl IntoResponse {
+async fn get_by_id(
+  Path(id): Path<u32>,
+  AcceptLanguageHeader(languages): AcceptLanguageHeader,
+  State(app_state): State<AppState>,
+) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
@@ -82,12 +95,11 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
   match service.get_by_id(id, language).await {
     Ok(item) => match item {
       None => Err((StatusCode::NOT_FOUND, "".to_string())),
-      Some(item) => Ok((StatusCode::OK, content_language, Json(item)))
+      Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
     },
-    Err(error) => Err(convert_service_error(error))
+    Err(error) => Err(convert_service_error(error)),
   }
 }
-
 
 #[utoipa::path(get, path = "/name/{name}",
   responses(
@@ -96,7 +108,12 @@ async fn get_by_id(Path(id): Path<u32>, AcceptLanguageHeader(languages): AcceptL
   params(NameParam, AcceptLanguageParam, PageParam, CountParam),
   tag = "Themes"
 )]
-async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): AcceptLanguageHeader, State(app_state): State<AppState>, Query(mut pagination): Query<QueryPagination>) -> impl IntoResponse {
+async fn get_by_name(
+  Path(name): Path<String>,
+  AcceptLanguageHeader(languages): AcceptLanguageHeader,
+  State(app_state): State<AppState>,
+  Query(mut pagination): Query<QueryPagination>,
+) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
@@ -110,7 +127,7 @@ async fn get_by_name(Path(name): Path<String>, AcceptLanguageHeader(languages): 
 
   match service.get_by_name(&name, language, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
-    Err(error) => Err(convert_service_error(error))
+    Err(error) => Err(convert_service_error(error)),
   }
 }
 
@@ -118,7 +135,6 @@ fn get_service(connection: &Client) -> impl ThemeService + '_ {
   let repository = get_theme_repository(connection, DEFAULT_LANGUAGE);
   get_theme_service(Arc::new(repository))
 }
-
 
 #[utoipa::path(post, path = "",
 responses(
@@ -138,7 +154,7 @@ async fn create_item(State(app_state): State<AppState>, Json(create_theme): Json
 
     match service.create(create_theme).await {
       Ok(theme) => Ok((StatusCode::CREATED, Json(theme))),
-      Err(error) => Err(convert_service_error(error))
+      Err(error) => Err(convert_service_error(error)),
     }
   };
   transaction.commit().await.map_err(convert_error)?;
@@ -162,8 +178,8 @@ async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> 
     println!("Route for deleting a theme");
 
     match service.delete(&[id]).await {
-      Ok(_) => Ok(StatusCode::NO_CONTENT),
-      Err(error) => Err(convert_service_error(error))
+      Ok(()) => Ok(StatusCode::NO_CONTENT),
+      Err(error) => Err(convert_service_error(error)),
     }
   };
   transaction.commit().await.map_err(convert_error)?;
@@ -172,6 +188,10 @@ async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> 
 
 fn get_mut_service<'a>(transaction: &'a Transaction<'a>, client: &'a Client) -> impl MutThemeService + 'a {
   let theme_repository = Arc::new(get_theme_repository(client, DEFAULT_LANGUAGE));
-  let mut_theme_repository = Arc::new(get_mut_theme_repository(transaction, DEFAULT_LANGUAGE, theme_repository.clone()));
+  let mut_theme_repository = Arc::new(get_mut_theme_repository(
+    transaction,
+    DEFAULT_LANGUAGE,
+    theme_repository.clone(),
+  ));
   get_mut_theme_service(DEFAULT_LANGUAGE, theme_repository, mut_theme_repository)
 }

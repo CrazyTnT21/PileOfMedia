@@ -22,15 +22,33 @@ impl<'a> DefaultFranchiseService<'a> {
 
 #[async_trait]
 impl<'a> FranchiseService for DefaultFranchiseService<'a> {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Franchise>, ServiceError<FranchiseServiceError>> {
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Franchise>, ServiceError<FranchiseServiceError>> {
     Ok(self.franchise_repository.get(language, pagination).await?)
   }
 
-  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Franchise>, ServiceError<FranchiseServiceError>> {
+  async fn get_by_id(
+    &self,
+    id: u32,
+    language: Language,
+  ) -> Result<Option<Franchise>, ServiceError<FranchiseServiceError>> {
     Ok(self.franchise_repository.get_by_id(id, language).await?)
   }
 
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Franchise>, ServiceError<FranchiseServiceError>> {
-    Ok(self.franchise_repository.get_by_name(name, language, pagination).await?)
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Franchise>, ServiceError<FranchiseServiceError>> {
+    Ok(
+      self
+        .franchise_repository
+        .get_by_name(name, language, pagination)
+        .await?,
+    )
   }
 }

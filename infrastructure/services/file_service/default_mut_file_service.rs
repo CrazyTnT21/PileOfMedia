@@ -19,12 +19,13 @@ impl<'a> DefaultMutFileService<'a> {
 
 #[async_trait]
 impl<'a> MutFileService for DefaultMutFileService<'a> {
-  async fn create(&self, data: &[u8], file_path: &str, file_name: Option<&str>) -> Result<FileName, ServiceError<MutFileServiceError>> {
+  async fn create(
+    &self,
+    data: &[u8],
+    file_path: &str,
+    file_name: Option<&str>,
+  ) -> Result<FileName, ServiceError<MutFileServiceError>> {
     Ok(self.repository.create(data, file_path, file_name).await?)
-  }
-
-  async fn create_base64(&self, data: &str, file_path: &str, file_name: Option<&str>) -> Result<FileName, ServiceError<MutFileServiceError>> {
-    Ok(self.repository.create_base64(data, file_path, file_name).await?)
   }
 
   async fn delete(&self, uri: &str) -> Result<(), ServiceError<MutFileServiceError>> {

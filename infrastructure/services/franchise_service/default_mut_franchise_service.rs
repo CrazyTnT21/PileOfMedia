@@ -3,8 +3,10 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use domain::entities::franchise::create_partial_franchise::{CreatePartialFranchise, CreatePartialFranchiseTranslation};
 use domain::entities::franchise::create_franchise::{CreateFranchise, CreateFranchiseTranslation};
+use domain::entities::franchise::create_partial_franchise::{
+  CreatePartialFranchise, CreatePartialFranchiseTranslation,
+};
 use domain::entities::franchise::Franchise;
 use domain::enums::language::Language;
 use repositories::franchise_repository::mut_franchise_repository::MutFranchiseRepository;
@@ -20,12 +22,14 @@ pub struct DefaultMutFranchiseService<'a> {
 }
 
 impl<'a> DefaultMutFranchiseService<'a> {
-  pub fn new(default_language: Language,
-             franchise_repository: Arc<dyn FranchiseRepository + 'a>,
-             mut_franchise_repository: Arc<dyn MutFranchiseRepository + 'a>, ) -> DefaultMutFranchiseService<'a> {
+  pub fn new(
+    default_language: Language,
+    franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+    mut_franchise_repository: Arc<dyn MutFranchiseRepository + 'a>,
+  ) -> DefaultMutFranchiseService<'a> {
     DefaultMutFranchiseService {
-      franchise_repository,
       default_language,
+      franchise_repository,
       mut_franchise_repository,
     }
   }
@@ -60,12 +64,18 @@ impl<'a> DefaultMutFranchiseService<'a> {
 
     Ok(())
   }
-  async fn validate_translations(&self, translations: &HashMap<Language, CreateFranchiseTranslation>, default_language: &Language) -> Result<(), ServiceError<MutFranchiseServiceError>> {
+  async fn validate_translations(
+    &self,
+    translations: &HashMap<Language, CreateFranchiseTranslation>,
+    default_language: &Language,
+  ) -> Result<(), ServiceError<MutFranchiseServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutFranchiseServiceError::NoTranslationsProvided));
     }
     if !translations.contains_key(default_language) {
-      return Err(ClientError(MutFranchiseServiceError::NoTranslationInLanguageProvided(*default_language)));
+      return Err(ClientError(MutFranchiseServiceError::NoTranslationInLanguageProvided(
+        *default_language,
+      )));
     }
     for item in translations.values() {
       if item.name.is_empty() {
@@ -74,26 +84,27 @@ impl<'a> DefaultMutFranchiseService<'a> {
     }
     Ok(())
   }
-  async fn transform_translations(&self, translations: HashMap<Language, CreateFranchiseTranslation>) -> Result<HashMap<Language, CreatePartialFranchiseTranslation>, ServiceError<MutFranchiseServiceError>> {
+  async fn transform_translations(
+    &self,
+    translations: HashMap<Language, CreateFranchiseTranslation>,
+  ) -> Result<HashMap<Language, CreatePartialFranchiseTranslation>, ServiceError<MutFranchiseServiceError>> {
     let mut hash_map: HashMap<Language, CreatePartialFranchiseTranslation> = HashMap::new();
     for (language, translation) in translations {
-      hash_map.insert(language, CreatePartialFranchiseTranslation {
-        name: translation.name,
-      });
+      hash_map.insert(language, CreatePartialFranchiseTranslation { name: translation.name });
     }
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateFranchise) -> Result<(), ServiceError<MutFranchiseServiceError>> {
-    self.validate_translations(&item.translations, &self.default_language).await?;
+    self
+      .validate_translations(&item.translations, &self.default_language)
+      .await?;
     Ok(())
   }
 }
 
 fn filter_non_existent(items: &[u32], existing: &[u32]) -> Vec<u32> {
-  items.iter().filter_map(|x|
-    existing.iter()
-      .find(|y| **y == *x)
-      .map(|_| None)
-      .unwrap_or(Some(*x))
-  ).collect()
+  items
+    .iter()
+    .filter_map(|x| existing.iter().find(|y| **y == *x).map_or(Some(*x), |_| None))
+    .collect()
 }

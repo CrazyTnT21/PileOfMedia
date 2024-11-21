@@ -1,4 +1,4 @@
-use crate::select::expression::{ConditionTrait};
+use crate::select::expression::ConditionTrait;
 use crate::select::selector::Selector;
 
 pub struct ColumnNull<'a> {
@@ -7,7 +7,9 @@ pub struct ColumnNull<'a> {
 
 impl<'a> ColumnNull<'a> {
   pub fn new(selector: impl Selector + 'a) -> ColumnNull<'a> {
-    ColumnNull { selector: Box::new(selector) }
+    ColumnNull {
+      selector: Box::new(selector),
+    }
   }
 }
 

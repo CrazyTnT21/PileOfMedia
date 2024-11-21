@@ -8,14 +8,16 @@ impl Selector for (&str, &str) {
   }
 }
 
-impl Selector for ((&str, &str), ) {
+impl Selector for ((&str, &str),) {
   fn sql(&self) -> String {
-    format!("({}.{})", self.0.0, self.0.1)
+    format!("({}.{})", self.0 .0, self.0 .1)
   }
 }
 
 macro_rules! tuple_for {
-    ($t: tt) => { (&str,&str) };
+  ($t: tt) => {
+    (&str, &str)
+  };
 }
 #[macro_export]
 macro_rules! selector {
@@ -29,9 +31,9 @@ macro_rules! selector {
     }
   };
 }
-selector!(a,b);
-selector!(a,b,c);
-selector!(a,b,c,d);
-selector!(a,b,c,d,e);
-selector!(a,b,c,d,e,f);
-selector!(a,b,c,d,e,f,g);
+selector!(a, b);
+selector!(a, b, c);
+selector!(a, b, c, d);
+selector!(a, b, c, d, e);
+selector!(a, b, c, d, e, f);
+selector!(a, b, c, d, e, f, g);

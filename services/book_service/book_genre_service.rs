@@ -13,7 +13,12 @@ pub mod mut_book_genre_service;
 
 #[async_trait]
 pub trait BookGenreService: Send + Sync {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, ServiceError<BookGenreServiceError>>;
+  async fn get(
+    &self,
+    book_id: u32,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Genre>, ServiceError<BookGenreServiceError>>;
 }
 
 pub enum BookGenreServiceError {}

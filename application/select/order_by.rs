@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter};
 use crate::select::selector::Selector;
+use std::fmt::{Display, Formatter};
 
 pub struct OrderBy<'a> {
   pub selector: Box<dyn Selector + 'a>,
@@ -9,7 +9,17 @@ pub struct OrderBy<'a> {
 
 impl Display for OrderBy<'_> {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{} {} {}", self.selector.sql(), self.direction, self.nulls_order.as_ref().map(|x| format!("NULLS {x}")).unwrap_or_default())
+    write!(
+      f,
+      "{} {} {}",
+      self.selector.sql(),
+      self.direction,
+      self
+        .nulls_order
+        .as_ref()
+        .map(|x| format!("NULLS {x}"))
+        .unwrap_or_default()
+    )
   }
 }
 
@@ -20,10 +30,14 @@ pub enum NullsOrder {
 
 impl Display for NullsOrder {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      NullsOrder::First => "FIRST",
-      NullsOrder::Last => "LAST"
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        NullsOrder::First => "FIRST",
+        NullsOrder::Last => "LAST",
+      }
+    )
   }
 }
 
@@ -34,9 +48,13 @@ pub enum Direction {
 
 impl Display for Direction {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      Direction::Ascending => "ASC",
-      Direction::Descending => "DESC"
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        Direction::Ascending => "ASC",
+        Direction::Descending => "DESC",
+      }
+    )
   }
 }

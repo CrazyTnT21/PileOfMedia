@@ -1,6 +1,6 @@
 use tokio_postgres::types::ToSql;
 
-use crate::select::conditions::value_equal::{ValueEqual};
+use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::to_sql_value::ToSqlValue;
 
 pub trait ConditionTrait: Send + Sync {
@@ -43,8 +43,18 @@ impl<'a> Expression<'a> {
 
   pub fn sql(&self, value_index: &mut usize) -> String {
     let condition = self.condition.sql(value_index);
-    let ands = self.ands.iter().map(|x| format!("AND ({})", x.sql(value_index))).collect::<Vec<String>>().join(" ");
-    let ors = self.ors.iter().map(|x| format!("OR ({})", x.sql(value_index))).collect::<Vec<String>>().join(" ");
+    let ands = self
+      .ands
+      .iter()
+      .map(|x| format!("AND ({})", x.sql(value_index)))
+      .collect::<Vec<String>>()
+      .join(" ");
+    let ors = self
+      .ors
+      .iter()
+      .map(|x| format!("OR ({})", x.sql(value_index)))
+      .collect::<Vec<String>>()
+      .join(" ");
     format!("{} {} {}", condition, ands, ors)
   }
   pub fn and(mut self, expression: Expression<'a>) -> Expression<'a> {

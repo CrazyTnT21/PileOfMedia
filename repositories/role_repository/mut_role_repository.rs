@@ -1,7 +1,7 @@
-use std::error::Error;
 use async_trait::async_trait;
-use domain::entities::role::Role;
 use domain::entities::role::create_partial_role::CreatePartialRole;
+use domain::entities::role::Role;
+use std::error::Error;
 
 #[async_trait]
 pub trait MutRoleRepository: Send + Sync {

@@ -75,17 +75,19 @@ pub mod create_book_part {
     OtherError(Box<dyn Error + Send>),
   }
 
-
   impl Display for CreateBookPartError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-      write!(f, "{}",
-             match self {
-               CreateBookPartError::InvalidFormat => "Invalid part format".to_string(),
-               CreateBookPartError::UnknownPart(value) => format!("Unknown part '{}'", value),
-               CreateBookPartError::BookMissing => "Book missing".to_string(),
-               CreateBookPartError::MissingPart => "Missing part value".to_string(),
-               CreateBookPartError::OtherError(value) => value.to_string(),
-             })
+      write!(
+        f,
+        "{}",
+        match self {
+          CreateBookPartError::InvalidFormat => "Invalid part format".to_string(),
+          CreateBookPartError::UnknownPart(value) => format!("Unknown part '{}'", value),
+          CreateBookPartError::BookMissing => "Book missing".to_string(),
+          CreateBookPartError::MissingPart => "Missing part value".to_string(),
+          CreateBookPartError::OtherError(value) => value.to_string(),
+        }
+      )
     }
   }
 
@@ -101,7 +103,7 @@ pub mod create_book_part {
         "book" => CreateBookPart::Book,
         "covers" => CreateBookPart::Cover,
         // "image" => CreateBookPart::Image,
-        _ => Err(CreateBookPartError::UnknownPart(name.to_string()))?
+        _ => Err(CreateBookPartError::UnknownPart(name.to_string()))?,
       };
       Ok(result)
     }
@@ -112,30 +114,45 @@ pub mod create_book_part {
     type Error = CreateBookPartError;
 
     async fn from_multi_part(mut multipart: multipart::axum::extract::Multipart) -> Result<Self, Self::Error>
-      where
-        Self: Sized,
+    where
+      Self: Sized,
     {
       let mut book: Option<CreateBookData> = None;
       let mut covers: Vec<CreateImage> = vec![];
       // let mut images = vec![];
-      while let Some(field) = multipart.next_field().await.map_err(|x| CreateBookPartError::OtherError(Box::new(x)))? {
+      while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?
+      {
         let part = CreateBookPart::from_header(field.name().ok_or(CreateBookPartError::MissingPart)?)?;
         match part {
           CreateBookPart::Book => {
-            let create_book = serde_json::from_slice::<CreateBookData>(&field.bytes()
-              .await
-              .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?)
-              .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?;
+            let create_book = serde_json::from_slice::<CreateBookData>(
+              &field
+                .bytes()
+                .await
+                .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?,
+            )
+            .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?;
             book = Some(create_book);
           }
           CreateBookPart::Cover => {
-            covers.push(CreateImage { 0: field.bytes().await.map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?.to_vec() });
-          }
-          // CreateBookPart::Image => { images.push(a.bytes().await.map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?); }
+            covers.push(CreateImage(
+              field
+                .bytes()
+                .await
+                .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?
+                .to_vec(),
+            ));
+          } // CreateBookPart::Image => { images.push(a.bytes().await.map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?); }
         }
       }
 
-      let book = CreateBook { book: book.ok_or(CreateBookPartError::BookMissing)?, covers };
+      let book = CreateBook {
+        book: book.ok_or(CreateBookPartError::BookMissing)?,
+        covers,
+      };
 
       Ok(book)
     }

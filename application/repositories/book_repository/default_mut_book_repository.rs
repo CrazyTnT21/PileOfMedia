@@ -4,16 +4,16 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::book::Book;
 use domain::entities::book::create_partial_book::CreatePartialBook;
+use domain::entities::book::Book;
 use domain::enums::language::Language;
 use from_row::Table;
 use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
 use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
 use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
 use repositories::book_repository::book_theme_repository::mut_book_theme_repository::MutBookThemeRepository;
-use repositories::book_repository::BookRepository;
 use repositories::book_repository::mut_book_repository::MutBookRepository;
+use repositories::book_repository::BookRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;
@@ -35,20 +35,22 @@ pub struct DefaultMutBookRepository<'a> {
 }
 
 impl<'a> DefaultMutBookRepository<'a> {
-  pub fn new(transaction: &'a Transaction<'a>,
-             default_language: Language,
-             mut_book_genre_repository: Arc<dyn MutBookGenreRepository + 'a>,
-             mut_book_character_repository: Arc<dyn MutBookCharacterRepository + 'a>,
-             mut_book_theme_repository: Arc<dyn MutBookThemeRepository + 'a>,
-             mut_book_involved_repository: Arc<dyn MutBookInvolvedRepository + 'a>,
-             book_repository: Arc<dyn BookRepository + 'a>, ) -> DefaultMutBookRepository<'a> {
+  pub fn new(
+    transaction: &'a Transaction<'a>,
+    default_language: Language,
+    mut_book_genre_repository: Arc<dyn MutBookGenreRepository + 'a>,
+    mut_book_character_repository: Arc<dyn MutBookCharacterRepository + 'a>,
+    mut_book_theme_repository: Arc<dyn MutBookThemeRepository + 'a>,
+    mut_book_involved_repository: Arc<dyn MutBookInvolvedRepository + 'a>,
+    book_repository: Arc<dyn BookRepository + 'a>,
+  ) -> DefaultMutBookRepository<'a> {
     DefaultMutBookRepository {
       transaction,
+      default_language,
       mut_book_genre_repository,
       mut_book_character_repository,
       mut_book_theme_repository,
       mut_book_involved_repository,
-      default_language,
       book_repository,
     }
   }
@@ -64,7 +66,8 @@ impl MutBookRepository for DefaultMutBookRepository<'_> {
     self.insert_genres(&item, id).await?;
     self.insert_involved(&item, id).await?;
 
-    let book = self.book_repository
+    let book = self
+      .book_repository
       .get_by_id(id, self.default_language)
       .await?
       .expect("Book was just created");
@@ -78,9 +81,12 @@ impl MutBookRepository for DefaultMutBookRepository<'_> {
     self.mut_book_theme_repository.remove_all(ids).await?;
     let ids = to_i32(ids);
 
-    Delete::new::<DbBookTranslation>(Expression::new(ValueIn::new((DbBookTranslation::TABLE_NAME, "fktranslation"), &ids)))
-      .execute_transaction(self.transaction)
-      .await?;
+    Delete::new::<DbBookTranslation>(Expression::new(ValueIn::new(
+      (DbBookTranslation::TABLE_NAME, "fktranslation"),
+      &ids,
+    )))
+    .execute_transaction(self.transaction)
+    .await?;
 
     Delete::new::<DbBook>(Expression::new(ValueIn::new((DbBook::TABLE_NAME, "id"), &ids)))
       .execute_transaction(self.transaction)
@@ -122,14 +128,23 @@ impl DefaultMutBookRepository<'_> {
     let franchise = &item.franchise.map(|x| x as i32);
     let id = Insert::new::<DbBook>(["chapters", "pages", "words", "published", "fkfranchise"])
       .values([chapters, pages, words, &item.published, franchise])
-      .returning_transaction("id", self.transaction).await?;
+      .returning_transaction("id", self.transaction)
+      .await?;
     Ok(id)
   }
   async fn insert_translation(&self, item: &CreatePartialBook, id: u32) -> Result<(), Box<dyn Error>> {
     let id = id as i32;
-    let mapped: Vec<(&String, &Option<String>, i32, DbLanguage)> = item.translations
+    let mapped: Vec<(&String, &Option<String>, i32, DbLanguage)> = item
+      .translations
       .iter()
-      .map(|x| (&x.1.title, &x.1.description, x.1.cover.id as i32, DbLanguage::from(*x.0)))
+      .map(|x| {
+        (
+          &x.1.title,
+          &x.1.description,
+          x.1.cover.id as i32,
+          DbLanguage::from(*x.0),
+        )
+      })
       .collect();
     let mut insert = Insert::new::<DbBookTranslation>(["title", "description", "fkcover", "fktranslation", "language"]);
     for (title, description, cover_id, language) in &mapped {

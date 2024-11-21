@@ -22,15 +22,33 @@ impl<'a> DefaultCharacterService<'a> {
 
 #[async_trait]
 impl<'a> CharacterService for DefaultCharacterService<'a> {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, ServiceError<CharacterServiceError>> {
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Character>, ServiceError<CharacterServiceError>> {
     Ok(self.character_repository.get(language, pagination).await?)
   }
 
-  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Character>, ServiceError<CharacterServiceError>> {
+  async fn get_by_id(
+    &self,
+    id: u32,
+    language: Language,
+  ) -> Result<Option<Character>, ServiceError<CharacterServiceError>> {
     Ok(self.character_repository.get_by_id(id, language).await?)
   }
 
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, ServiceError<CharacterServiceError>> {
-    Ok(self.character_repository.get_by_name(name, language, pagination).await?)
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Character>, ServiceError<CharacterServiceError>> {
+    Ok(
+      self
+        .character_repository
+        .get_by_name(name, language, pagination)
+        .await?,
+    )
   }
 }

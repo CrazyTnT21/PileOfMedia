@@ -1,6 +1,6 @@
-use chrono::NaiveDate;
 use crate::entities::image::Image;
 use crate::enums::language::Language;
+use chrono::NaiveDate;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

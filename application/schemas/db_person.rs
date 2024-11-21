@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use tokio_postgres::Row;
 
 use domain::entities::image::Image;
-use domain::entities::person::{Person};
+use domain::entities::person::Person;
 use from_row::FromRow;
 
 use crate::schemas::db_person_translation::DbPersonTranslation;

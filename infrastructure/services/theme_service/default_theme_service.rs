@@ -22,7 +22,11 @@ impl<'a> DefaultThemeService<'a> {
 
 #[async_trait]
 impl<'a> ThemeService for DefaultThemeService<'a> {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
     Ok(self.theme_repository.get(language, pagination).await?)
   }
 
@@ -30,7 +34,12 @@ impl<'a> ThemeService for DefaultThemeService<'a> {
     Ok(self.theme_repository.get_by_id(id, language).await?)
   }
 
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
     Ok(self.theme_repository.get_by_name(name, language, pagination).await?)
   }
 }

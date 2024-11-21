@@ -4,12 +4,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::person::Person;
 use domain::entities::person::create_partial_person::CreatePartialPerson;
+use domain::entities::person::Person;
 use domain::enums::language::Language;
 use from_row::Table;
-use repositories::person_repository::PersonRepository;
 use repositories::person_repository::mut_person_repository::MutPersonRepository;
+use repositories::person_repository::PersonRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;
@@ -27,9 +27,11 @@ pub struct DefaultMutPersonRepository<'a> {
 }
 
 impl<'a> DefaultMutPersonRepository<'a> {
-  pub fn new(transaction: &'a Transaction<'a>,
-             default_language: Language,
-             person_repository: Arc<dyn PersonRepository + 'a>, ) -> DefaultMutPersonRepository<'a> {
+  pub fn new(
+    transaction: &'a Transaction<'a>,
+    default_language: Language,
+    person_repository: Arc<dyn PersonRepository + 'a>,
+  ) -> DefaultMutPersonRepository<'a> {
     DefaultMutPersonRepository {
       transaction,
       default_language,
@@ -44,7 +46,8 @@ impl MutPersonRepository for DefaultMutPersonRepository<'_> {
     let id = self.insert_person(&item).await? as u32;
     self.insert_translation(&item, id).await?;
 
-    let person = self.person_repository
+    let person = self
+      .person_repository
       .get_by_id(id, self.default_language)
       .await?
       .expect("Person was just created");
@@ -54,9 +57,12 @@ impl MutPersonRepository for DefaultMutPersonRepository<'_> {
   async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let ids = to_i32(ids);
 
-    Delete::new::<DbPersonTranslation>(Expression::new(ValueIn::new((DbPersonTranslation::TABLE_NAME, "fktranslation"), &ids)))
-      .execute_transaction(self.transaction)
-      .await?;
+    Delete::new::<DbPersonTranslation>(Expression::new(ValueIn::new(
+      (DbPersonTranslation::TABLE_NAME, "fktranslation"),
+      &ids,
+    )))
+    .execute_transaction(self.transaction)
+    .await?;
 
     Delete::new::<DbPerson>(Expression::new(ValueIn::new((DbPerson::TABLE_NAME, "id"), &ids)))
       .execute_transaction(self.transaction)
@@ -69,13 +75,22 @@ impl DefaultMutPersonRepository<'_> {
   async fn insert_person(&self, item: &CreatePartialPerson) -> Result<i32, Box<dyn Error>> {
     let image_id = item.image.as_ref().map(|x| x.id as i32);
     let id = Insert::new::<DbPerson>(["name", "firstname", "lastname", "birthday", "height", "fkimage"])
-      .values([&item.name, &item.first_name, &item.last_name, &item.birthday, &item.height.map(|x| x as i16), &image_id])
-      .returning_transaction("id", self.transaction).await?;
+      .values([
+        &item.name,
+        &item.first_name,
+        &item.last_name,
+        &item.birthday,
+        &item.height.map(|x| x as i16),
+        &image_id,
+      ])
+      .returning_transaction("id", self.transaction)
+      .await?;
     Ok(id)
   }
   async fn insert_translation(&self, item: &CreatePartialPerson, id: u32) -> Result<(), Box<dyn Error>> {
     let id = id as i32;
-    let translations: Vec<(&Option<String>, DbLanguage)> = item.translations
+    let translations: Vec<(&Option<String>, DbLanguage)> = item
+      .translations
       .iter()
       .map(|x| (&x.1.description, DbLanguage::from(*x.0)))
       .collect();

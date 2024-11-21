@@ -7,7 +7,6 @@ pub struct Image {
   pub id: u32,
   pub versions: Vec<ImageData>,
 }
-pub mod image_data;
 pub mod create_image;
 pub mod create_partial_image;
-
+pub mod image_data;

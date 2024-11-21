@@ -7,8 +7,8 @@ use domain::entities::genre::create_genre::{CreateGenre, CreateGenreTranslation}
 use domain::entities::genre::create_partial_genre::{CreatePartialGenre, CreatePartialGenreTranslation};
 use domain::entities::genre::Genre;
 use domain::enums::language::Language;
-use repositories::genre_repository::GenreRepository;
 use repositories::genre_repository::mut_genre_repository::MutGenreRepository;
+use repositories::genre_repository::GenreRepository;
 use services::genre_service::mut_genre_service::{MutGenreService, MutGenreServiceError};
 use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;
@@ -20,12 +20,14 @@ pub struct DefaultMutGenreService<'a> {
 }
 
 impl<'a> DefaultMutGenreService<'a> {
-  pub fn new(default_language: Language,
-             genre_repository: Arc<dyn GenreRepository + 'a>,
-             mut_genre_repository: Arc<dyn MutGenreRepository + 'a>, ) -> DefaultMutGenreService<'a> {
+  pub fn new(
+    default_language: Language,
+    genre_repository: Arc<dyn GenreRepository + 'a>,
+    mut_genre_repository: Arc<dyn MutGenreRepository + 'a>,
+  ) -> DefaultMutGenreService<'a> {
     DefaultMutGenreService {
-      genre_repository,
       default_language,
+      genre_repository,
       mut_genre_repository,
     }
   }
@@ -60,12 +62,18 @@ impl<'a> DefaultMutGenreService<'a> {
 
     Ok(())
   }
-  async fn validate_translations(&self, translations: &HashMap<Language, CreateGenreTranslation>, default_language: &Language) -> Result<(), ServiceError<MutGenreServiceError>> {
+  async fn validate_translations(
+    &self,
+    translations: &HashMap<Language, CreateGenreTranslation>,
+    default_language: &Language,
+  ) -> Result<(), ServiceError<MutGenreServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutGenreServiceError::NoTranslationsProvided));
     }
     if !translations.contains_key(default_language) {
-      return Err(ClientError(MutGenreServiceError::NoTranslationInLanguageProvided(*default_language)));
+      return Err(ClientError(MutGenreServiceError::NoTranslationInLanguageProvided(
+        *default_language,
+      )));
     }
     for item in translations.values() {
       if item.name.is_empty() {
@@ -74,25 +82,26 @@ impl<'a> DefaultMutGenreService<'a> {
     }
     Ok(())
   }
-  async fn transform_translations(&self, translations: HashMap<Language, CreateGenreTranslation>) -> Result<HashMap<Language, CreatePartialGenreTranslation>, ServiceError<MutGenreServiceError>> {
+  async fn transform_translations(
+    &self,
+    translations: HashMap<Language, CreateGenreTranslation>,
+  ) -> Result<HashMap<Language, CreatePartialGenreTranslation>, ServiceError<MutGenreServiceError>> {
     let mut hash_map: HashMap<Language, CreatePartialGenreTranslation> = HashMap::new();
     for (language, translation) in translations {
-      hash_map.insert(language, CreatePartialGenreTranslation {
-        name: translation.name,
-      });
+      hash_map.insert(language, CreatePartialGenreTranslation { name: translation.name });
     }
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateGenre) -> Result<(), ServiceError<MutGenreServiceError>> {
-    self.validate_translations(&item.translations, &self.default_language).await?;
+    self
+      .validate_translations(&item.translations, &self.default_language)
+      .await?;
     Ok(())
   }
 }
 fn filter_non_existent(items: &[u32], existing: &[u32]) -> Vec<u32> {
-  items.iter().filter_map(|x|
-    existing.iter()
-      .find(|y| **y == *x)
-      .map(|_| None)
-      .unwrap_or(Some(*x))
-  ).collect()
+  items
+    .iter()
+    .filter_map(|x| existing.iter().find(|y| **y == *x).map_or(Some(*x), |_| None))
+    .collect()
 }

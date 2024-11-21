@@ -1,7 +1,7 @@
-use std::error::Error;
 use async_trait::async_trait;
-use domain::entities::franchise::Franchise;
 use domain::entities::franchise::create_partial_franchise::CreatePartialFranchise;
+use domain::entities::franchise::Franchise;
+use std::error::Error;
 
 #[async_trait]
 pub trait MutFranchiseRepository: Send + Sync {

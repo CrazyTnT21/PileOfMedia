@@ -14,7 +14,11 @@ pub mod mut_user_service;
 pub trait UserService: Send + Sync {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<User>, ServiceError<UserServiceError>>;
   async fn get_by_id(&self, id: u32) -> Result<Option<User>, ServiceError<UserServiceError>>;
-  async fn get_by_name(&self, name: &str, pagination: Pagination) -> Result<ItemsTotal<User>, ServiceError<UserServiceError>>;
+  async fn get_by_name(
+    &self,
+    name: &str,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<User>, ServiceError<UserServiceError>>;
 }
 
 pub enum UserServiceError {}

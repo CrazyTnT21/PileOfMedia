@@ -4,5 +4,5 @@ use crate::entities::role::Role;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct PersonRole {
-  pub role: Role
+  pub role: Role,
 }

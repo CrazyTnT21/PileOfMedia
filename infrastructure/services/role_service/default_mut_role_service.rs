@@ -20,12 +20,14 @@ pub struct DefaultMutRoleService<'a> {
 }
 
 impl<'a> DefaultMutRoleService<'a> {
-  pub fn new(default_language: Language,
-             role_repository: Arc<dyn RoleRepository + 'a>,
-             mut_role_repository: Arc<dyn MutRoleRepository + 'a>, ) -> DefaultMutRoleService<'a> {
+  pub fn new(
+    default_language: Language,
+    role_repository: Arc<dyn RoleRepository + 'a>,
+    mut_role_repository: Arc<dyn MutRoleRepository + 'a>,
+  ) -> DefaultMutRoleService<'a> {
     DefaultMutRoleService {
-      role_repository,
       default_language,
+      role_repository,
       mut_role_repository,
     }
   }
@@ -60,12 +62,18 @@ impl<'a> DefaultMutRoleService<'a> {
 
     Ok(())
   }
-  async fn validate_translations(&self, translations: &HashMap<Language, CreateRoleTranslation>, default_language: &Language) -> Result<(), ServiceError<MutRoleServiceError>> {
+  async fn validate_translations(
+    &self,
+    translations: &HashMap<Language, CreateRoleTranslation>,
+    default_language: &Language,
+  ) -> Result<(), ServiceError<MutRoleServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutRoleServiceError::NoTranslationsProvided));
     }
     if !translations.contains_key(default_language) {
-      return Err(ClientError(MutRoleServiceError::NoTranslationInLanguageProvided(*default_language)));
+      return Err(ClientError(MutRoleServiceError::NoTranslationInLanguageProvided(
+        *default_language,
+      )));
     }
     for item in translations.values() {
       if item.name.is_empty() {
@@ -74,26 +82,27 @@ impl<'a> DefaultMutRoleService<'a> {
     }
     Ok(())
   }
-  async fn transform_translations(&self, translations: HashMap<Language, CreateRoleTranslation>) -> Result<HashMap<Language, CreatePartialRoleTranslation>, ServiceError<MutRoleServiceError>> {
+  async fn transform_translations(
+    &self,
+    translations: HashMap<Language, CreateRoleTranslation>,
+  ) -> Result<HashMap<Language, CreatePartialRoleTranslation>, ServiceError<MutRoleServiceError>> {
     let mut hash_map: HashMap<Language, CreatePartialRoleTranslation> = HashMap::new();
     for (language, translation) in translations {
-      hash_map.insert(language, CreatePartialRoleTranslation {
-        name: translation.name,
-      });
+      hash_map.insert(language, CreatePartialRoleTranslation { name: translation.name });
     }
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateRole) -> Result<(), ServiceError<MutRoleServiceError>> {
-    self.validate_translations(&item.translations, &self.default_language).await?;
+    self
+      .validate_translations(&item.translations, &self.default_language)
+      .await?;
     Ok(())
   }
 }
 
 fn filter_non_existent(items: &[u32], existing: &[u32]) -> Vec<u32> {
-  items.iter().filter_map(|x|
-    existing.iter()
-      .find(|y| **y == *x)
-      .map(|_| None)
-      .unwrap_or(Some(*x))
-  ).collect()
+  items
+    .iter()
+    .filter_map(|x| existing.iter().find(|y| **y == *x).map_or(Some(*x), |_| None))
+    .collect()
 }

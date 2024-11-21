@@ -22,13 +22,24 @@ pub enum MutBookCharacterServiceError {
 
 impl Display for MutBookCharacterServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      MutBookCharacterServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
-      MutBookCharacterServiceError::AlreadyAssociated(x) => format!("The following characters already have an association: [{}]", x.join_comma()),
-      MutBookCharacterServiceError::NotAssociated(x) => format!("The following characters do not have an association: [{}]", x.join_comma()),
-      MutBookCharacterServiceError::NonExistent(x) => format!("The following characters do not exist: [{}]", x.join_comma()),
-      MutBookCharacterServiceError::NoCharactersProvided => "No characters provided".to_string(),
-      MutBookCharacterServiceError::OtherError(x) => x.to_string()
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        MutBookCharacterServiceError::NonExistentBook(x) => format!("Book with the id {x} does not exist"),
+        MutBookCharacterServiceError::AlreadyAssociated(x) => format!(
+          "The following characters already have an association: [{}]",
+          x.join_comma()
+        ),
+        MutBookCharacterServiceError::NotAssociated(x) => format!(
+          "The following characters do not have an association: [{}]",
+          x.join_comma()
+        ),
+        MutBookCharacterServiceError::NonExistent(x) =>
+          format!("The following characters do not exist: [{}]", x.join_comma()),
+        MutBookCharacterServiceError::NoCharactersProvided => "No characters provided".to_string(),
+        MutBookCharacterServiceError::OtherError(x) => x.to_string(),
+      }
+    )
   }
 }

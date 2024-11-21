@@ -1,6 +1,6 @@
+use crate::enums::db_language::DbLanguage;
 use from_row::FromRow;
 use tokio_postgres::Row;
-use crate::enums::db_language::DbLanguage;
 
 #[derive(FromRow, Debug)]
 #[rename = "booktranslation"]

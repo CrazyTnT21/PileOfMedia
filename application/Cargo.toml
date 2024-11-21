@@ -9,17 +9,19 @@ edition = "2021"
 domain = { path = "../domain" }
 repositories = { path = "../repositories" }
 
-from-row = { path = "from_row", features = ["macros", "macros-validation", "chrono"] }
-tokio-postgres = { version = "0.7.10", features = ["with-chrono-0_4"] }
+from-row = { path = "from_row", features = ["macros", "chrono"] }
+tokio-postgres = { version = "0.7.12", features = ["with-chrono-0_4"] }
 bb8-postgres = { version = "0.8.1", features = ["with-chrono-0_4"] }
-async-trait = "0.1.80"
+async-trait = "0.1.83"
 chrono = { version = "0.4.38", features = ["serde"] }
-serde = { version = "1.0.198", features = ["derive"] }
-base64 = { version = "0.22.1" }
+serde = { version = "1.0.215", features = ["derive"] }
 rand = "0.8.5"
 infer = "0.16.0"
-image = { version = "0.25.1" }
+image = { version = "0.25.5" }
 
 [lib]
 name = "application"
 path = "lib.rs"
+
+[lints]
+workspace = true

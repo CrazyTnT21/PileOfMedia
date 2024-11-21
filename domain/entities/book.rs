@@ -4,9 +4,9 @@ use crate::entities::franchise::Franchise;
 use crate::entities::image::Image;
 use crate::enums::language::Language;
 
-pub mod create_book;
 pub mod book_character;
 pub mod book_involved;
+pub mod create_book;
 pub mod create_partial_book;
 
 #[derive(Debug, Clone)]
@@ -28,6 +28,5 @@ pub struct Book {
   pub members: u32,
   pub added: NaiveDate,
   pub franchise: Option<Franchise>,
-  pub language: Language
+  pub language: Language,
 }
-

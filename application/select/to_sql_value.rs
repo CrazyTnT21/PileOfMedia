@@ -1,7 +1,7 @@
+use crate::enums::db_language::DbLanguage;
+use crate::select::expression::{next, IntoSql};
 use chrono::{NaiveDate, NaiveTime};
 use tokio_postgres::types::ToSql;
-use crate::enums::db_language::DbLanguage;
-use crate::select::expression::{IntoSql, next};
 
 pub trait ToSqlValue<'a>: Send + Sync {
   fn values(&self) -> Vec<&IntoSql<'a>>;
@@ -26,13 +26,13 @@ impl<'a, T: ToSqlValue<'a> + ToSql + 'a> ToSqlValue<'a> for Option<T> {
   fn values(&self) -> Vec<&IntoSql<'a>> {
     match self {
       None => vec![self],
-      Some(value) => value.values()
+      Some(value) => value.values(),
     }
   }
   fn sql(&self, index: &mut usize) -> String {
     match self {
       None => format!("${}", next(index)),
-      Some(value) => value.sql(index)
+      Some(value) => value.sql(index),
     }
   }
 }
@@ -61,16 +61,16 @@ impl<'a, T: ToSqlValue<'a>> ToSqlValue<'a> for &'a [T] {
 macro_rules! to_value {
   ($t: ty) => {
     impl<'a> ToSqlValue<'a> for &$t {
-  fn values(&self) -> Vec<&IntoSql<'a>> {
-    vec![*self]
-  }
-}
-impl<'a> ToSqlValue<'a> for $t {
-  fn values(&self) -> Vec<&IntoSql<'a>> {
-    vec![self]
-  }
+      fn values(&self) -> Vec<&IntoSql<'a>> {
+        vec![*self]
+      }
     }
-  }
+    impl<'a> ToSqlValue<'a> for $t {
+      fn values(&self) -> Vec<&IntoSql<'a>> {
+        vec![self]
+      }
+    }
+  };
 }
 to_value!(i8);
 to_value!(i16);
@@ -81,4 +81,3 @@ to_value!(NaiveDate);
 to_value!(NaiveTime);
 to_value!(String);
 to_value!(&'a str);
-

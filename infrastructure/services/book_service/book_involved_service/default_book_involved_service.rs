@@ -16,13 +16,20 @@ pub struct DefaultBookInvolvedService<'a> {
 
 impl<'a> DefaultBookInvolvedService<'a> {
   pub fn new(book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>) -> DefaultBookInvolvedService<'a> {
-    DefaultBookInvolvedService { book_involved_repository }
+    DefaultBookInvolvedService {
+      book_involved_repository,
+    }
   }
 }
 
 #[async_trait]
 impl<'a> BookInvolvedService for DefaultBookInvolvedService<'a> {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<BookInvolved>, ServiceError<BookInvolvedServiceError>> {
+  async fn get(
+    &self,
+    book_id: u32,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<BookInvolved>, ServiceError<BookInvolvedServiceError>> {
     Ok(self.book_involved_repository.get(book_id, language, pagination).await?)
   }
 }

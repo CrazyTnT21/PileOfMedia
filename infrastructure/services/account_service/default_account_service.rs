@@ -37,9 +37,7 @@ impl<'a> AccountService for DefaultAccountService<'a> {
   }
 
   async fn login(&self, email: &Email, password: &Password) -> Result<Account, ServiceError<AccountServiceError>> {
-    let account = self.get_by_email(email)
-      .await?
-      .ok_or(unknown_email())?;
+    let account = self.get_by_email(email).await?.ok_or_else(unknown_email)?;
 
     let hash = password_hash(&account.password.0)?;
     if Argon2::default().verify_password(password.0.as_bytes(), &hash).is_ok() {
@@ -53,10 +51,10 @@ fn password_hash(argon_password: &str) -> Result<PasswordHash, ServiceError<Acco
   PasswordHash::new(argon_password).map_err(|y| map_server_error(Box::new(y)))
 }
 
-fn unknown_email() -> ServiceError<AccountServiceError> {
+const fn unknown_email() -> ServiceError<AccountServiceError> {
   ServiceError::ClientError(AccountServiceError::UnknownEmail)
 }
 
-fn wrong_password() -> ServiceError<AccountServiceError> {
+const fn wrong_password() -> ServiceError<AccountServiceError> {
   ServiceError::ClientError(AccountServiceError::WrongPassword)
 }

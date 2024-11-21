@@ -22,7 +22,11 @@ impl<'a> DefaultRoleService<'a> {
 
 #[async_trait]
 impl<'a> RoleService for DefaultRoleService<'a> {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>> {
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>> {
     Ok(self.role_repository.get(language, pagination).await?)
   }
 
@@ -30,7 +34,12 @@ impl<'a> RoleService for DefaultRoleService<'a> {
     Ok(self.role_repository.get_by_id(id, language).await?)
   }
 
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>> {
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>> {
     Ok(self.role_repository.get_by_name(name, language, pagination).await?)
   }
 }

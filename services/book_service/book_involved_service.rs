@@ -13,7 +13,12 @@ pub mod mut_book_involved_service;
 
 #[async_trait]
 pub trait BookInvolvedService: Send + Sync {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<BookInvolved>, ServiceError<BookInvolvedServiceError>>;
+  async fn get(
+    &self,
+    book_id: u32,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<BookInvolved>, ServiceError<BookInvolvedServiceError>>;
 }
 
 pub enum BookInvolvedServiceError {}

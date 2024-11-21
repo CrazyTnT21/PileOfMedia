@@ -4,6 +4,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
+use crate::convert_to_sql::to_i32;
 use domain::entities::theme::Theme;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
@@ -12,7 +13,6 @@ use from_row::Table;
 use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::BookRepository;
 use repositories::theme_repository::ThemeRepository;
-use crate::convert_to_sql::{to_i32};
 
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_book_theme::DbBookTheme;
@@ -29,10 +29,11 @@ pub struct DefaultBookThemeRepository<'a> {
 }
 
 impl<'a> DefaultBookThemeRepository<'a> {
-  pub fn new(client: &'a Client,
-             default_language: Language,
-             book_repository: Arc<dyn BookRepository + 'a>,
-             theme_repository: Arc<dyn ThemeRepository + 'a>,
+  pub fn new(
+    client: &'a Client,
+    default_language: Language,
+    book_repository: Arc<dyn BookRepository + 'a>,
+    theme_repository: Arc<dyn ThemeRepository + 'a>,
   ) -> DefaultBookThemeRepository<'a> {
     DefaultBookThemeRepository {
       client,
@@ -45,19 +46,31 @@ impl<'a> DefaultBookThemeRepository<'a> {
 
 #[async_trait]
 impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
+  async fn get(
+    &self,
+    book_id: u32,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
     let book_id = book_id as i32;
 
     let total = Select::new::<DbBookTheme>()
-      .where_expression(Expression::new(ValueEqual::new((DbBookTheme::TABLE_NAME, "fkbook"), book_id)))
+      .where_expression(Expression::new(ValueEqual::new(
+        (DbBookTheme::TABLE_NAME, "fkbook"),
+        book_id,
+      )))
       .count()
-      .get_single(self.client).await?
+      .get_single(self.client)
+      .await?
       .expect("Count should return one row");
     let total = total.0 as usize;
 
     let theme_ids: Vec<u32> = Select::new::<DbBookTheme>()
       .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
-      .where_expression(Expression::new(ValueEqual::new((DbBookTheme::TABLE_NAME, "fkbook"), book_id)))
+      .where_expression(Expression::new(ValueEqual::new(
+        (DbBookTheme::TABLE_NAME, "fkbook"),
+        book_id,
+      )))
       .pagination(pagination)
       .query(self.client)
       .await?
@@ -67,12 +80,9 @@ impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
 
     let items = match theme_ids.is_empty() {
       true => vec![],
-      false => self.theme_repository.get_by_ids(&theme_ids, language).await?
+      false => self.theme_repository.get_by_ids(&theme_ids, language).await?,
     };
-    Ok(ItemsTotal {
-      items,
-      total,
-    })
+    Ok(ItemsTotal { items, total })
   }
 
   async fn filter_existing(&self, book_id: u32, themes: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
@@ -81,12 +91,15 @@ impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
 
     let filtered = Select::new::<DbBookTheme>()
       .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
-      .where_expression(Expression::new(ValueIn::new((DbBookTheme::TABLE_NAME, "fktheme"), &themes)))
+      .where_expression(Expression::new(ValueIn::new(
+        (DbBookTheme::TABLE_NAME, "fktheme"),
+        &themes,
+      )))
       .where_expression(Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
       .into_iter()
-      .map(|x| { x.0 as u32 })
+      .map(|x| x.0 as u32)
       .collect();
     Ok(filtered)
   }

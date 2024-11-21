@@ -22,7 +22,11 @@ impl<'a> DefaultGenreService<'a> {
 
 #[async_trait]
 impl<'a> GenreService for DefaultGenreService<'a> {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, ServiceError<GenreServiceError>> {
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Genre>, ServiceError<GenreServiceError>> {
     Ok(self.genre_repository.get(language, pagination).await?)
   }
 
@@ -30,7 +34,12 @@ impl<'a> GenreService for DefaultGenreService<'a> {
     Ok(self.genre_repository.get_by_id(id, language).await?)
   }
 
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, ServiceError<GenreServiceError>> {
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Genre>, ServiceError<GenreServiceError>> {
     Ok(self.genre_repository.get_by_name(name, language, pagination).await?)
   }
 }

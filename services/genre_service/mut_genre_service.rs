@@ -1,10 +1,10 @@
-use std::fmt::{Display, Formatter};
-use async_trait::async_trait;
-use domain::entities::genre::Genre;
-use domain::entities::genre::create_genre::CreateGenre;
-use domain::enums::language::Language;
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
+use async_trait::async_trait;
+use domain::entities::genre::create_genre::CreateGenre;
+use domain::entities::genre::Genre;
+use domain::enums::language::Language;
+use std::fmt::{Display, Formatter};
 
 #[async_trait]
 pub trait MutGenreService: Send + Sync {
@@ -23,13 +23,21 @@ pub enum MutGenreServiceError {
 
 impl Display for MutGenreServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      MutGenreServiceError::OtherError(x) => x.to_string(),
-      MutGenreServiceError::NoTranslationsProvided => "No translations provided".to_string(),
-      MutGenreServiceError::NoTranslationInLanguageProvided(language) => format!("No translation in '{}' ({}) provided", language, language.language_code()),
-      MutGenreServiceError::InvalidName(x) => format!("Name '{x}' in translation is invalid"),
-      MutGenreServiceError::NonExistent(x) => format!("The following genres do not exist: [{}]", x.join_comma()),
-      MutGenreServiceError::NoIdsProvided => "No ids provided".to_string()
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        MutGenreServiceError::OtherError(x) => x.to_string(),
+        MutGenreServiceError::NoTranslationsProvided => "No translations provided".to_string(),
+        MutGenreServiceError::NoTranslationInLanguageProvided(language) => format!(
+          "No translation in '{}' ({}) provided",
+          language,
+          language.language_code()
+        ),
+        MutGenreServiceError::InvalidName(x) => format!("Name '{x}' in translation is invalid"),
+        MutGenreServiceError::NonExistent(x) => format!("The following genres do not exist: [{}]", x.join_comma()),
+        MutGenreServiceError::NoIdsProvided => "No ids provided".to_string(),
+      }
+    )
   }
 }

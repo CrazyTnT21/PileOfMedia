@@ -9,10 +9,14 @@ pub enum ServiceError<T> {
 
 impl<T: Display> Display for ServiceError<T> {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      ServiceError::ClientError(client_error) => client_error.to_string(),
-      ServiceError::ServerError(_) => "Internal server error".to_string()
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        ServiceError::ClientError(client_error) => client_error.to_string(),
+        ServiceError::ServerError(_) => "Internal server error".to_string(),
+      }
+    )
   }
 }
 

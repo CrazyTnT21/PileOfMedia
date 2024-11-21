@@ -22,7 +22,12 @@ impl<'a> DefaultBookGenreService<'a> {
 
 #[async_trait]
 impl<'a> BookGenreService for DefaultBookGenreService<'a> {
-  async fn get(&self, book_id: u32, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, ServiceError<BookGenreServiceError>> {
+  async fn get(
+    &self,
+    book_id: u32,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Genre>, ServiceError<BookGenreServiceError>> {
     Ok(self.book_genre_repository.get(book_id, language, pagination).await?)
   }
 }

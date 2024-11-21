@@ -4,5 +4,5 @@ pub struct PageParam(
   ///The current page
   #[param(minimum = 0)]
   #[serde(default)]
-  Option<u32>
+  Option<u32>,
 );

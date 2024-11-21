@@ -22,7 +22,11 @@ impl<'a> DefaultBookService<'a> {
 
 #[async_trait]
 impl<'a> BookService for DefaultBookService<'a> {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
     Ok(self.book_repository.get(language, pagination).await?)
   }
 
@@ -30,7 +34,12 @@ impl<'a> BookService for DefaultBookService<'a> {
     Ok(self.book_repository.get_by_id(id, language).await?)
   }
 
-  async fn get_by_title(&self, title: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
+  async fn get_by_title(
+    &self,
+    title: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
     Ok(self.book_repository.get_by_title(title, language, pagination).await?)
   }
 }

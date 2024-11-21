@@ -13,13 +13,17 @@ pub trait MutUserService: Send + Sync {
 }
 
 pub enum MutUserServiceError {
-  OtherError(Box<dyn Display>)
+  OtherError(Box<dyn Display>),
 }
 
 impl Display for MutUserServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      MutUserServiceError::OtherError(x) => x.to_string()
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        MutUserServiceError::OtherError(x) => x.to_string(),
+      }
+    )
   }
 }

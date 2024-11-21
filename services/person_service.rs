@@ -13,9 +13,18 @@ use crate::traits::service_error::ServiceError;
 
 #[async_trait]
 pub trait PersonService: Send + Sync {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, ServiceError<PersonServiceError>>;
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Person>, ServiceError<PersonServiceError>>;
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Person>, ServiceError<PersonServiceError>>;
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, ServiceError<PersonServiceError>>;
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Person>, ServiceError<PersonServiceError>>;
 }
 
 pub enum PersonServiceError {}

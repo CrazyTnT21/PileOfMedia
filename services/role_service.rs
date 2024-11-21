@@ -13,9 +13,18 @@ use crate::traits::service_error::ServiceError;
 
 #[async_trait]
 pub trait RoleService: Send + Sync {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>>;
+  async fn get(
+    &self,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>>;
   async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Role>, ServiceError<RoleServiceError>>;
-  async fn get_by_name(&self, name: &str, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>>;
+  async fn get_by_name(
+    &self,
+    name: &str,
+    language: Language,
+    pagination: Pagination,
+  ) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>>;
 }
 
 pub enum RoleServiceError {}

@@ -18,8 +18,12 @@ pub enum MutImageServiceError {
 
 impl Display for MutImageServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", match self {
-      MutImageServiceError::OtherError(x) => x.to_string()
-    })
+    write!(
+      f,
+      "{}",
+      match self {
+        MutImageServiceError::OtherError(x) => x.to_string(),
+      }
+    )
   }
 }

@@ -1,7 +1,8 @@
-FROM postgres:alpine
+FROM postgres:16-alpine
 
 WORKDIR /app
 COPY . .
+
 RUN echo "psql -c \"create database collectiondb;\"" > /docker-entrypoint-initdb.d/init.sh
 RUN echo "psql -f /app/setup.sql collectiondb" >> /docker-entrypoint-initdb.d/init.sh
 

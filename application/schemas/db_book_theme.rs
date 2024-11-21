@@ -1,5 +1,5 @@
-use tokio_postgres::Row;
 use from_row::FromRow;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "booktheme"]
