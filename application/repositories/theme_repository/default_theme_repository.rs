@@ -39,7 +39,7 @@ impl<'a> DefaultThemeRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> ThemeRepository for DefaultThemeRepository<'a> {
+impl ThemeRepository for DefaultThemeRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
 

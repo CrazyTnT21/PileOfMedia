@@ -1,14 +1,7 @@
-use tokio_postgres::types::ToSql;
-
+use crate::select::condition::Condition;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::to_sql_value::ToSqlValue;
-
-pub trait ConditionTrait: Send + Sync {
-  fn sql(&self, value_index: &mut usize) -> String;
-  fn values(&self) -> Vec<&IntoSql> {
-    Vec::new()
-  }
-}
+use tokio_postgres::types::ToSql;
 
 pub fn next(value: &mut usize) -> usize {
   let last_value = *value;
@@ -17,13 +10,13 @@ pub fn next(value: &mut usize) -> usize {
 }
 
 pub struct Expression<'a> {
-  pub condition: Box<dyn ConditionTrait + 'a>,
+  pub condition: Box<dyn Condition + 'a>,
   pub ands: Vec<Expression<'a>>,
   pub ors: Vec<Expression<'a>>,
 }
 
 impl<'a> Expression<'a> {
-  pub fn new(condition: impl ConditionTrait + 'a) -> Expression<'a> {
+  pub fn new(condition: impl Condition + 'a) -> Expression<'a> {
     Self {
       condition: Box::new(condition),
       ands: vec![],

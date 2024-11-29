@@ -1,4 +1,4 @@
-use crate::select::expression::ConditionTrait;
+use crate::select::condition::Condition;
 use crate::select::selector::Selector;
 
 pub struct ColumnNull<'a> {
@@ -13,7 +13,7 @@ impl<'a> ColumnNull<'a> {
   }
 }
 
-impl ConditionTrait for ColumnNull<'_> {
+impl Condition for ColumnNull<'_> {
   fn sql(&self, _value_index: &mut usize) -> String {
     let selector = self.selector.sql();
     format!("{} IS NULL", selector)

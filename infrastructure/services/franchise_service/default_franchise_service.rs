@@ -21,7 +21,7 @@ impl<'a> DefaultFranchiseService<'a> {
 }
 
 #[async_trait]
-impl<'a> FranchiseService for DefaultFranchiseService<'a> {
+impl FranchiseService for DefaultFranchiseService<'_> {
   async fn get(
     &self,
     language: Language,

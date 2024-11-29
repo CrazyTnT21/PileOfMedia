@@ -21,7 +21,7 @@ impl<'a> DefaultRoleService<'a> {
 }
 
 #[async_trait]
-impl<'a> RoleService for DefaultRoleService<'a> {
+impl RoleService for DefaultRoleService<'_> {
   async fn get(
     &self,
     language: Language,

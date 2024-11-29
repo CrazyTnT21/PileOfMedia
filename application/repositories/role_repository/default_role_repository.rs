@@ -39,7 +39,7 @@ impl<'a> DefaultRoleRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> RoleRepository for DefaultRoleRepository<'a> {
+impl RoleRepository for DefaultRoleRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
 

@@ -39,7 +39,7 @@ impl<'a> DefaultGenreRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> GenreRepository for DefaultGenreRepository<'a> {
+impl GenreRepository for DefaultGenreRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
 

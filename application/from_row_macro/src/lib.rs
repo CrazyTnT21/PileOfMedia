@@ -119,9 +119,7 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
 fn row_columns_impl(name: &Ident, columns: &Vec<String>) -> proc_macro2::TokenStream {
   quote!(
     impl from_row::RowColumns for #name {
-      fn columns() -> Vec<&'static str>{
-        vec![#(#columns),*]
-      }
+      const COLUMNS: &'static [&'static str] = &[#(#columns),*];
     }
   )
 }

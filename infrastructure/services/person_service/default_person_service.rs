@@ -15,13 +15,13 @@ pub struct DefaultPersonService<'a> {
 }
 
 impl<'a> DefaultPersonService<'a> {
-  pub fn new(person_repository: Arc<dyn PersonRepository + 'a>) -> DefaultPersonService {
+  pub fn new(person_repository: Arc<dyn PersonRepository + 'a>) -> DefaultPersonService<'a> {
     DefaultPersonService { person_repository }
   }
 }
 
 #[async_trait]
-impl<'a> PersonService for DefaultPersonService<'a> {
+impl PersonService for DefaultPersonService<'_> {
   async fn get(
     &self,
     language: Language,

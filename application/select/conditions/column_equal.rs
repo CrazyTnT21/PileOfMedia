@@ -1,4 +1,4 @@
-use crate::select::expression::ConditionTrait;
+use crate::select::condition::Condition;
 use crate::select::selector::Selector;
 
 pub struct ColumnEqual<'a> {
@@ -6,7 +6,7 @@ pub struct ColumnEqual<'a> {
   second_selector: Box<dyn Selector + 'a>,
 }
 
-impl ConditionTrait for ColumnEqual<'_> {
+impl Condition for ColumnEqual<'_> {
   fn sql(&self, _value_index: &mut usize) -> String {
     let selector = self.selector.sql();
     let second_selector = self.second_selector.sql();

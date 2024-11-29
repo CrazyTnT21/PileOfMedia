@@ -20,7 +20,7 @@ impl<'a, T, F> IOTransaction<'a, T, F> {
   }
 }
 
-impl<'a, T> IOTransaction<'a, T, ()> {
+impl<T> IOTransaction<'_, T, ()> {
   pub fn rollback(self) -> T {
     let function = self.rollback_fn;
     function();
@@ -28,7 +28,7 @@ impl<'a, T> IOTransaction<'a, T, ()> {
   }
 }
 
-impl<'a, T, F: Future<Output = ()>> IOTransaction<'a, T, F> {
+impl<T, F: Future<Output = ()>> IOTransaction<'_, T, F> {
   pub async fn rollback_async(self) -> T {
     let function = self.rollback_fn;
     function().await;

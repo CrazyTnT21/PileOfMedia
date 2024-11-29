@@ -15,13 +15,13 @@ pub struct DefaultBookService<'a> {
 }
 
 impl<'a> DefaultBookService<'a> {
-  pub fn new(book_repository: Arc<dyn BookRepository + 'a>) -> DefaultBookService {
+  pub fn new(book_repository: Arc<dyn BookRepository + 'a>) -> DefaultBookService<'a> {
     DefaultBookService { book_repository }
   }
 }
 
 #[async_trait]
-impl<'a> BookService for DefaultBookService<'a> {
+impl BookService for DefaultBookService<'_> {
   async fn get(
     &self,
     language: Language,

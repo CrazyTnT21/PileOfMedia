@@ -20,7 +20,7 @@ impl<'a> DefaultUserService<'a> {
 }
 
 #[async_trait]
-impl<'a> UserService for DefaultUserService<'a> {
+impl UserService for DefaultUserService<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<User>, ServiceError<UserServiceError>> {
     Ok(self.user_repository.get(pagination).await?)
   }

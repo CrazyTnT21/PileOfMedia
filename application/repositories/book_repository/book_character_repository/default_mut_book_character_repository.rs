@@ -24,7 +24,7 @@ impl<'a> DefaultMutBookCharacterRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookCharacterRepository for DefaultMutBookCharacterRepository<'a> {
+impl MutBookCharacterRepository for DefaultMutBookCharacterRepository<'_> {
   async fn add(&self, book_id: u32, characters: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let characters = to_i32(characters);

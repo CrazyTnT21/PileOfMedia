@@ -39,7 +39,7 @@ impl<'a> DefaultFranchiseRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> FranchiseRepository for DefaultFranchiseRepository<'a> {
+impl FranchiseRepository for DefaultFranchiseRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Franchise>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
 

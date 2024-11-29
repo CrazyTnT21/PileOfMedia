@@ -34,7 +34,7 @@ impl<'a> DefaultMutGenreService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutGenreService for DefaultMutGenreService<'a> {
+impl MutGenreService for DefaultMutGenreService<'_> {
   async fn create(&self, item: CreateGenre) -> Result<Genre, ServiceError<MutGenreServiceError>> {
     self.validate_create(&item).await?;
     let translations = self.transform_translations(item.translations).await?;

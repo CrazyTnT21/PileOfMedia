@@ -45,7 +45,7 @@ impl<'a> DefaultBookThemeRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> BookThemeRepository for DefaultBookThemeRepository<'a> {
+impl BookThemeRepository for DefaultBookThemeRepository<'_> {
   async fn get(
     &self,
     book_id: u32,

@@ -10,7 +10,7 @@ pub trait FromRow {
 }
 
 pub trait RowColumns<T: FromRow = Self>: FromRow {
-  fn columns() -> Vec<&'static str>;
+  const COLUMNS: &'static [&'static str];
 }
 
 pub trait Table {
@@ -59,9 +59,7 @@ impl FromRow for () {
 }
 
 impl<T: FromRow<DbType = T> + RowColumns + FromRowOption> RowColumns for Option<T> {
-  fn columns() -> Vec<&'static str> {
-    T::columns()
-  }
+  const COLUMNS: &'static [&'static str] = T::COLUMNS;
 }
 from_row_tuple!(T,);
 from_row_tuple!(T, T1);

@@ -24,7 +24,7 @@ impl<'a> DefaultMutBookGenreRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookGenreRepository for DefaultMutBookGenreRepository<'a> {
+impl MutBookGenreRepository for DefaultMutBookGenreRepository<'_> {
   async fn add(&self, book_id: u32, genres: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let genres = to_i32(genres);

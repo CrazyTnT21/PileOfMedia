@@ -34,7 +34,7 @@ impl<'a> DefaultMutRoleService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutRoleService for DefaultMutRoleService<'a> {
+impl MutRoleService for DefaultMutRoleService<'_> {
   async fn create(&self, item: CreateRole) -> Result<Role, ServiceError<MutRoleServiceError>> {
     self.validate_create(&item).await?;
     let translations = self.transform_translations(item.translations).await?;

@@ -21,7 +21,7 @@ impl<'a> DefaultCharacterService<'a> {
 }
 
 #[async_trait]
-impl<'a> CharacterService for DefaultCharacterService<'a> {
+impl CharacterService for DefaultCharacterService<'_> {
   async fn get(
     &self,
     language: Language,

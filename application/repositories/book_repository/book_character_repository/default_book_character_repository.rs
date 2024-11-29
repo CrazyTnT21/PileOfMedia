@@ -45,7 +45,7 @@ impl<'a> DefaultBookCharacterRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> BookCharacterRepository for DefaultBookCharacterRepository<'a> {
+impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
   async fn get(
     &self,
     book_id: u32,

@@ -21,7 +21,7 @@ impl<'a> DefaultBookGenreService<'a> {
 }
 
 #[async_trait]
-impl<'a> BookGenreService for DefaultBookGenreService<'a> {
+impl BookGenreService for DefaultBookGenreService<'_> {
   async fn get(
     &self,
     book_id: u32,

@@ -23,7 +23,7 @@ impl<'a> DefaultAccountService<'a> {
 }
 
 #[async_trait]
-impl<'a> AccountService for DefaultAccountService<'a> {
+impl AccountService for DefaultAccountService<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, ServiceError<AccountServiceError>> {
     Ok(self.account_repository.get(pagination).await?)
   }

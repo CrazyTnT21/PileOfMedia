@@ -35,7 +35,7 @@ impl<'a> DefaultUserRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> UserRepository for DefaultUserRepository<'a> {
+impl UserRepository for DefaultUserRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
     let total = Select::new::<DbUser>()
       .count()

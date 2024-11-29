@@ -14,14 +14,14 @@ pub struct Insert<'a, const U: usize> {
 }
 
 impl<'a, const U: usize> Insert<'a, U> {
-  pub fn new<T: Table>(columns: [&'a str; U]) -> Insert<'a, U> {
+  pub const fn new<T: Table>(columns: [&'a str; U]) -> Insert<'a, U> {
     Self::new_raw(T::TABLE_NAME, columns)
   }
-  pub fn new_raw(into: &'a str, columns: [&'a str; U]) -> Insert<'a, U> {
+  pub const fn new_raw(into: &'a str, columns: [&'a str; U]) -> Insert<'a, U> {
     Insert {
       into,
       columns,
-      values: vec![],
+      values: Vec::new(),
     }
   }
   pub fn values(mut self, values: [&'a dyn ToSqlValue<'a>; U]) -> Self {

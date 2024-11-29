@@ -34,7 +34,7 @@ impl<'a> DefaultAccountRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> AccountRepository for DefaultAccountRepository<'a> {
+impl AccountRepository for DefaultAccountRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, Box<dyn Error>> {
     let total = Select::new::<DbAccount>()
       .count()

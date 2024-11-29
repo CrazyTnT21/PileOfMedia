@@ -1,4 +1,5 @@
-use crate::select::expression::{ConditionTrait, IntoSql};
+use crate::select::condition::Condition;
+use crate::select::expression::IntoSql;
 use crate::select::selector::Selector;
 use crate::select::to_sql_value::ToSqlValue;
 
@@ -16,7 +17,7 @@ impl<'a> ValueIn<'a> {
   }
 }
 
-impl ConditionTrait for ValueIn<'_> {
+impl Condition for ValueIn<'_> {
   fn sql(&self, value_index: &mut usize) -> String {
     let selector = self.selector.sql();
     let values = self.values.sql(value_index);

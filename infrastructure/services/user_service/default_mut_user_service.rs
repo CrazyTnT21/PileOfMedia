@@ -30,7 +30,7 @@ impl<'a> DefaultMutUserService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutUserService for DefaultMutUserService<'a> {
+impl MutUserService for DefaultMutUserService<'_> {
   async fn create(&self, user: CreateUser) -> Result<User, ServiceError<MutUserServiceError>> {
     let data = user.user;
     let image = match user.profile_picture {

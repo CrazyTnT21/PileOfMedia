@@ -21,7 +21,7 @@ impl<'a> DefaultGenreService<'a> {
 }
 
 #[async_trait]
-impl<'a> GenreService for DefaultGenreService<'a> {
+impl GenreService for DefaultGenreService<'_> {
   async fn get(
     &self,
     language: Language,

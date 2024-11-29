@@ -48,7 +48,7 @@ impl<'a> DefaultCharacterRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> CharacterRepository for DefaultCharacterRepository<'a> {
+impl CharacterRepository for DefaultCharacterRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Character>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
 

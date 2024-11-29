@@ -48,7 +48,7 @@ impl<'a> DefaultPersonRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> PersonRepository for DefaultPersonRepository<'a> {
+impl PersonRepository for DefaultPersonRepository<'_> {
   async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Person>, Box<dyn Error>> {
     let language = DbLanguage::from(language);
 

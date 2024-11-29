@@ -34,7 +34,7 @@ impl<'a> DefaultMutThemeService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutThemeService for DefaultMutThemeService<'a> {
+impl MutThemeService for DefaultMutThemeService<'_> {
   async fn create(&self, item: CreateTheme) -> Result<Theme, ServiceError<MutThemeServiceError>> {
     self.validate_create(&item).await?;
     let translations = self.transform_translations(item.translations).await?;

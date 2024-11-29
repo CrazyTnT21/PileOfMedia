@@ -35,7 +35,7 @@ impl<'a> DefaultMutBookThemeService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookThemeService for DefaultMutBookThemeService<'a> {
+impl MutBookThemeService for DefaultMutBookThemeService<'_> {
   async fn add(&self, book_id: u32, themes: &[u32]) -> Result<(), ServiceError<MutBookThemeServiceError>> {
     self.validate_add(book_id, themes).await?;
     Ok(self.mut_book_theme_repository.add(book_id, themes).await?)

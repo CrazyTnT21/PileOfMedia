@@ -33,7 +33,7 @@ impl<'a> DefaultMutAccountRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> MutAccountRepository for DefaultMutAccountRepository<'a> {
+impl MutAccountRepository for DefaultMutAccountRepository<'_> {
   async fn create(&self, account: CreatePartialAccount) -> Result<Account, Box<dyn Error>> {
     let user_id = account.user.id as i32;
     let id = Insert::new::<DbAccount>(["fkuser", "email", "password"])

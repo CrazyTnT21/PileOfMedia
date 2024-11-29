@@ -28,7 +28,7 @@ impl<'a> DefaultImageRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> ImageRepository for DefaultImageRepository<'a> {
+impl ImageRepository for DefaultImageRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, Box<dyn Error>> {
     let total = Select::new::<DbImage>()
       .count()

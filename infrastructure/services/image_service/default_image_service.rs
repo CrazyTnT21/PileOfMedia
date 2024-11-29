@@ -20,7 +20,7 @@ impl<'a> DefaultImageService<'a> {
 }
 
 #[async_trait]
-impl<'a> ImageService for DefaultImageService<'a> {
+impl ImageService for DefaultImageService<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, ServiceError<ImageServiceError>> {
     Ok(self.image_repository.get(pagination).await?)
   }

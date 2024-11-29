@@ -39,7 +39,7 @@ impl<'a> DefaultMutPersonService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutPersonService for DefaultMutPersonService<'a> {
+impl MutPersonService for DefaultMutPersonService<'_> {
   async fn create(&self, item: CreatePerson) -> Result<Person, ServiceError<MutPersonServiceError>> {
     self.validate_create(&item).await?;
     let data = item.person;

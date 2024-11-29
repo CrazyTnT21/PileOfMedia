@@ -17,7 +17,7 @@ impl<'a> DefaultFileService<'a> {
 }
 
 #[async_trait]
-impl<'a> FileService for DefaultFileService<'a> {
+impl FileService for DefaultFileService<'_> {
   async fn get(&self, uri: &str) -> Result<Vec<u8>, ServiceError<FileServiceError>> {
     Ok(self.repository.get(uri).await?)
   }

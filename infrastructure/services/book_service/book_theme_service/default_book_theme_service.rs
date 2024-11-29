@@ -21,7 +21,7 @@ impl<'a> DefaultBookThemeService<'a> {
 }
 
 #[async_trait]
-impl<'a> BookThemeService for DefaultBookThemeService<'a> {
+impl BookThemeService for DefaultBookThemeService<'_> {
   async fn get(
     &self,
     book_id: u32,

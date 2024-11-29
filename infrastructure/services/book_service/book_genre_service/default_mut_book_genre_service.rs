@@ -35,7 +35,7 @@ impl<'a> DefaultMutBookGenreService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookGenreService for DefaultMutBookGenreService<'a> {
+impl MutBookGenreService for DefaultMutBookGenreService<'_> {
   async fn add(&self, book_id: u32, genres: &[u32]) -> Result<(), ServiceError<MutBookGenreServiceError>> {
     self.validate_add(book_id, genres).await?;
     Ok(self.mut_book_genre_repository.add(book_id, genres).await?)

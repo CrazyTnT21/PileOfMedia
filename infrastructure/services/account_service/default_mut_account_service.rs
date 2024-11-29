@@ -40,7 +40,7 @@ impl<'a> DefaultMutAccountService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutAccountService for DefaultMutAccountService<'a> {
+impl MutAccountService for DefaultMutAccountService<'_> {
   async fn create(&self, account: CreateAccount) -> Result<Account, ServiceError<MutAccountServiceError>> {
     self.validate_create(&account).await?;
     let data = account.account;

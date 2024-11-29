@@ -40,7 +40,7 @@ impl<'a> DefaultMutBookInvolvedService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookInvolvedService for DefaultMutBookInvolvedService<'a> {
+impl MutBookInvolvedService for DefaultMutBookInvolvedService<'_> {
   async fn add(&self, book_id: u32, involved: &[InvolvedId]) -> Result<(), ServiceError<MutBookInvolvedServiceError>> {
     self.validate_add(book_id, involved).await?;
     Ok(self.mut_book_involved_repository.add(book_id, involved).await?)

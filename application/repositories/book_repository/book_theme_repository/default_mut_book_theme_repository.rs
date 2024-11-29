@@ -24,7 +24,7 @@ impl<'a> DefaultMutBookThemeRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookThemeRepository for DefaultMutBookThemeRepository<'a> {
+impl MutBookThemeRepository for DefaultMutBookThemeRepository<'_> {
   async fn add(&self, book_id: u32, themes: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let themes = to_i32(themes);

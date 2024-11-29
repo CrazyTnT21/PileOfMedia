@@ -18,7 +18,7 @@ impl<'a> DefaultMutFileService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutFileService for DefaultMutFileService<'a> {
+impl MutFileService for DefaultMutFileService<'_> {
   async fn create(
     &self,
     data: &[u8],

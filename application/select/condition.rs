@@ -1,7 +1,8 @@
-use crate::select::comparison::Comparison;
+use crate::select::expression::IntoSql;
 
-#[derive(Debug, Clone)]
-pub enum Condition<'a> {
-  Column((&'a str, &'a str), (&'a str, &'a str)),
-  Value((&'a str, &'a str), Comparison<'a>),
+pub trait Condition: Send + Sync {
+  fn sql(&self, value_index: &mut usize) -> String;
+  fn values(&self) -> Vec<&IntoSql> {
+    Vec::new()
+  }
 }

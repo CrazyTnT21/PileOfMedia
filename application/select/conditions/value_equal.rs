@@ -1,4 +1,5 @@
-use crate::select::expression::{ConditionTrait, IntoSql};
+use crate::select::condition::Condition;
+use crate::select::expression::IntoSql;
 use crate::select::selector::Selector;
 use crate::select::to_sql_value::ToSqlValue;
 
@@ -7,7 +8,7 @@ pub struct ValueEqual<'a> {
   value: Box<dyn ToSqlValue<'a> + 'a>,
 }
 
-impl<'a> ConditionTrait for ValueEqual<'a> {
+impl Condition for ValueEqual<'_> {
   fn sql(&self, value_index: &mut usize) -> String {
     let selector = self.selector.sql();
     format!("{} = {}", selector, self.value.sql(value_index))

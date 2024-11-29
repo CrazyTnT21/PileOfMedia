@@ -35,7 +35,7 @@ impl<'a> DefaultMutBookCharacterService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookCharacterService for DefaultMutBookCharacterService<'a> {
+impl MutBookCharacterService for DefaultMutBookCharacterService<'_> {
   async fn add(&self, book_id: u32, characters: &[u32]) -> Result<(), ServiceError<MutBookCharacterServiceError>> {
     self.validate_add(book_id, characters).await?;
     Ok(self.mut_book_character_repository.add(book_id, characters).await?)

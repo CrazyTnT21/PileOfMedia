@@ -25,7 +25,7 @@ impl<'a> DefaultMutBookInvolvedRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'a> {
+impl MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'_> {
   async fn add(&self, book_id: u32, involved: &[InvolvedId]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let involved: Vec<(i32, i32)> = involved

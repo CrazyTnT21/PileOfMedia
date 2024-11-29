@@ -23,7 +23,7 @@ impl<'a> DefaultBookCharacterService<'a> {
 }
 
 #[async_trait]
-impl<'a> BookCharacterService for DefaultBookCharacterService<'a> {
+impl BookCharacterService for DefaultBookCharacterService<'_> {
   async fn get(
     &self,
     book_id: u32,

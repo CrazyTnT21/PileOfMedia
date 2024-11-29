@@ -66,7 +66,7 @@ impl<'a> DefaultMutBookService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutBookService for DefaultMutBookService<'a> {
+impl MutBookService for DefaultMutBookService<'_> {
   async fn create(&self, item: CreateBook) -> Result<Book, ServiceError<MutBookServiceError>> {
     self.validate_create(&item).await?;
     let data = item.book;

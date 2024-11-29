@@ -15,13 +15,13 @@ pub struct DefaultThemeService<'a> {
 }
 
 impl<'a> DefaultThemeService<'a> {
-  pub fn new(theme_repository: Arc<dyn ThemeRepository + 'a>) -> DefaultThemeService {
+  pub fn new(theme_repository: Arc<dyn ThemeRepository + 'a>) -> DefaultThemeService<'a> {
     DefaultThemeService { theme_repository }
   }
 }
 
 #[async_trait]
-impl<'a> ThemeService for DefaultThemeService<'a> {
+impl ThemeService for DefaultThemeService<'_> {
   async fn get(
     &self,
     language: Language,

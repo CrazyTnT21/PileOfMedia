@@ -1,4 +1,5 @@
-use crate::select::expression::{ConditionTrait, IntoSql};
+use crate::select::condition::Condition;
+use crate::select::expression::IntoSql;
 use crate::select::selector::Selector;
 
 pub struct ValueILike<'a> {
@@ -15,7 +16,7 @@ impl<'a> ValueILike<'a> {
   }
 }
 
-impl ConditionTrait for ValueILike<'_> {
+impl Condition for ValueILike<'_> {
   fn sql(&self, value_index: &mut usize) -> String {
     let selector = self.selector.sql();
     format!("{} ILIKE ${}", selector, crate::select::expression::next(value_index))

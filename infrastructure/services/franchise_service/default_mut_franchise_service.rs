@@ -36,7 +36,7 @@ impl<'a> DefaultMutFranchiseService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutFranchiseService for DefaultMutFranchiseService<'a> {
+impl MutFranchiseService for DefaultMutFranchiseService<'_> {
   async fn create(&self, item: CreateFranchise) -> Result<Franchise, ServiceError<MutFranchiseServiceError>> {
     self.validate_create(&item).await?;
     let translations = self.transform_translations(item.translations).await?;

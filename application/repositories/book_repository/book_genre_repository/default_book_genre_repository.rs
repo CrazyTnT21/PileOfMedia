@@ -45,7 +45,7 @@ impl<'a> DefaultBookGenreRepository<'a> {
 }
 
 #[async_trait]
-impl<'a> BookGenreRepository for DefaultBookGenreRepository<'a> {
+impl BookGenreRepository for DefaultBookGenreRepository<'_> {
   async fn get(
     &self,
     book_id: u32,

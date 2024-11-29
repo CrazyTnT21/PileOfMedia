@@ -36,7 +36,7 @@ impl<'a> DefaultMutImageService<'a> {
 }
 
 #[async_trait]
-impl<'a> MutImageService for DefaultMutImageService<'a> {
+impl MutImageService for DefaultMutImageService<'_> {
   async fn create(&self, image: CreateImage) -> Result<Image, ServiceError<MutImageServiceError>> {
     //TODO: Validate data size
     let file = self
