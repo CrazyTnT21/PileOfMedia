@@ -1,5 +1,6 @@
 use axum::async_trait;
 use axum::extract::{FromRequest, Multipart, Request};
+use std::collections::HashMap;
 use std::error::Error;
 
 #[async_trait]
@@ -22,4 +23,23 @@ impl<T: FromMultiPart, S: Send + Sync> FromRequest<S> for MultiPartRequest<T> {
     Ok(multipart)
   }
 }
+pub async fn serialize_parts<'a>(
+  mut multipart: Multipart,
+) -> Result<HashMap<Option<String>, Vec<Bytes>>, MultipartError> {
+  let mut result: HashMap<Option<String>, Vec<Bytes>> = HashMap::new();
+  while let Some(value) = multipart.next_field().await? {
+    let previous = result.get_mut(&value.name().map(std::string::ToString::to_string));
+    if let Some(set) = previous {
+      set.push(value.bytes().await?);
+      continue;
+    }
+    result.insert(
+      value.name().map(std::string::ToString::to_string),
+      vec![value.bytes().await?],
+    );
+  }
+  Ok(result)
+}
 pub use axum;
+use axum::body::Bytes;
+use axum::extract::multipart::MultipartError;

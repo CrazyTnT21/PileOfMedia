@@ -20,6 +20,8 @@ services:
       API_URL: https://localhost/api/
   db:
     build: Database
+    ports:
+      - "5432:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
     environment:

@@ -104,7 +104,6 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
   let columns_impl = row_columns_impl(&ast.ident, &columns);
   let name = &ast.ident;
   let table_name = renamed_field(&ast.attrs).unwrap_or_else(|| ast.ident.to_string());
-
   let gen = quote! {
     #from_row_impl
     #columns_impl
@@ -112,6 +111,16 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
       const TABLE_NAME: &'static str = #table_name;
     }
   };
+
+  #[cfg(feature = "testing")]
+  let gen = quote!(
+    #gen
+    #[cfg(test)]
+    #[tokio::test]
+    async fn test_from_row(){
+      from_row::testing::from_row_test::<#name>().await;
+    }
+  );
 
   gen.into()
 }

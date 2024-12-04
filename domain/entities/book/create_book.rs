@@ -1,10 +1,8 @@
-use std::collections::HashMap;
-
-use chrono::NaiveDate;
-
 use crate::entities::book::book_involved::InvolvedId;
 use crate::entities::image::create_image::CreateImage;
 use crate::enums::language::Language;
+use chrono::NaiveDate;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -53,11 +51,15 @@ pub enum CreateCover {
 
 #[cfg(feature = "axum-multipart")]
 pub mod create_book_part {
-  use std::error::Error;
-  use std::fmt::{Display, Formatter};
-
   use crate::entities::book::create_book::{CreateBook, CreateBookData};
   use crate::entities::image::create_image::CreateImage;
+  use crate::vec_single::{Single, SingleVecError};
+  use multipart::axum::extract::multipart::MultipartError;
+  use multipart::axum::extract::Multipart;
+  use multipart::{serialize_parts, FromMultiPart};
+  use serde_json::from_slice;
+  use std::error::Error;
+  use std::fmt::{Display, Formatter};
 
   #[derive(Debug)]
   pub enum CreateBookPart {
@@ -68,11 +70,19 @@ pub mod create_book_part {
 
   #[derive(Debug)]
   pub enum CreateBookPartError {
-    MissingPart,
-    InvalidFormat,
     BookMissing,
-    UnknownPart(String),
+    MoreThanOneBook,
     OtherError(Box<dyn Error + Send>),
+  }
+  impl From<serde_json::Error> for CreateBookPartError {
+    fn from(value: serde_json::Error) -> Self {
+      CreateBookPartError::OtherError(Box::new(value))
+    }
+  }
+  impl From<MultipartError> for CreateBookPartError {
+    fn from(value: MultipartError) -> Self {
+      CreateBookPartError::OtherError(Box::new(value))
+    }
   }
 
   impl Display for CreateBookPartError {
@@ -81,11 +91,9 @@ pub mod create_book_part {
         f,
         "{}",
         match self {
-          CreateBookPartError::InvalidFormat => "Invalid part format".to_string(),
-          CreateBookPartError::UnknownPart(value) => format!("Unknown part '{}'", value),
           CreateBookPartError::BookMissing => "Book missing".to_string(),
-          CreateBookPartError::MissingPart => "Missing part value".to_string(),
           CreateBookPartError::OtherError(value) => value.to_string(),
+          CreateBookPartError::MoreThanOneBook => "There is more than 1 book".to_string(),
         }
       )
     }
@@ -93,68 +101,29 @@ pub mod create_book_part {
 
   impl Error for CreateBookPartError {}
 
-  impl CreateBookPart {
-    fn from_header(name: &str) -> Result<Self, CreateBookPartError> {
-      if name.is_empty() {
-        return Err(CreateBookPartError::InvalidFormat);
-      }
-
-      let result = match name.to_lowercase().as_str() {
-        "book" => CreateBookPart::Book,
-        "covers" => CreateBookPart::Cover,
-        // "image" => CreateBookPart::Image,
-        _ => Err(CreateBookPartError::UnknownPart(name.to_string()))?,
-      };
-      Ok(result)
-    }
-  }
-
   #[async_trait::async_trait]
-  impl multipart::FromMultiPart for CreateBook {
+  impl FromMultiPart for CreateBook {
     type Error = CreateBookPartError;
 
-    async fn from_multi_part(mut multipart: multipart::axum::extract::Multipart) -> Result<Self, Self::Error>
+    async fn from_multi_part(multipart: Multipart) -> Result<Self, Self::Error>
     where
       Self: Sized,
     {
-      let mut book: Option<CreateBookData> = None;
-      let mut covers: Vec<CreateImage> = vec![];
-      // let mut images = vec![];
-      while let Some(field) = multipart
-        .next_field()
-        .await
-        .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?
-      {
-        let part = CreateBookPart::from_header(field.name().ok_or(CreateBookPartError::MissingPart)?)?;
-        match part {
-          CreateBookPart::Book => {
-            let create_book = serde_json::from_slice::<CreateBookData>(
-              &field
-                .bytes()
-                .await
-                .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?,
-            )
-            .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?;
-            book = Some(create_book);
-          }
-          CreateBookPart::Cover => {
-            covers.push(CreateImage(
-              field
-                .bytes()
-                .await
-                .map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?
-                .to_vec(),
-            ));
-          } // CreateBookPart::Image => { images.push(a.bytes().await.map_err(|x| CreateBookPartError::OtherError(Box::new(x)))?); }
-        }
-      }
+      let mut parts = serialize_parts(multipart).await?;
+      let book_bytes = parts
+        .remove(&Some("book".to_string()))
+        .ok_or_else(|| CreateBookPartError::BookMissing)?
+        .single()
+        .map_err(|x| match x {
+          SingleVecError::NoItems => CreateBookPartError::BookMissing,
+          SingleVecError::MoreThanOneItem(_) => CreateBookPartError::MoreThanOneBook,
+        })?;
 
-      let book = CreateBook {
-        book: book.ok_or(CreateBookPartError::BookMissing)?,
-        covers,
-      };
+      let book: CreateBookData = from_slice(&book_bytes)?;
 
-      Ok(book)
+      let covers = parts.remove(&Some("covers".to_string())).unwrap_or_else(Vec::new);
+      let covers: Vec<CreateImage> = covers.into_iter().map(|x| CreateImage(x.to_vec())).collect();
+      Ok(CreateBook { book, covers })
     }
   }
 }

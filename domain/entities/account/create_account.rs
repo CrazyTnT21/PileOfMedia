@@ -20,12 +20,15 @@ pub struct CreateAccountData {
 }
 
 #[cfg(feature = "axum-multipart")]
-pub mod create_book_part {
-  use std::error::Error;
-  use std::fmt::{Display, Formatter};
-
+pub mod create_account_part {
   use crate::entities::account::create_account::{CreateAccount, CreateAccountData};
   use crate::entities::image::create_image::CreateImage;
+  use crate::vec_single::{Single, SingleVecError};
+  use multipart::axum::extract::multipart::MultipartError;
+  use multipart::serialize_parts;
+  use serde_json::from_slice;
+  use std::error::Error;
+  use std::fmt::{Display, Formatter};
 
   #[derive(Debug)]
   pub enum CreateAccountPart {
@@ -35,10 +38,9 @@ pub mod create_book_part {
 
   #[derive(Debug)]
   pub enum CreateAccountPartError {
-    MissingPart,
-    InvalidFormat,
     AccountMissing,
-    UnknownPart(String),
+    MoreThanOneAccount,
+    MoreThanOneProfilePicture,
     OtherError(Box<dyn Error + Send>),
   }
 
@@ -48,11 +50,10 @@ pub mod create_book_part {
         f,
         "{}",
         match self {
-          CreateAccountPartError::InvalidFormat => "Invalid part format".to_string(),
-          CreateAccountPartError::UnknownPart(value) => format!("Unknown part '{}'", value),
           CreateAccountPartError::AccountMissing => "Account missing".to_string(),
-          CreateAccountPartError::MissingPart => "Missing part value".to_string(),
           CreateAccountPartError::OtherError(value) => value.to_string(),
+          CreateAccountPartError::MoreThanOneAccount => "There is more than 1 account".to_string(),
+          CreateAccountPartError::MoreThanOneProfilePicture => "There is more than 1 profile picture".to_string(),
         }
       )
     }
@@ -60,63 +61,56 @@ pub mod create_book_part {
 
   impl Error for CreateAccountPartError {}
 
-  impl CreateAccountPart {
-    fn from_header(value: &str) -> Result<Self, CreateAccountPartError> {
-      if value.is_empty() {
-        return Err(CreateAccountPartError::InvalidFormat);
-      }
-      let result = match value.to_lowercase().as_str() {
-        "account" => CreateAccountPart::Account,
-        "profile_picture" => CreateAccountPart::ProfilePicture,
-        _ => Err(CreateAccountPartError::UnknownPart(value.to_string()))?,
-      };
-      Ok(result)
+  impl From<serde_json::Error> for CreateAccountPartError {
+    fn from(value: serde_json::Error) -> Self {
+      CreateAccountPartError::OtherError(Box::new(value))
     }
   }
-
+  impl From<MultipartError> for CreateAccountPartError {
+    fn from(value: MultipartError) -> Self {
+      CreateAccountPartError::OtherError(Box::new(value))
+    }
+  }
   #[async_trait::async_trait]
   impl multipart::FromMultiPart for CreateAccount {
     type Error = CreateAccountPartError;
 
-    async fn from_multi_part(mut multipart: multipart::axum::extract::Multipart) -> Result<Self, Self::Error>
+    async fn from_multi_part(multipart: multipart::axum::extract::Multipart) -> Result<Self, Self::Error>
     where
       Self: Sized,
     {
-      let mut data: Option<CreateAccountData> = None;
-      let mut image = None;
-      while let Some(a) = multipart
-        .next_field()
-        .await
-        .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?
-      {
-        let part = CreateAccountPart::from_header(a.name().ok_or(CreateAccountPartError::MissingPart)?)?;
-        match part {
-          CreateAccountPart::Account => {
-            let create_account = serde_json::from_slice::<CreateAccountData>(
-              &a.bytes()
-                .await
-                .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?,
-            )
-            .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?;
-            data = Some(create_account);
-          }
-          CreateAccountPart::ProfilePicture => {
-            image = Some(
-              a.bytes()
-                .await
-                .map_err(|x| CreateAccountPartError::OtherError(Box::new(x)))?,
-            );
-          }
-        }
-      }
-      let data = data.ok_or(CreateAccountPartError::AccountMissing)?;
-      let profile_picture = image.map(|x| CreateImage(x.to_vec()));
+      let mut parts = serialize_parts(multipart).await?;
+      let account_bytes = parts
+        .remove(&Some("account".to_string()))
+        .ok_or_else(|| CreateAccountPartError::AccountMissing)?
+        .single()
+        .map_err(|x| match x {
+          SingleVecError::NoItems => CreateAccountPartError::AccountMissing,
+          SingleVecError::MoreThanOneItem(_) => CreateAccountPartError::MoreThanOneAccount,
+        })?;
 
-      let account = CreateAccount {
-        account: data,
+      let account: CreateAccountData = from_slice(&account_bytes)?;
+
+      let profile_picture = parts
+        .remove(&Some("profile_picture".to_string()))
+        .unwrap_or_else(Vec::new);
+      let profile_picture = profile_picture
+        .into_iter()
+        .map(|x| CreateImage(x.to_vec()))
+        .collect::<Vec<CreateImage>>()
+        .single();
+      let profile_picture = match profile_picture {
+        Ok(pic) => Ok(Some(pic)),
+        Err(err) => match err {
+          SingleVecError::NoItems => Ok(None),
+          SingleVecError::MoreThanOneItem(_) => Err(CreateAccountPartError::MoreThanOneProfilePicture),
+        },
+      }?;
+
+      Ok(CreateAccount {
+        account,
         profile_picture,
-      };
-      Ok(account)
+      })
     }
   }
 }

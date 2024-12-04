@@ -34,11 +34,14 @@ pub struct CreatePersonTranslation {
 
 #[cfg(feature = "axum-multipart")]
 pub mod create_person_part {
-  use std::error::Error;
-  use std::fmt::{Display, Formatter};
-
   use crate::entities::person::create_person::CreateImage;
   use crate::entities::person::create_person::{CreatePerson, CreatePersonData};
+  use crate::vec_single::{Single, SingleVecError};
+  use multipart::axum::extract::multipart::MultipartError;
+  use multipart::serialize_parts;
+  use serde_json::from_slice;
+  use std::error::Error;
+  use std::fmt::{Display, Formatter};
 
   #[derive(Debug)]
   pub enum CreatePersonPart {
@@ -48,10 +51,9 @@ pub mod create_person_part {
 
   #[derive(Debug)]
   pub enum CreatePersonPartError {
-    MissingPart,
-    InvalidFormat,
     PersonMissing,
-    UnknownPart(String),
+    MoreThanOnePerson,
+    MoreThanOneProfilePicture,
     OtherError(Box<dyn Error + Send>),
   }
 
@@ -61,29 +63,23 @@ pub mod create_person_part {
         f,
         "{}",
         match self {
-          CreatePersonPartError::InvalidFormat => "Invalid part format".to_string(),
-          CreatePersonPartError::UnknownPart(value) => format!("Unknown part '{}'", value),
           CreatePersonPartError::PersonMissing => "Person missing".to_string(),
-          CreatePersonPartError::MissingPart => "Missing part value".to_string(),
           CreatePersonPartError::OtherError(value) => value.to_string(),
+          CreatePersonPartError::MoreThanOnePerson => "There is more than 1 person".to_string(),
+          CreatePersonPartError::MoreThanOneProfilePicture => "There is more than 1 profile picture".to_string(),
         }
       )
     }
   }
-
   impl Error for CreatePersonPartError {}
-
-  impl CreatePersonPart {
-    fn from_header(value: &str) -> Result<Self, CreatePersonPartError> {
-      if value.is_empty() {
-        return Err(CreatePersonPartError::InvalidFormat);
-      }
-      let result = match value.to_lowercase().as_str() {
-        "person" => CreatePersonPart::Person,
-        "image" => CreatePersonPart::Image,
-        _ => Err(CreatePersonPartError::UnknownPart(value.to_string()))?,
-      };
-      Ok(result)
+  impl From<serde_json::Error> for CreatePersonPartError {
+    fn from(value: serde_json::Error) -> Self {
+      CreatePersonPartError::OtherError(Box::new(value))
+    }
+  }
+  impl From<MultipartError> for CreatePersonPartError {
+    fn from(value: MultipartError) -> Self {
+      CreatePersonPartError::OtherError(Box::new(value))
     }
   }
 
@@ -91,42 +87,37 @@ pub mod create_person_part {
   impl multipart::FromMultiPart for CreatePerson {
     type Error = CreatePersonPartError;
 
-    async fn from_multi_part(mut multipart: multipart::axum::extract::Multipart) -> Result<Self, Self::Error>
+    async fn from_multi_part(multipart: multipart::axum::extract::Multipart) -> Result<Self, Self::Error>
     where
       Self: Sized,
     {
-      let mut person: Option<CreatePersonData> = None;
-      let mut image = None;
-      while let Some(a) = multipart
-        .next_field()
-        .await
-        .map_err(|x| CreatePersonPartError::OtherError(Box::new(x)))?
-      {
-        let part = CreatePersonPart::from_header(a.name().ok_or(CreatePersonPartError::MissingPart)?)?;
-        match part {
-          CreatePersonPart::Person => {
-            let create_person = serde_json::from_slice::<CreatePersonData>(
-              &a.bytes()
-                .await
-                .map_err(|x| CreatePersonPartError::OtherError(Box::new(x)))?,
-            )
-            .map_err(|x| CreatePersonPartError::OtherError(Box::new(x)))?;
-            person = Some(create_person);
-          }
-          CreatePersonPart::Image => {
-            image = Some(
-              a.bytes()
-                .await
-                .map_err(|x| CreatePersonPartError::OtherError(Box::new(x)))?,
-            );
-          }
-        }
-      }
-      let data = person.ok_or(CreatePersonPartError::PersonMissing)?;
-      let image = image.map(|x| CreateImage(x.to_vec()));
+      let mut parts = serialize_parts(multipart).await?;
+      let person_bytes = parts
+        .remove(&Some("person".to_string()))
+        .ok_or_else(|| CreatePersonPartError::PersonMissing)?
+        .single()
+        .map_err(|x| match x {
+          SingleVecError::NoItems => CreatePersonPartError::PersonMissing,
+          SingleVecError::MoreThanOneItem(_) => CreatePersonPartError::MoreThanOnePerson,
+        })?;
 
-      let user = CreatePerson { person: data, image };
-      Ok(user)
+      let person: CreatePersonData = from_slice(&person_bytes)?;
+
+      let image = parts.remove(&Some("image".to_string())).unwrap_or_else(Vec::new);
+      let image = image
+        .into_iter()
+        .map(|x| CreateImage(x.to_vec()))
+        .collect::<Vec<CreateImage>>()
+        .single();
+      let image = match image {
+        Ok(pic) => Ok(Some(pic)),
+        Err(err) => match err {
+          SingleVecError::NoItems => Ok(None),
+          SingleVecError::MoreThanOneItem(_) => Err(CreatePersonPartError::MoreThanOneProfilePicture),
+        },
+      }?;
+
+      Ok(CreatePerson { person, image })
     }
   }
 }

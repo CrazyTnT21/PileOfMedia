@@ -111,3 +111,80 @@ mod chrono_from {
   from_row_impl!(NaiveTime);
   from_row_impl!(NaiveDateTime);
 }
+
+#[cfg(feature = "testing")]
+pub mod testing {
+  use std::sync::Mutex;
+  use testcontainers::{ContainerAsync, GenericImage, ImageExt};
+
+  static CONTAINER: tokio::sync::Mutex<Option<ContainerAsync<GenericImage>>> = tokio::sync::Mutex::const_new(None);
+  static COUNT: Mutex<usize> = Mutex::new(0);
+
+  use super::{RowColumns, Table};
+  use bb8_postgres::bb8::Pool;
+  use bb8_postgres::PostgresConnectionManager;
+  use std::error::Error;
+  use testcontainers::core::{IntoContainerPort, WaitFor};
+  use testcontainers::runners::AsyncRunner;
+  use tokio_postgres::NoTls;
+
+  pub async fn from_row_test<T: RowColumns + Table>() {
+    let result = wrapper::<T>().await;
+    {
+      let count = {
+        let mut count = COUNT.lock().unwrap();
+        *count -= 1;
+        *count
+      };
+      if count == 0 {
+        let mut lock = CONTAINER.lock().await;
+        *lock = None;
+      }
+    }
+    if let Err(e) = result {
+      panic!("{}", e);
+    }
+  }
+  async fn wrapper<T: RowColumns + Table>() -> Result<(), Box<dyn Error>> {
+    {
+      let mut count = COUNT.lock()?;
+      *count += 1;
+    }
+    {
+      let mut lock = CONTAINER.lock().await;
+
+      if !lock.is_some() {
+        *lock = Some(create_image().await?);
+      }
+    }
+
+    let manager = PostgresConnectionManager::new_from_stringlike(
+      "postgresql://postgres:Placeholder@localhost:9876/collectiondb",
+      NoTls,
+    )?;
+    let pool = Pool::builder().build(manager).await?;
+    let connection = pool.get().await?;
+    let result = connection
+      .query(&format!("SELECT {} FROM {}", T::COLUMNS.join(","), T::TABLE_NAME), &[])
+      .await;
+    match result {
+      Ok(_) => {}
+      Err(err) => {
+        Err(err.as_db_error().ok_or("db error missing")?.message())?;
+      }
+    };
+    Ok(())
+  }
+
+  async fn create_image() -> testcontainers::core::error::Result<ContainerAsync<GenericImage>> {
+    GenericImage::new("mycollection-db", "latest")
+      .with_wait_for(WaitFor::message_on_stdout(
+        "database system is ready to accept connections",
+      ))
+      .with_mapped_port(9876, 5432.tcp())
+      .with_network("mycollection")
+      .with_env_var("POSTGRES_PASSWORD", "Placeholder")
+      .start()
+      .await
+  }
+}

@@ -7,18 +7,14 @@ edition = "2021"
 
 [dependencies]
 quote = "1.0.37"
-syn = "2.0.89"
-proc-macro2 = "1.0.91"
-
-tokio-postgres = { version = "0.7.12", optional = true }
-tokio = { version = "1.41.1", optional = true }
-dotenvy = { version = "0.15.7", optional = true }
+syn = "2.0.90"
+proc-macro2 = "1.0.92"
 
 [lib]
 proc-macro = true
 
 [features]
-validate = ["tokio-postgres", "dotenvy", "tokio", "tokio/rt", "tokio/rt-multi-thread"]
+testing = []
 
 [lints]
 workspace = true

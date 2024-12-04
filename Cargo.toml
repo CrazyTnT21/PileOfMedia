@@ -11,6 +11,17 @@ members = [
   "openapi"
 ]
 
+[package]
+name = "my_collection"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.42.0", features = ["rt", "rt-multi-thread", "macros"] }
+navigation = { path = "navigation" }
+
 [workspace.lints.clippy]
 branches_sharing_code = "warn"
 cognitive_complexity = "warn"
@@ -108,14 +119,3 @@ used_underscore_binding = "warn"
 #used_underscore_items = "warn"
 useless_let_if_seq = "warn"
 zero_sized_map_values = "warn"
-
-[package]
-name = "my_collection"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-tokio = { version = "1.41.1", features = ["rt", "rt-multi-thread", "macros"] }
-navigation = { path = "navigation" }
