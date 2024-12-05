@@ -25,5 +25,22 @@ macro_rules! enum_from_sql {
         true
       }
     }
+    impl from_row::postgres_type::PostgresType for $x {
+      const POSTGRES_TYPES: &[from_row::postgres_type::TypeKind] = &[from_row::postgres_type::TypeKind::SimpleType {
+        name: $db_name,
+        kind: Kind::Enum(vec![]),
+      }];
+    }
   };
 }
+//TODO:  kind: Enum(
+//                 [
+//                     "EN",
+//                     "DE",
+//                     "ES",
+//                     "DA",
+//                     "NL",
+//                     "JA",
+//                     "KO",
+//                 ],
+//             ),

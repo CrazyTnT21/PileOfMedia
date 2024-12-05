@@ -13,6 +13,7 @@ pub fn from_row(item: TokenStream) -> TokenStream {
 struct DbColumnIdent {
   field: Ident,
   rename: Option<String>,
+  field_type: Type,
   is_optional: bool,
 }
 
@@ -89,16 +90,21 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
       rename: renamed_field(&x.attrs),
       field: x.clone().ident.unwrap(),
       is_optional: is_optional(&x.ty),
+      field_type: x.clone().ty,
     })
     .collect::<Vec<DbColumnIdent>>();
 
   let columns = db_mapping
     .iter()
-    .map(|x| match &x.rename {
-      None => x.field.clone().to_string(),
-      Some(value) => value.clone(),
+    .map(|x| {
+      let name = match &x.rename {
+        None => x.field.clone().to_string(),
+        Some(value) => value.clone(),
+      };
+      let field_type = &x.field_type;
+      quote!((#name,<#field_type as from_row::postgres_type::PostgresType>::POSTGRES_TYPES))
     })
-    .collect::<Vec<String>>();
+    .collect::<Vec<proc_macro2::TokenStream>>();
 
   let from_row_impl = from_row_impl(&ast.ident, &db_mapping);
   let columns_impl = row_columns_impl(&ast.ident, &columns);
@@ -125,10 +131,10 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
   gen.into()
 }
 
-fn row_columns_impl(name: &Ident, columns: &Vec<String>) -> proc_macro2::TokenStream {
+fn row_columns_impl(name: &Ident, columns: &[proc_macro2::TokenStream]) -> proc_macro2::TokenStream {
   quote!(
     impl from_row::RowColumns for #name {
-      const COLUMNS: &'static [&'static str] = &[#(#columns),*];
+      const COLUMNS: &'static [(&'static str, &'static [from_row::postgres_type::TypeKind])] = &[#(#columns),*];
     }
   )
 }
