@@ -47,7 +47,11 @@ impl<'a, const U: usize> Insert<'a, U> {
       .map_err(InsertError::PostgresError)
   }
 
-  pub async fn returning(&self, column: &'a str, connection: &'a Client) -> Result<i32, InsertError> {
+  pub async fn returning<T: for<'b> tokio_postgres::types::FromSql<'b>>(
+    &self,
+    column: &'a str,
+    connection: &'a Client,
+  ) -> Result<T, InsertError> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne);
     }
@@ -56,15 +60,14 @@ impl<'a, const U: usize> Insert<'a, U> {
       .query_one(&self.returning_sql(column), &self.sql_values())
       .await
       .map_err(InsertError::PostgresError)?;
-
-    Ok(result.get(0))
+    Ok(result.get::<'_, _, T>(0))
   }
 
-  pub async fn returning_transaction(
+  pub async fn returning_transaction<T: for<'b> tokio_postgres::types::FromSql<'b>>(
     &self,
     column: &'a str,
     transaction: &'a Transaction<'a>,
-  ) -> Result<i32, InsertError> {
+  ) -> Result<T, InsertError> {
     if self.values.len() > 1 {
       return Err(InsertError::ReturningMoreThanOne);
     }
@@ -72,7 +75,7 @@ impl<'a, const U: usize> Insert<'a, U> {
       .query_one(&self.returning_sql(column), &self.sql_values())
       .await
       .map_err(InsertError::PostgresError)?;
-    Ok(result.get(0))
+    Ok(result.get::<'_, _, T>(0))
   }
 
   pub fn sql(&self) -> String {

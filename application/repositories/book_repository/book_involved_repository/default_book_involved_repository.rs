@@ -4,7 +4,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
-use domain::entities::book::book_involved::{BookInvolved, InvolvedId};
+use domain::entities::book::book_involved::BookInvolved;
+use domain::entities::involved::InvolvedId;
 use domain::entities::person::person_role::PersonRole;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;

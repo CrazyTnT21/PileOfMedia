@@ -1,22 +1,3 @@
-use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::routing::{delete, get, post};
-use axum::{Json, Router};
-use domain::entities::book::book_involved::InvolvedId;
-use domain::entities::book::create_book::CreateBook;
-use multipart::MultiPartRequest;
-use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
-use services::book_service::book_character_service::BookCharacterService;
-use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
-use services::book_service::book_genre_service::BookGenreService;
-use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
-use services::book_service::book_involved_service::BookInvolvedService;
-use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
-use services::book_service::book_theme_service::BookThemeService;
-use services::book_service::mut_book_service::MutBookService;
-use services::book_service::BookService;
-
 use crate::app_state::AppState;
 use crate::controllers::book_controller::book_implementations::{
   get_character_service, get_genre_service, get_involved_service, get_mut_character_service, get_mut_genre_service,
@@ -36,6 +17,25 @@ use crate::openapi::params::query::page::PageParam;
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
+use axum::extract::{Path, Query, State};
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::routing::{delete, get, post};
+use axum::{Json, Router};
+use domain::entities::book::create_book::CreateBook;
+use domain::entities::involved::InvolvedId;
+use multipart::MultiPartRequest;
+use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
+use services::book_service::book_character_service::BookCharacterService;
+use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
+use services::book_service::book_genre_service::BookGenreService;
+use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
+use services::book_service::book_involved_service::BookInvolvedService;
+use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
+use services::book_service::book_theme_service::BookThemeService;
+use services::book_service::mut_book_service::MutBookService;
+use services::book_service::{BookService, BookServiceError};
+use services::traits::service_error::ServiceError;
 
 pub mod book_doc;
 mod book_implementations;
@@ -46,8 +46,9 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/", post(create_book))
     .route("/:id", get(get_by_id))
     .route("/:id", delete(delete_book))
+    .route("/:id/statistic", get(get_statistic))
     .route("/title/:title", get(get_by_title))
-    .route("/:ids/genres", get(get_genres))
+    .route("/:id/genres", get(get_genres))
     .route("/:id/genres/:genre_id", post(add_genre))
     .route("/:id/genres/:genre_id", delete(remove_genre))
     .route("/:id/themes", get(get_themes))
@@ -118,6 +119,29 @@ async fn get_by_id(
       Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
     },
     Err(error) => Err(convert_service_error(error)),
+  }
+}
+#[utoipa::path(get, path = "/{id}/statistic",
+  responses(
+    (status = 200, description = "Returned book statistic based on the id", body = BookStatistic), ServerError, BadRequest, NotFound
+  ),
+  params(IdParam),
+  tag = "Books"
+)]
+async fn get_statistic(Path(id): Path<u32>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
+  let service = get_service(&connection);
+
+  println!("Route for a book statistic with id {}", id);
+
+  match service.get_statistics(&[id]).await {
+    Ok(mut items) => Ok((StatusCode::OK, Json(items.swap_remove(0)))),
+    Err(error) => Err(match error {
+      ServiceError::ClientError(error) => match error {
+        BookServiceError::NonExistentBooks(_) => (StatusCode::NOT_FOUND, error.to_string()),
+      },
+      ServiceError::ServerError(_) => convert_service_error(error),
+    }),
   }
 }
 

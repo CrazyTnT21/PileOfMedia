@@ -74,16 +74,15 @@ impl MutBookService for DefaultMutBookService<'_> {
     let translations = self.transform_translations(data.translations, covers).await?;
 
     let partial_book = CreatePartialBook {
-      chapters: data.chapters,
-      pages: data.pages,
-      words: data.words,
+      slug: data.slug,
       published: data.published,
       franchise: data.franchise,
       translations,
-      genres: data.genres,
-      themes: data.themes,
-      characters: data.characters,
-      involved: data.involved,
+      genres: data.genres.unwrap_or_default(),
+      themes: data.themes.unwrap_or_default(),
+      characters: data.characters.unwrap_or_default(),
+      involved: data.involved.unwrap_or_default(),
+      // images: vec![], // TODO,
     };
     Ok(self.mut_book_repository.create(partial_book).await?)
   }
@@ -198,6 +197,7 @@ impl<'a> DefaultMutBookService<'a> {
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateBook) -> Result<(), ServiceError<MutBookServiceError>> {
+    //TODO: Slug
     let data = &item.book;
     if let Some(franchise_id) = data.franchise {
       let ids = self.franchise_repository.filter_existing(&[franchise_id]).await?;
@@ -205,43 +205,52 @@ impl<'a> DefaultMutBookService<'a> {
         return Err(ClientError(MutBookServiceError::NonExistentFranchise(franchise_id)));
       }
     }
-    if !data.themes.is_empty() {
-      let existing_themes = self.theme_repository.filter_existing(&data.themes).await?;
-      if data.themes.len() != existing_themes.len() {
-        let non_existent_themes = filter_non_existent(&data.themes, &existing_themes);
-        return Err(ClientError(MutBookServiceError::NonExistentThemes(non_existent_themes)));
+    if let Some(themes) = &data.themes {
+      if !themes.is_empty() {
+        let existing_themes = self.theme_repository.filter_existing(themes).await?;
+        if themes.len() != existing_themes.len() {
+          let non_existent_themes = filter_non_existent(themes, &existing_themes);
+          return Err(ClientError(MutBookServiceError::NonExistentThemes(non_existent_themes)));
+        }
       }
     }
-    if !data.genres.is_empty() {
-      let existing_genres = self.genre_repository.filter_existing(&data.genres).await?;
-      if data.genres.len() != existing_genres.len() {
-        let non_existent_genres = filter_non_existent(&data.genres, &existing_genres);
-        return Err(ClientError(MutBookServiceError::NonExistentGenres(non_existent_genres)));
+    if let Some(genres) = &data.genres {
+      if !genres.is_empty() {
+        let existing_genres = self.genre_repository.filter_existing(genres).await?;
+        if genres.len() != existing_genres.len() {
+          let non_existent_genres = filter_non_existent(genres, &existing_genres);
+          return Err(ClientError(MutBookServiceError::NonExistentGenres(non_existent_genres)));
+        }
       }
     }
-    if !data.characters.is_empty() {
-      let existing_characters = self.character_repository.filter_existing(&data.characters).await?;
-      if data.characters.len() != existing_characters.len() {
-        let non_existent_characters = filter_non_existent(&data.characters, &existing_characters);
-        return Err(ClientError(MutBookServiceError::NonExistentCharacters(
-          non_existent_characters,
-        )));
+    if let Some(characters) = &data.characters {
+      if !characters.is_empty() {
+        let existing_characters = self.character_repository.filter_existing(characters).await?;
+        if characters.len() != existing_characters.len() {
+          let non_existent_characters = filter_non_existent(characters, &existing_characters);
+          return Err(ClientError(MutBookServiceError::NonExistentCharacters(
+            non_existent_characters,
+          )));
+        }
       }
     }
-    let people: Vec<u32> = data.involved.iter().map(|x| x.person_id).collect();
-    if !people.is_empty() {
-      let existing_people = self.person_repository.filter_existing(&people).await?;
-      if people.len() != existing_people.len() {
-        let non_existent_people = filter_non_existent(&people, &existing_people);
-        return Err(ClientError(MutBookServiceError::NonExistentPeople(non_existent_people)));
+    if let Some(involved) = &data.involved {
+      let people: Vec<u32> = involved.iter().map(|x| x.person_id).collect();
+      if !people.is_empty() {
+        let existing_people = self.person_repository.filter_existing(&people).await?;
+        if people.len() != existing_people.len() {
+          let non_existent_people = filter_non_existent(&people, &existing_people);
+          return Err(ClientError(MutBookServiceError::NonExistentPeople(non_existent_people)));
+        }
       }
-    }
-    let roles: Vec<u32> = data.involved.iter().map(|x| x.role_id).collect();
-    if !roles.is_empty() {
-      let existing_roles = self.role_repository.filter_existing(&roles).await?;
-      if roles.len() != existing_roles.len() {
-        let non_existent_roles = filter_non_existent(&roles, &existing_roles);
-        return Err(ClientError(MutBookServiceError::NonExistentRoles(non_existent_roles)));
+
+      let roles: Vec<u32> = involved.iter().map(|x| x.role_id).collect();
+      if !roles.is_empty() {
+        let existing_roles = self.role_repository.filter_existing(&roles).await?;
+        if roles.len() != existing_roles.len() {
+          let non_existent_roles = filter_non_existent(&roles, &existing_roles);
+          return Err(ClientError(MutBookServiceError::NonExistentRoles(non_existent_roles)));
+        }
       }
     }
     self

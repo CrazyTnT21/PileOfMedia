@@ -1,5 +1,5 @@
 use tokio_postgres::types::Type;
-
+#[derive(Debug)]
 pub enum TypeKind {
   Postgres(Type),
   SimpleType {
@@ -11,7 +11,7 @@ pub trait PostgresType {
   const POSTGRES_TYPES: &'static [TypeKind];
   const NULLABLE: bool = false;
 }
-impl<'a> PostgresType for &'a str {
+impl PostgresType for &str {
   const POSTGRES_TYPES: &'static [TypeKind] = &[
     TypeKind::Postgres(Type::VARCHAR),
     TypeKind::Postgres(Type::TEXT),

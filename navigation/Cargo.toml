@@ -1,6 +1,6 @@
 [package]
 name = "navigation"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,16 +15,16 @@ multipart = { path = "../multipart" }
 
 tower-http = { version = "0.6.2", features = ["cors"] }
 tokio-postgres = { version = "0.7.12", features = ["with-chrono-0_4"] }
-bb8-postgres = { version = "0.8.1", features = ["with-chrono-0_4"] }
+bb8-postgres = { version = "0.9.0", features = ["with-chrono-0_4"] }
 axum = { version = "0.7.9", features = ["macros", "json", "multipart"] }
-serde = { version = "1.0.215", features = ["derive"] }
-tokio = "1.41.1"
+serde = { version = "1.0.216", features = ["derive"] }
+tokio = "1.42.0"
 dotenvy = "0.15.7"
 async-trait = "0.1.83"
 utoipa = { git = "https://github.com/juhaku/utoipa.git", rev = "97bc507" }
 utoipa-swagger-ui = { git = "https://github.com/juhaku/utoipa.git", rev = "97bc507", features = ["axum"] }
 jsonwebtoken = { version = "9.3.0", features = ["pem"] }
-chrono = { version = "0.4.38", features = ["serde"] }
+chrono = { version = "0.4.39", features = ["serde"] }
 
 [lib]
 name = "navigation"

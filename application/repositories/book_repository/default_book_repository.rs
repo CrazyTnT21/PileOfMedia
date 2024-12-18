@@ -4,6 +4,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
+use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
@@ -17,7 +18,9 @@ use crate::convert_to_sql::to_i32;
 use crate::enums::db_language::DbLanguage;
 use crate::fallback_unwrap::{fallback_unwrap, fallback_unwrap_ref};
 use crate::schemas::db_book::DbBook;
+use crate::schemas::db_book_statistic::DbBookStatistic;
 use crate::schemas::db_book_translation::DbBookTranslation;
+use crate::schemas::db_rating::DbRating;
 use crate::select::combined_tuple::CombinedType;
 use crate::select::conditions::column_equal::ColumnEqual;
 use crate::select::conditions::column_null::ColumnNull;
@@ -204,10 +207,10 @@ impl BookRepository for DefaultBookRepository<'_> {
     Ok(books)
   }
 
-  async fn filter_existing(&self, books: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
-    let books = to_i32(books);
+  async fn filter_existing(&self, book_ids: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
+    let books = to_i32(book_ids);
 
-    let count = Select::new::<DbBook>()
+    let filtered = Select::new::<DbBook>()
       .column::<i32>(DbBook::TABLE_NAME, "id")
       .where_expression(Expression::new(ValueIn::new((DbBook::TABLE_NAME, "id"), &books)))
       .query(self.client)
@@ -215,7 +218,33 @@ impl BookRepository for DefaultBookRepository<'_> {
       .into_iter()
       .map(|x| x.0 as u32)
       .collect();
-    Ok(count)
+    Ok(filtered)
+  }
+
+  async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, Box<dyn Error>> {
+    let ids = to_i32(book_ids);
+
+    let statistics = Select::new::<DbBookStatistic>()
+      .columns::<DbBookStatistic>(DbBookStatistic::TABLE_NAME)
+      .columns::<DbRating>(DbRating::TABLE_NAME)
+      .inner_join::<DbRating>(
+        None,
+        Expression::new(ColumnEqual::new(
+          (DbRating::TABLE_NAME, "id"),
+          (DbBookStatistic::TABLE_NAME, "fkrating"),
+        )),
+      )
+      .where_expression(Expression::new(ValueIn::new(
+        (DbBookStatistic::TABLE_NAME, "fkbook"),
+        &ids,
+      )))
+      .query(self.client)
+      .await?
+      .into_iter()
+      .map(|(statistic, rating)| statistic.to_entity(rating.to_entity()))
+      .collect();
+
+    Ok(statistics)
   }
 }
 

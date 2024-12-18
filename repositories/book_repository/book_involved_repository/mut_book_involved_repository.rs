@@ -1,5 +1,6 @@
 use async_trait::async_trait;
-use domain::entities::book::book_involved::InvolvedId;
+use domain::entities::involved::InvolvedId;
+
 use std::error::Error;
 
 #[async_trait]

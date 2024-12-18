@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug)]
 pub enum ServiceError<T> {
@@ -24,4 +24,13 @@ impl<T> From<Box<dyn Error>> for ServiceError<T> {
   fn from(value: Box<dyn Error>) -> Self {
     ServiceError::ServerError(value)
   }
+}
+impl<T> ServiceError<T> {
+  pub fn server_error(value: Box<dyn Error>) -> Self {
+    Self::ServerError(value)
+  }
+}
+
+pub trait ServiceErrorMap<T, E> {
+  fn map_service_error(self) -> Result<T, ServiceError<E>>;
 }

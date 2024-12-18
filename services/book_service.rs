@@ -2,12 +2,13 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
+use crate::join_comma::JoinComma;
+use crate::traits::service_error::ServiceError;
+use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-
-use crate::traits::service_error::ServiceError;
 
 pub mod book_character_service;
 pub mod book_genre_service;
@@ -29,12 +30,23 @@ pub trait BookService: Send + Sync {
     language: Language,
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>>;
+
+  async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, ServiceError<BookServiceError>>;
 }
 
-pub enum BookServiceError {}
+pub enum BookServiceError {
+  NonExistentBooks(Vec<u32>),
+}
 
 impl Display for BookServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        BookServiceError::NonExistentBooks(x) =>
+          format!("Books with the following ids do not exist: [{}]", x.join_comma()),
+      }
+    )
   }
 }

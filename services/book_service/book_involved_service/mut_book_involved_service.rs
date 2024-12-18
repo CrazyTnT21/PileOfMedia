@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use domain::entities::book::book_involved::InvolvedId;
+use domain::entities::involved::InvolvedId;
 
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;

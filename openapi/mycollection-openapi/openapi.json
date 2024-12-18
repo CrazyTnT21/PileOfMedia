@@ -6,7 +6,7 @@
     "license": {
       "name": ""
     },
-    "version": "0.1.0"
+    "version": "0.1.2"
   },
   "paths": {
     "/accounts/login": {
@@ -1081,6 +1081,62 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/books/{id}/statistic": {
+      "get": {
+        "tags": [
+          "Books"
+        ],
+        "operationId": "get_statistic",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the item to search for",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned book statistic based on the id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookStatistic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
           },
           "500": {
             "description": "",
@@ -3334,37 +3390,17 @@
         "required": [
           "id",
           "title",
+          "slug",
           "cover",
-          "score",
-          "rank",
-          "popularity",
-          "favorites",
-          "members",
-          "added",
           "language"
         ],
         "properties": {
-          "added": {
-            "type": "string",
-            "format": "date"
-          },
-          "chapters": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "minimum": 0
-          },
           "cover": {
             "$ref": "#/components/schemas/Image"
           },
           "description": {
             "type": "string",
             "nullable": true
-          },
-          "favorites": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
           },
           "franchise": {
             "allOf": [
@@ -3382,44 +3418,16 @@
           "language": {
             "$ref": "#/components/schemas/Language"
           },
-          "members": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
-          },
-          "pages": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "minimum": 0
-          },
-          "popularity": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
-          },
           "published": {
             "type": "string",
             "format": "date",
             "nullable": true
           },
-          "rank": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
-          },
-          "score": {
-            "type": "number",
-            "format": "float"
+          "slug": {
+            "$ref": "#/components/schemas/Slug"
           },
           "title": {
             "type": "string"
-          },
-          "words": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "minimum": 0
           }
         }
       },
@@ -3453,21 +3461,6 @@
           }
         }
       },
-      "BookInvolved": {
-        "type": "object",
-        "required": [
-          "person",
-          "role"
-        ],
-        "properties": {
-          "person": {
-            "$ref": "#/components/schemas/Person"
-          },
-          "role": {
-            "$ref": "#/components/schemas/PersonRole"
-          }
-        }
-      },
       "BookInvolvedTotal": {
         "type": "object",
         "required": [
@@ -3478,12 +3471,52 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/BookInvolved"
+              "$ref": "#/components/schemas/Involved"
             }
           },
           "total": {
             "type": "integer",
             "minimum": 0
+          }
+        }
+      },
+      "BookStatistic": {
+        "type": "object",
+        "required": [
+          "rating",
+          "rank",
+          "popularity",
+          "favorites",
+          "members",
+          "added"
+        ],
+        "properties": {
+          "added": {
+            "type": "string",
+            "format": "date"
+          },
+          "favorites": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "members": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "popularity": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "rank": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "rating": {
+            "$ref": "#/components/schemas/Rating"
           }
         }
       },
@@ -3636,22 +3669,18 @@
       "CreateBookData": {
         "type": "object",
         "required": [
+          "slug",
           "translations"
         ],
         "properties": {
-          "chapters": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "minimum": 0
-          },
           "characters": {
             "type": "array",
             "items": {
               "type": "integer",
               "format": "int32",
               "minimum": 0
-            }
+            },
+            "nullable": true
           },
           "franchise": {
             "type": "integer",
@@ -3665,24 +3694,23 @@
               "type": "integer",
               "format": "int32",
               "minimum": 0
-            }
+            },
+            "nullable": true
           },
           "involved": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InvolvedId"
-            }
-          },
-          "pages": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "minimum": 0
+            },
+            "nullable": true
           },
           "published": {
             "type": "string",
             "format": "date",
             "nullable": true
+          },
+          "slug": {
+            "$ref": "#/components/schemas/Slug"
           },
           "themes": {
             "type": "array",
@@ -3690,19 +3718,14 @@
               "type": "integer",
               "format": "int32",
               "minimum": 0
-            }
+            },
+            "nullable": true
           },
           "translations": {
             "type": "object",
             "additionalProperties": {
               "$ref": "#/components/schemas/CreateBookTranslation"
             }
-          },
-          "words": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "minimum": 0
           }
         }
       },
@@ -4081,6 +4104,21 @@
           }
         }
       },
+      "Involved": {
+        "type": "object",
+        "required": [
+          "person",
+          "role"
+        ],
+        "properties": {
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PersonRole"
+          }
+        }
+      },
       "InvolvedId": {
         "type": "object",
         "required": [
@@ -4227,6 +4265,30 @@
           }
         }
       },
+      "Rating": {
+        "type": "object",
+        "required": [
+          "id",
+          "amount"
+        ],
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "score": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          }
+        }
+      },
       "Role": {
         "type": "object",
         "required": [
@@ -4266,6 +4328,9 @@
             "minimum": 0
           }
         }
+      },
+      "Slug": {
+        "type": "string"
       },
       "Theme": {
         "type": "object",

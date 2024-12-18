@@ -25,7 +25,7 @@ pub trait FromRowOption<T: FromRow = Self> {
   fn from_row_optional(row: &Row, from: usize) -> Option<T::DbType>;
 }
 
-impl<T: FromRow<DbType=T> + FromRowOption> FromRow for Option<T> {
+impl<T: FromRow<DbType = T> + FromRowOption> FromRow for Option<T> {
   type DbType = Option<T>;
   const COLUMN_COUNT: usize = T::COLUMN_COUNT;
 
@@ -62,7 +62,7 @@ impl FromRow for () {
   fn from_row(_: &Row, _: usize) -> Self::DbType {}
 }
 
-impl<T: FromRow<DbType=T> + RowColumns + FromRowOption> RowColumns for Option<T> {
+impl<T: FromRow<DbType = T> + RowColumns + FromRowOption> RowColumns for Option<T> {
   const COLUMNS: &'static [(&'static str, &'static [TypeKind])] = T::COLUMNS;
 }
 from_row_tuple!(T,);
@@ -137,7 +137,7 @@ pub mod testing {
   use testcontainers::core::{IntoContainerPort, WaitFor};
   use testcontainers::runners::AsyncRunner;
   use testcontainers::{ContainerAsync, GenericImage, ImageExt};
-  use tokio_postgres::{GenericClient, NoTls, Statement};
+  use tokio_postgres::{Column, NoTls, Statement};
 
   use crate::postgres_type::TypeKind;
 
@@ -163,35 +163,40 @@ pub mod testing {
       Ok(statement) => {
         for (i, column) in statement.columns().iter().enumerate() {
           for column_type in T::COLUMNS[i].1 {
-            match column_type {
-              TypeKind::Postgres(post) => {
-                if column.type_() == post {
-                  break;
-                }
-                panic!(
-                  "column: {} ({}) does not match the struct type ({})",
-                  column.name(),
-                  column.type_(),
-                  post
-                );
-              }
-              TypeKind::SimpleType { name, .. } => {
-                if column.name() == *name {
-                  break;
-                }
-                panic!(
-                  "column: {} ({}) does not match the struct type ({})",
-                  column.name(),
-                  column.type_(),
-                  name
-                );
-              }
+            if validate_column(column, column_type) {
+              break;
             }
           }
         }
       }
       Err(e) => {
         panic!("{}", e);
+      }
+    };
+  }
+  fn validate_column(column: &Column, column_type: &TypeKind) -> bool {
+    match column_type {
+      TypeKind::Postgres(post) => {
+        if column.type_() == post {
+          return true;
+        }
+        panic!(
+          "column: {} ({}) does not match the struct type ({})",
+          column.name(),
+          column.type_(),
+          post
+        );
+      }
+      TypeKind::SimpleType { name, .. } => {
+        if column.name() == *name {
+          return true;
+        }
+        panic!(
+          "column: {} ({}) does not match the struct type ({})",
+          column.name(),
+          column.type_(),
+          name
+        );
       }
     };
   }
@@ -217,11 +222,7 @@ pub mod testing {
     let result = connection
       .prepare(&format!(
         "SELECT {} FROM {}",
-        T::COLUMNS
-          .into_iter()
-          .map(|x| x.0)
-          .collect::<Vec<&'static str>>()
-          .join(","),
+        T::COLUMNS.iter().map(|x| x.0).collect::<Vec<&'static str>>().join(","),
         T::TABLE_NAME
       ))
       .await;

@@ -21,6 +21,7 @@ pub enum AccountServiceError {
   UnknownEmail,
   InvalidEmail,
   WrongPassword,
+  OtherError(Box<dyn Display>),
 }
 
 impl Display for AccountServiceError {
@@ -29,9 +30,10 @@ impl Display for AccountServiceError {
       f,
       "{}",
       match self {
-        AccountServiceError::UnknownEmail => "Unknown email",
-        AccountServiceError::InvalidEmail => "Invalid email",
-        AccountServiceError::WrongPassword => "Wrong password",
+        AccountServiceError::UnknownEmail => "Unknown email".to_string(),
+        AccountServiceError::InvalidEmail => "Invalid email".to_string(),
+        AccountServiceError::WrongPassword => "Wrong password".to_string(),
+        AccountServiceError::OtherError(x) => x.to_string(),
       }
     )
   }

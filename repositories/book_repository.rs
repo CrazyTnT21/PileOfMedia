@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
@@ -23,5 +24,7 @@ pub trait BookRepository: Send + Sync {
   ) -> Result<ItemsTotal<Book>, Box<dyn Error>>;
   async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Book>, Box<dyn Error>>;
 
-  async fn filter_existing(&self, books: &[u32]) -> Result<Vec<u32>, Box<dyn Error>>;
+  async fn filter_existing(&self, book_ids: &[u32]) -> Result<Vec<u32>, Box<dyn Error>>;
+
+  async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, Box<dyn Error>>;
 }

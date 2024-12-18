@@ -1,9 +1,9 @@
 use crate::entities::book::book_character::BookCharacter;
-use crate::entities::book::book_involved::BookInvolved;
 use crate::entities::book::Book;
 use crate::entities::character::Character;
 use crate::entities::franchise::Franchise;
 use crate::entities::genre::Genre;
+use crate::entities::involved::Involved;
 use crate::entities::person::Person;
 use crate::entities::role::Role;
 use crate::entities::theme::Theme;
@@ -18,7 +18,7 @@ use crate::entities::user::User;
   PeopleTotal = ItemsTotal < Person >,
   CharactersTotal = ItemsTotal < Character >,
   RolesTotal = ItemsTotal < Role >,
-  BookInvolvedTotal = ItemsTotal < BookInvolved >,
+  BookInvolvedTotal = ItemsTotal < Involved >,
   BookCharactersTotal = ItemsTotal < BookCharacter >,
   FranchisesTotal = ItemsTotal < Franchise >,
   UsersTotal = ItemsTotal < User >

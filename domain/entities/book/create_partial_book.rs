@@ -1,6 +1,8 @@
-use crate::entities::book::book_involved::InvolvedId;
+// use crate::entities::book::book_edition::CreateBookEdition;
 use crate::entities::image::Image;
+use crate::entities::involved::InvolvedId;
 use crate::enums::language::Language;
+use crate::slug::Slug;
 use chrono::NaiveDate;
 use std::collections::HashMap;
 
@@ -8,9 +10,7 @@ use std::collections::HashMap;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct CreatePartialBook {
-  pub chapters: Option<u16>,
-  pub pages: Option<u16>,
-  pub words: Option<u32>,
+  pub slug: Slug,
   pub published: Option<NaiveDate>,
   pub franchise: Option<u32>,
   pub translations: HashMap<Language, CreatePartialBookTranslation>,
@@ -18,6 +18,8 @@ pub struct CreatePartialBook {
   pub themes: Vec<u32>,
   pub characters: Vec<u32>,
   pub involved: Vec<InvolvedId>,
+  // pub editions: Vec<CreateBookEdition>,
+  // pub images: Vec<Image>,
 }
 
 #[derive(Debug, Clone)]

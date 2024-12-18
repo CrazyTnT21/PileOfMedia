@@ -19,7 +19,8 @@ use super::*;
     add_involved,
     remove_involved,
     create_book,
-    delete_book
+    delete_book,
+    get_statistic
   )
 )]
 pub(crate) struct BookDoc;

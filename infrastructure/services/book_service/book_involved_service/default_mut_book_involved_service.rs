@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use domain::entities::book::book_involved::InvolvedId;
+use domain::entities::involved::InvolvedId;
 use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
 use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
 use repositories::book_repository::BookRepository;

@@ -4,7 +4,7 @@ use domain::entities::account::Email;
 use domain::entities::account::Password;
 use domain::entities::book::book_character::BookCharacter;
 use domain::entities::book::book_involved::BookInvolved;
-use domain::entities::book::book_involved::InvolvedId;
+use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::create_book::CreateBook;
 use domain::entities::book::create_book::CreateBookData;
 use domain::entities::book::create_book::CreateBookTranslation;
@@ -20,11 +20,13 @@ use domain::entities::genre::Genre;
 use domain::entities::image::create_image::CreateImage;
 use domain::entities::image::image_data::ImageData;
 use domain::entities::image::Image;
+use domain::entities::involved::InvolvedId;
 use domain::entities::person::create_person::CreatePerson;
 use domain::entities::person::create_person::CreatePersonData;
 use domain::entities::person::create_person::CreatePersonTranslation;
 use domain::entities::person::person_role::PersonRole;
 use domain::entities::person::Person;
+use domain::entities::rating::Rating;
 use domain::entities::role::create_role::CreateRole;
 use domain::entities::role::create_role::CreateRoleTranslation;
 use domain::entities::role::Role;
@@ -45,6 +47,7 @@ use domain::items_total::PeopleTotal;
 use domain::items_total::RolesTotal;
 use domain::items_total::ThemesTotal;
 use domain::items_total::UsersTotal;
+use domain::slug::Slug;
 
 use crate::controllers::account_controller::account_doc::AccountDoc;
 use crate::controllers::account_controller::LoginData;
@@ -120,6 +123,9 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     CreateRole,
     CreateRoleTranslation,
     CreateFranchise,
-    CreateFranchiseTranslation
+    CreateFranchiseTranslation,
+    Slug,
+    BookStatistic,
+    Rating
   )))]
 pub(crate) struct ApiDoc;

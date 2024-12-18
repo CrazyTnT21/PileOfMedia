@@ -1,6 +1,8 @@
-use crate::entities::book::book_involved::InvolvedId;
+// use crate::entities::book::create_book_edition::CreateBookEditionData;
 use crate::entities::image::create_image::CreateImage;
+use crate::entities::involved::InvolvedId;
 use crate::enums::language::Language;
+use crate::slug::Slug;
 use chrono::NaiveDate;
 use std::collections::HashMap;
 
@@ -10,26 +12,23 @@ use std::collections::HashMap;
 pub struct CreateBook {
   pub book: CreateBookData,
   pub covers: Vec<CreateImage>,
+  // pub images: Option<Vec<CreateImage>>,
+  // pub editions: Vec<CreateBookEditionData>,
+  // pub edition_covers: Vec<CreateImage>,
 }
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct CreateBookData {
-  pub chapters: Option<u16>,
-  pub pages: Option<u16>,
-  pub words: Option<u32>,
+  pub slug: Slug,
   pub published: Option<NaiveDate>,
   pub franchise: Option<u32>,
   pub translations: HashMap<Language, CreateBookTranslation>,
-  #[cfg_attr(feature = "serde", serde(default))]
-  pub genres: Vec<u32>,
-  #[cfg_attr(feature = "serde", serde(default))]
-  pub themes: Vec<u32>,
-  #[cfg_attr(feature = "serde", serde(default))]
-  pub characters: Vec<u32>,
-  #[cfg_attr(feature = "serde", serde(default))]
-  pub involved: Vec<InvolvedId>,
+  pub genres: Option<Vec<u32>>,
+  pub themes: Option<Vec<u32>>,
+  pub characters: Option<Vec<u32>>,
+  pub involved: Option<Vec<InvolvedId>>,
 }
 
 #[derive(Debug, Clone)]
@@ -52,6 +51,7 @@ pub enum CreateCover {
 #[cfg(feature = "axum-multipart")]
 pub mod create_book_part {
   use crate::entities::book::create_book::{CreateBook, CreateBookData};
+  // use crate::entities::book::create_book_edition::CreateBookEditionData;
   use crate::entities::image::create_image::CreateImage;
   use crate::vec_single::{Single, SingleVecError};
   use multipart::axum::extract::multipart::MultipartError;
@@ -60,13 +60,6 @@ pub mod create_book_part {
   use serde_json::from_slice;
   use std::error::Error;
   use std::fmt::{Display, Formatter};
-
-  #[derive(Debug)]
-  pub enum CreateBookPart {
-    Book,
-    Cover,
-    // Image,
-  }
 
   #[derive(Debug)]
   pub enum CreateBookPartError {
@@ -120,10 +113,35 @@ pub mod create_book_part {
         })?;
 
       let book: CreateBookData = from_slice(&book_bytes)?;
+      // let editions = parts.remove(&Some("editions".to_string())).unwrap_or_else(Vec::new);
+      // let editions: Result<Vec<CreateBookEditionData>, serde_json::Error> = editions
+      //   .into_iter()
+      //   .map(|x| {
+      //     let edition: Result<CreateBookEditionData, serde_json::Error> = from_slice(&x);
+      //     edition
+      //   })
+      //   .collect::<Vec<Result<CreateBookEditionData, serde_json::Error>>>()
+      //   .into_iter()
+      //   .collect();
+      // let editions = editions?;
 
       let covers = parts.remove(&Some("covers".to_string())).unwrap_or_else(Vec::new);
       let covers: Vec<CreateImage> = covers.into_iter().map(|x| CreateImage(x.to_vec())).collect();
-      Ok(CreateBook { book, covers })
+
+      // let images = parts.remove(&Some("images".to_string())).unwrap_or_else(Vec::new);
+      // let images: Option<Vec<CreateImage>> = Some(images.into_iter().map(|x| CreateImage(x.to_vec())).collect());
+
+      // let edition_covers = parts
+      // .remove(&Some("edition_covers".to_string()))
+      // .unwrap_or_else(Vec::new);
+      // let edition_covers: Vec<CreateImage> = edition_covers.into_iter().map(|x| CreateImage(x.to_vec())).collect();
+      Ok(CreateBook {
+        book,
+        covers,
+        // images,
+        // editions,
+        // edition_covers,
+      })
     }
   }
 }

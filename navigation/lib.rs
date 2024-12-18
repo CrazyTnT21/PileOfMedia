@@ -19,6 +19,7 @@ mod implementations;
 mod openapi;
 pub async fn main() -> Result<(), Box<dyn Error>> {
   dotenv().ok();
+  dotenvy::from_path_override(".local/.env").ok();
   let database_url = env::var("DATABASE_URL").map_err(|_| "DATABASE_URL must be set")?;
   //let server_url = env::var("SERVER_URL").expect("SERVER_URL must be set");
   let content_path = env::var("CONTENT_PATH").map_err(|_| "CONTENT_PATH must be set")?;

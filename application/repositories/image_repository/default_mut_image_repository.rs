@@ -44,7 +44,7 @@ impl<'a> DefaultMutImageRepository<'a> {
 #[async_trait]
 impl MutImageRepository for DefaultMutImageRepository<'_> {
   async fn create(&self, image: CreatePartialImage<'_>) -> Result<Image, Box<dyn Error>> {
-    let id = Insert::new::<DbImage>([])
+    let id: i32 = Insert::new::<DbImage>([])
       .returning_transaction("id", self.transaction)
       .await?;
     let image_data = self.file_repository.get(image.uri).await?;

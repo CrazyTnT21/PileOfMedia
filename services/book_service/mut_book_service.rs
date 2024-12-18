@@ -25,6 +25,7 @@ pub enum MutBookServiceError {
   NonExistentCharacters(Vec<u32>),
   InvalidTitle(String),
   InvalidDescription(String),
+  AlreadyExistingSlug(String),
   NonExistentTranslationCover(Language),
   OtherError(Box<dyn Display>),
 }
@@ -55,8 +56,11 @@ impl Display for MutBookServiceError {
           "A cover for the language '{language}' ({}) does not exist",
           language.language_code()
         ),
-        MutBookServiceError::NonExistentBooks(x) => format!("The following books do not exist: [{}]", x.join_comma()),
+        MutBookServiceError::NonExistentBooks(x) =>
+          format!("Books with the following ids do not exist: [{}]", x.join_comma()),
         MutBookServiceError::NoIdsProvided => "No ids provided".to_string(),
+        MutBookServiceError::AlreadyExistingSlug(slug) =>
+          format!("A book with the following slug already exists: {slug}"),
       }
     )
   }

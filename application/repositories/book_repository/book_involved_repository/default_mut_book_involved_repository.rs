@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use domain::entities::book::book_involved::InvolvedId;
+use domain::entities::involved::InvolvedId;
 use tokio_postgres::Transaction;
 
 use crate::convert_to_sql::to_i32;

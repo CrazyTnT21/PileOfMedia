@@ -20,9 +20,12 @@ use crate::delete::Delete;
 use crate::enums::db_language::DbLanguage;
 use crate::insert::Insert;
 use crate::schemas::db_book::DbBook;
+use crate::schemas::db_book_statistic::DbBookStatistic;
 use crate::schemas::db_book_translation::DbBookTranslation;
+use crate::schemas::db_rating::DbRating;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
+use crate::select::Select;
 
 pub struct DefaultMutBookRepository<'a> {
   transaction: &'a Transaction<'a>,
@@ -122,15 +125,31 @@ impl DefaultMutBookRepository<'_> {
     self.mut_book_character_repository.add(id, &item.characters).await
   }
   async fn insert_book(&self, item: &CreatePartialBook) -> Result<i32, Box<dyn Error>> {
-    let chapters = &item.chapters.map(|x| x as i16);
-    let pages = &item.pages.map(|x| x as i16);
-    let words = &item.words.map(|x| x as i32);
     let franchise = &item.franchise.map(|x| x as i32);
-    let id = Insert::new::<DbBook>(["chapters", "pages", "words", "published", "fkfranchise"])
-      .values([chapters, pages, words, &item.published, franchise])
+    let slug = item.slug.to_string();
+    let book_id: i32 = Insert::new::<DbBook>(["published", "fkfranchise", "slug"])
+      .values([&item.published, franchise, &slug])
       .returning_transaction("id", self.transaction)
       .await?;
-    Ok(id)
+
+    let rating_id: i32 = Insert::new::<DbRating>([])
+      .values([])
+      .returning_transaction("id", self.transaction)
+      .await?;
+
+    let (book_count,) = Select::new::<DbBook>()
+      .count()
+      .get_single(self.transaction.client())
+      .await?
+      .ok_or("DbBook count returned no columns")?;
+    let book_count = book_count as i32;
+
+    Insert::new::<DbBookStatistic>(["fkbook", "fkrating", "popularity", "rank"])
+      .values([&book_id, &rating_id, &book_count, &book_count])
+      .execute_transaction(self.transaction)
+      .await?;
+
+    Ok(book_id)
   }
   async fn insert_translation(&self, item: &CreatePartialBook, id: u32) -> Result<(), Box<dyn Error>> {
     let id = id as i32;

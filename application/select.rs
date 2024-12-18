@@ -110,11 +110,7 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
     <T as CombinedType>::Combined<C>: FromRow<DbType = <T as CombinedType>::Combined<C>>,
   {
     self.columns.push(SelectElement::Column(ColumnTable {
-      columns: C::COLUMNS
-        .into_iter()
-        .map(|x| x.0)
-        .collect::<Vec<&'static str>>()
-        .to_vec(),
+      columns: C::COLUMNS.iter().map(|x| x.0).collect::<Vec<&'static str>>(),
       alias: from,
     }));
     self.create_new_select::<C>()

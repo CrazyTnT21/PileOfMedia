@@ -4,4 +4,5 @@ pub mod file_name;
 pub mod io_transaction;
 pub mod items_total;
 pub mod pagination;
+pub mod slug;
 pub mod vec_single;

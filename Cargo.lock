@@ -58,7 +58,7 @@ name = "application"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "bb8-postgres",
+ "bb8-postgres 0.9.0",
  "chrono",
  "domain",
  "from-row",
@@ -263,13 +263,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "bb8"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "212d8b8e1a22743d9241575c6ba822cf9c8fef34771c86ab7e477a4fbfd254e5"
+dependencies = [
+ "futures-util",
+ "parking_lot",
+ "tokio",
+]
+
+[[package]]
 name = "bb8-postgres"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56ac82c42eb30889b5c4ee4763a24b8c566518171ebea648cd7e3bc532c60680"
 dependencies = [
  "async-trait",
- "bb8",
+ "bb8 0.8.6",
+ "tokio",
+ "tokio-postgres",
+]
+
+[[package]]
+name = "bb8-postgres"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e570e6557cd0f88d28d32afa76644873271a70dc22656df565b2021c4036aa9c"
+dependencies = [
+ "bb8 0.9.0",
  "tokio",
  "tokio-postgres",
 ]
@@ -457,9 +479,9 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
 name = "chrono"
-version = "0.4.38"
+version = "0.4.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
+checksum = "7e36cc9d416881d2e24f9a963be5fb1cd90966419ac844274161d10488b3e825"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -667,6 +689,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "multipart",
+ "regex",
  "serde",
  "serde_json",
  "utoipa",
@@ -791,7 +814,7 @@ dependencies = [
 name = "from-row"
 version = "0.1.0"
 dependencies = [
- "bb8-postgres",
+ "bb8-postgres 0.8.1",
  "chrono",
  "from-row-macros",
  "testcontainers",
@@ -1638,12 +1661,12 @@ dependencies = [
 
 [[package]]
 name = "navigation"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "application",
  "async-trait",
  "axum",
- "bb8-postgres",
+ "bb8-postgres 0.9.0",
  "chrono",
  "domain",
  "dotenvy",
@@ -2470,18 +2493,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.215"
+version = "1.0.216"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6513c1ad0b11a9376da888e3e0baa0077f1aed55c17f50e7b2397136129fb88f"
+checksum = "0b9781016e935a97e8beecf0c933758c97a5520d32930e460142b4cd80c6338e"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.215"
+version = "1.0.216"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad1e866f866923f252f05c889987993144fb74e722403468a4ebd70c3cd756c0"
+checksum = "46f859dbbf73865c6627ed570e78961cd3ac92407a2d117204c49232485da55e"
 dependencies = [
  "proc-macro2",
  "quote",
