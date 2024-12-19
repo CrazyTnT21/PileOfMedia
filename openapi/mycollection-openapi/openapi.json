@@ -6,7 +6,7 @@
     "license": {
       "name": ""
     },
-    "version": "0.1.2"
+    "version": "0.1.3"
   },
   "paths": {
     "/accounts/login": {
@@ -271,6 +271,70 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/books/slug/{slug}": {
+      "get": {
+        "tags": [
+          "Books"
+        ],
+        "operationId": "get_by_slug",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "description": "Slug of the item to search for",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Slug"
+            }
+          },
+          {
+            "name": "Accept-Language",
+            "in": "header",
+            "description": "The language of the items",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned book based on the slug",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Book"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
           },
           "500": {
             "description": "",

@@ -9,6 +9,7 @@ use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
+use domain::slug::Slug;
 
 pub mod book_character_service;
 pub mod book_genre_service;
@@ -31,6 +32,7 @@ pub trait BookService: Send + Sync {
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>>;
 
+  async fn get_by_slug(&self, slug: &Slug, language: Language) -> Result<Option<Book>, ServiceError<BookServiceError>>;
   async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, ServiceError<BookServiceError>>;
 }
 

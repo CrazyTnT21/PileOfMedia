@@ -9,6 +9,7 @@ use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
+use domain::slug::Slug;
 use from_row::Table;
 use repositories::book_repository::BookRepository;
 use repositories::franchise_repository::FranchiseRepository;
@@ -245,6 +246,21 @@ impl BookRepository for DefaultBookRepository<'_> {
       .collect();
 
     Ok(statistics)
+  }
+
+  async fn get_by_slug(&self, slug: &Slug, language: Language) -> Result<Option<Book>, Box<dyn Error>> {
+    let db_language = DbLanguage::from(language);
+    let slug = slug.to_string();
+    let select = book_select(&db_language, &self.default_language).where_expression(Expression::column_equal(
+      DbBook::TABLE_NAME,
+      "slug",
+      slug,
+    ));
+
+    let Some(value) = select.get_single(self.client).await? else {
+      return Ok(None);
+    };
+    Ok(Some(self.book_from_tuple(value, language).await?))
   }
 }
 

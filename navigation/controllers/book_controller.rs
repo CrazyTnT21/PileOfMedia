@@ -11,6 +11,7 @@ use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
+use crate::openapi::params::path::slug::SlugParam;
 use crate::openapi::params::path::title::TitleParam;
 use crate::openapi::params::query::count::CountParam;
 use crate::openapi::params::query::page::PageParam;
@@ -24,6 +25,7 @@ use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use domain::entities::book::create_book::CreateBook;
 use domain::entities::involved::InvolvedId;
+use domain::slug::Slug;
 use multipart::MultiPartRequest;
 use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
 use services::book_service::book_character_service::BookCharacterService;
@@ -48,6 +50,7 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/:id", delete(delete_book))
     .route("/:id/statistic", get(get_statistic))
     .route("/title/:title", get(get_by_title))
+    .route("/slug/:slug", get(get_by_slug))
     .route("/:id/genres", get(get_genres))
     .route("/:id/genres/:genre_id", post(add_genre))
     .route("/:id/genres/:genre_id", delete(remove_genre))
@@ -171,6 +174,36 @@ async fn get_by_title(
 
   match service.get_by_title(&title, language, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
+    Err(error) => Err(convert_service_error(error)),
+  }
+}
+#[utoipa::path(get, path = "/slug/{slug}",
+  responses(
+    (status = 200, description = "Returned book based on the slug", body = Book), ServerError, BadRequest, NotFound
+  ),
+  params(SlugParam, AcceptLanguageParam),
+  tag = "Books"
+)]
+async fn get_by_slug(
+  Path(slug): Path<Slug>,
+  AcceptLanguageHeader(languages): AcceptLanguageHeader,
+  State(app_state): State<AppState>,
+) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
+  let service = get_service(&connection);
+
+  let language = get_language(languages, DEFAULT_LANGUAGE);
+
+  println!("Route for a book with slug {} in {}", slug, language);
+
+  let mut content_language = content_language_header(language);
+  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
+
+  match service.get_by_slug(&slug, language).await {
+    Ok(item) => match item {
+      None => Err((StatusCode::NOT_FOUND, "".to_string())),
+      Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
+    },
     Err(error) => Err(convert_service_error(error)),
   }
 }

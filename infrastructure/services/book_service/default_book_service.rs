@@ -7,6 +7,7 @@ use domain::entities::book::Book;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
+use domain::slug::Slug;
 use repositories::book_repository::BookRepository;
 use services::book_service::{BookService, BookServiceError};
 use services::traits::service_error::ServiceError;
@@ -43,6 +44,9 @@ impl BookService for DefaultBookService<'_> {
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
     Ok(self.book_repository.get_by_title(title, language, pagination).await?)
+  }
+  async fn get_by_slug(&self, slug: &Slug, language: Language) -> Result<Option<Book>, ServiceError<BookServiceError>> {
+    Ok(self.book_repository.get_by_slug(slug, language).await?)
   }
 
   async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, ServiceError<BookServiceError>> {

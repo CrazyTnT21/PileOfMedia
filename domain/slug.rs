@@ -1,6 +1,7 @@
 use regex::Regex;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use std::sync::LazyLock;
 
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
@@ -43,21 +44,21 @@ impl Display for SlugError {
       "{}",
       match self {
         SlugError::InvalidPattern(value) => {
-          format!("value '{value}' did not match pattern '{REGEX_PATTERN}'")
+          format!("value '{value}' did not match pattern '{SLUG_REGEX_PATTERN}'")
         }
       }
     )
   }
 }
 impl Error for SlugError {}
-const REGEX_PATTERN: &str = r"^[a-z\-]+$";
+const SLUG_REGEX_PATTERN: &str = r"^[a-z\-]+$";
+static SLUG_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(SLUG_REGEX_PATTERN).unwrap());
 impl Slug {
   /// # Panics
   ///
   /// Will panic if an error occurred during parsing or compiling the regular expression.
   pub fn parse(value: String) -> Result<Slug, SlugError> {
-    let regex = Regex::new(REGEX_PATTERN).unwrap();
-    let is_match = regex.is_match(&value);
+    let is_match = SLUG_REGEX.is_match(&value);
     if !is_match {
       return Err(SlugError::InvalidPattern(value));
     }
