@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build database image
-        run: docker build Database -t mycollection-db
+        run: docker build database -t pileofmedia-db
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Test

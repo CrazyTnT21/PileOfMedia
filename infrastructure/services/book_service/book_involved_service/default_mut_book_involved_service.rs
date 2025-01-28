@@ -69,7 +69,9 @@ impl DefaultMutBookInvolvedService<'_> {
         MutBookInvolvedServiceError::AlreadyAssociated(existing),
       ));
     };
-    let people: Vec<u32> = involved.iter().map(|x| x.person_id).collect();
+    let mut people: Vec<u32> = involved.iter().map(|x| x.person_id).collect();
+    people.sort_unstable();
+    people.dedup();
     let existing_people = self.person_repository.filter_existing(&people).await?;
 
     if existing_people.len() != involved.len() {
@@ -78,8 +80,11 @@ impl DefaultMutBookInvolvedService<'_> {
         MutBookInvolvedServiceError::NonExistentPeople(non_existent_people),
       ));
     };
-    let roles: Vec<u32> = involved.iter().map(|x| x.role_id).collect();
+    let mut roles: Vec<u32> = involved.iter().map(|x| x.role_id).collect();
+    roles.sort_unstable();
+    roles.dedup();
     let existing_roles = self.role_repository.filter_existing(&roles).await?;
+
     if existing_roles.len() != involved.len() {
       let non_existent_roles = filter_non_existent(&roles, &existing_roles);
       return Err(ServiceError::ClientError(

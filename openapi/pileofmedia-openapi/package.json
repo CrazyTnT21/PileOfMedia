@@ -1,5 +1,5 @@
 {
-  "name": "mycollection-openapi",
+  "name": "pileofmedia-openapi",
   "version": "0.1.3",
   "description": "",
   "main": "index.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CrazyTnT21/MyCollection.git"
+    "url": "git+https://github.com/CrazyTnT21/pileofmedia.git"
   },
   "keywords": [
     "openapi"
@@ -18,11 +18,11 @@
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/CrazyTnT21/MyCollection/issues"
+    "url": "https://github.com/CrazyTnT21/pileofmedia/issues"
   },
-  "homepage": "https://github.com/CrazyTnT21/MyCollection#readme",
+  "homepage": "https://github.com/CrazyTnT21/pileofmedia#readme",
   "devDependencies": {
-    "openapi-typescript": "^7.4.4",
-    "typescript": "^5.7.2"
+    "openapi-typescript": "^7.6.0",
+    "typescript": "^5.7.3"
   }
 }

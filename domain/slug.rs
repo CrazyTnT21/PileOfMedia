@@ -51,7 +51,7 @@ impl Display for SlugError {
   }
 }
 impl Error for SlugError {}
-const SLUG_REGEX_PATTERN: &str = r"^[a-z\-]+$";
+const SLUG_REGEX_PATTERN: &str = r"^[a-z\-\d]+$";
 static SLUG_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(SLUG_REGEX_PATTERN).unwrap());
 impl Slug {
   /// # Panics

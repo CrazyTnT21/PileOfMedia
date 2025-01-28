@@ -233,12 +233,12 @@ pub mod testing {
   }
 
   async fn create_image() -> testcontainers::core::error::Result<ContainerAsync<GenericImage>> {
-    GenericImage::new("mycollection-db", "latest")
+    GenericImage::new("pileofmedia-db", "latest")
       .with_wait_for(WaitFor::message_on_stdout(
         "database system is ready to accept connections",
       ))
       .with_mapped_port(9876, 5432.tcp())
-      .with_network("mycollection")
+      .with_network("pileofmedia")
       .with_env_var("POSTGRES_PASSWORD", "Placeholder")
       .start()
       .await

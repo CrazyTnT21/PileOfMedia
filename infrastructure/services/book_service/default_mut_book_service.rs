@@ -235,7 +235,9 @@ impl<'a> DefaultMutBookService<'a> {
       }
     }
     if let Some(involved) = &data.involved {
-      let people: Vec<u32> = involved.iter().map(|x| x.person_id).collect();
+      let mut people: Vec<u32> = involved.iter().map(|x| x.person_id).collect();
+      people.sort_unstable();
+      people.dedup();
       if !people.is_empty() {
         let existing_people = self.person_repository.filter_existing(&people).await?;
         if people.len() != existing_people.len() {
@@ -244,7 +246,9 @@ impl<'a> DefaultMutBookService<'a> {
         }
       }
 
-      let roles: Vec<u32> = involved.iter().map(|x| x.role_id).collect();
+      let mut roles: Vec<u32> = involved.iter().map(|x| x.role_id).collect();
+      roles.sort_unstable();
+      roles.dedup();
       if !roles.is_empty() {
         let existing_roles = self.role_repository.filter_existing(&roles).await?;
         if roles.len() != existing_roles.len() {

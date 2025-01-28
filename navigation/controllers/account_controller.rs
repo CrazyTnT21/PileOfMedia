@@ -93,7 +93,7 @@ fn create_claim(subject: String, user_id: u32, exp: usize) -> Claim {
   Claim {
     user_id,
     sub: subject,
-    iss: "MyCollection".to_string(),
+    iss: "PileOfMedia".to_string(),
     exp,
     iat: Utc::now().timestamp() as usize,
   }

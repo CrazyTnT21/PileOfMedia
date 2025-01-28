@@ -62,7 +62,7 @@ use crate::controllers::theme_controller::theme_doc::ThemeDoc;
 use crate::controllers::user_controller::user_doc::UserDoc;
 
 #[derive(utoipa::OpenApi)]
-#[openapi(info(title = "mycollection"),
+#[openapi(info(title = "pileofmedia"),
   nest(
     ("/books", BookDoc),
     ("/genres", GenreDoc),
