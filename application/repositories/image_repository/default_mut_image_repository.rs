@@ -80,7 +80,7 @@ fn combined(mut value: String, b: &str) -> String {
   value
 }
 
-impl<'a> DefaultMutImageRepository<'a> {
+impl DefaultMutImageRepository<'_> {
   async fn resize(
     &self,
     factor: u32,

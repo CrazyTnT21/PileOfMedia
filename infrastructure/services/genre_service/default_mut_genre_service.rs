@@ -14,19 +14,16 @@ use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;
 
 pub struct DefaultMutGenreService<'a> {
-  default_language: Language,
   genre_repository: Arc<dyn GenreRepository + 'a>,
   mut_genre_repository: Arc<dyn MutGenreRepository + 'a>,
 }
 
 impl<'a> DefaultMutGenreService<'a> {
   pub fn new(
-    default_language: Language,
     genre_repository: Arc<dyn GenreRepository + 'a>,
     mut_genre_repository: Arc<dyn MutGenreRepository + 'a>,
   ) -> DefaultMutGenreService<'a> {
     DefaultMutGenreService {
-      default_language,
       genre_repository,
       mut_genre_repository,
     }
@@ -49,7 +46,7 @@ impl MutGenreService for DefaultMutGenreService<'_> {
   }
 }
 
-impl<'a> DefaultMutGenreService<'a> {
+impl DefaultMutGenreService<'_> {
   async fn validate_delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutGenreServiceError>> {
     if ids.is_empty() {
       return Err(ClientError(MutGenreServiceError::NoIdsProvided));
@@ -65,15 +62,9 @@ impl<'a> DefaultMutGenreService<'a> {
   async fn validate_translations(
     &self,
     translations: &HashMap<Language, CreateGenreTranslation>,
-    default_language: &Language,
   ) -> Result<(), ServiceError<MutGenreServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutGenreServiceError::NoTranslationsProvided));
-    }
-    if !translations.contains_key(default_language) {
-      return Err(ClientError(MutGenreServiceError::NoTranslationInLanguageProvided(
-        *default_language,
-      )));
     }
     for item in translations.values() {
       if item.name.is_empty() {
@@ -93,9 +84,7 @@ impl<'a> DefaultMutGenreService<'a> {
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateGenre) -> Result<(), ServiceError<MutGenreServiceError>> {
-    self
-      .validate_translations(&item.translations, &self.default_language)
-      .await?;
+    self.validate_translations(&item.translations).await?;
     Ok(())
   }
 }

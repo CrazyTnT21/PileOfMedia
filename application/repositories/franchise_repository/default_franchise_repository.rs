@@ -45,11 +45,8 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
 
     let total = Select::new::<DbFranchise>()
       .transform(|x| self.franchise_joins(x, &language))
-      .count()
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let franchises = franchise_select_columns()
       .transform(|x| self.franchise_joins(x, &language))
@@ -109,12 +106,8 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
           ValueILike::new(("franchise_translation_fallback", "name"), &name),
         )),
       )
-      .count()
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
     let franchises = franchise_select_columns()
       .transform(|x| self.franchise_joins(x, &language))
       .where_expression(
@@ -161,14 +154,14 @@ impl<'a> DefaultFranchiseRepository<'a> {
     select
       .left_join::<DbFranchiseTranslation>(
         Some("franchise_translation"),
-        Expression::column_equal("franchise_translation", "language", language).and(Expression::new(ColumnEqual::new(
+        Expression::value_equal("franchise_translation", "language", language).and(Expression::new(ColumnEqual::new(
           ("franchise_translation", "fktranslation"),
           ("franchise", "id"),
         ))),
       )
       .left_join::<DbFranchiseTranslation>(
         Some("franchise_translation_fallback"),
-        Expression::column_equal("franchise_translation_fallback", "language", self.default_language)
+        Expression::value_equal("franchise_translation_fallback", "language", self.default_language)
           .and(Expression::new(ColumnEqual::new(
             ("franchise_translation_fallback", "fktranslation"),
             ("franchise", "id"),

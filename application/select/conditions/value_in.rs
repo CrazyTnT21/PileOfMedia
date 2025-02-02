@@ -19,6 +19,9 @@ impl<'a> ValueIn<'a> {
 
 impl Condition for ValueIn<'_> {
   fn sql(&self, value_index: &mut usize) -> String {
+    if self.values.values().is_empty() {
+      return "FALSE".to_string();
+    }
     let selector = self.selector.sql();
     let values = self.values.sql(value_index);
     format!("{} IN ({})", selector, values)

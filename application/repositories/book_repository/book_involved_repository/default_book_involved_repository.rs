@@ -65,16 +65,13 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
     let book_id = book_id as i32;
     let db_language = DbLanguage::from(language);
     let total = Select::new::<DbBookInvolved>()
-      .count()
       .transform(|x| involved_joins(x, &db_language, &self.default_language))
       .where_expression(Expression::new(ValueEqual::new(
         (DbBookInvolved::TABLE_NAME, "fkbook"),
         book_id,
       )))
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let involved = Select::new::<DbBookInvolved>()
       .columns::<DbRole>(DbRole::TABLE_NAME)
@@ -138,7 +135,7 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
         ),
         &involved,
       )))
-      .where_expression(Expression::column_equal(DbBookInvolved::TABLE_NAME, "fkbook", book_id))
+      .where_expression(Expression::value_equal(DbBookInvolved::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
       .into_iter()
@@ -170,7 +167,7 @@ fn involved_joins<'a, T: FromRow<DbType = T> + CombinedType>(
         ("role_translation", "fktranslation"),
         (DbRole::TABLE_NAME, "id"),
       ))
-      .and(Expression::column_equal("role_translation", "language", language)),
+      .and(Expression::value_equal("role_translation", "language", language)),
     )
     .left_join::<DbRoleTranslation>(
       Some("role_translation_fallback"),
@@ -178,7 +175,7 @@ fn involved_joins<'a, T: FromRow<DbType = T> + CombinedType>(
         ("role_translation_fallback", "fktranslation"),
         (DbRole::TABLE_NAME, "id"),
       ))
-      .and(Expression::column_equal(
+      .and(Expression::value_equal(
         "role_translation_fallback",
         "language",
         fallback_language,

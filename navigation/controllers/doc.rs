@@ -1,3 +1,4 @@
+use domain::available_translations::GenreAvailableTranslations;
 use domain::entities::account::create_account::CreateAccount;
 use domain::entities::account::create_account::CreateAccountData;
 use domain::entities::account::Email;
@@ -16,6 +17,7 @@ use domain::entities::franchise::create_franchise::CreateFranchiseTranslation;
 use domain::entities::franchise::Franchise;
 use domain::entities::genre::create_genre::CreateGenre;
 use domain::entities::genre::create_genre::CreateGenreTranslation;
+use domain::entities::genre::genre_translation::GenreTranslation;
 use domain::entities::genre::Genre;
 use domain::entities::image::create_image::CreateImage;
 use domain::entities::image::image_data::ImageData;
@@ -126,6 +128,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     CreateFranchiseTranslation,
     Slug,
     BookStatistic,
-    Rating
+    Rating,
+    GenreAvailableTranslations,
+    GenreTranslation
   )))]
 pub(crate) struct ApiDoc;

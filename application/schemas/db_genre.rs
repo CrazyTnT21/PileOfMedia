@@ -1,9 +1,8 @@
-use tokio_postgres::Row;
-
+use domain::available_translations::AvailableTranslations;
+use domain::entities::genre::genre_translation::GenreTranslation;
 use domain::entities::genre::Genre;
 use from_row::FromRow;
-
-use crate::schemas::db_genre_translation::DbGenreTranslation;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "genre"]
@@ -12,11 +11,10 @@ pub struct DbGenre {
 }
 
 impl DbGenre {
-  pub fn to_entity(self, genre_translation: DbGenreTranslation) -> Genre {
+  pub const fn to_entity(self, translations: AvailableTranslations<GenreTranslation>) -> Genre {
     Genre {
       id: self.id as u32,
-      name: genre_translation.name,
-      language: genre_translation.language.into(),
+      translations,
     }
   }
 }

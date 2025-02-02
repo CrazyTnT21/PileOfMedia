@@ -53,12 +53,9 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let language = DbLanguage::from(language);
 
     let total = Select::new::<DbPerson>()
-      .count()
       .transform(|x| self.person_joins(x, &language))
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let people = person_select_columns()
       .transform(|x| self.person_joins(x, &language))
@@ -137,14 +134,10 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let name = format!("%{name}%");
 
     let total = Select::new::<DbPerson>()
-      .count()
       .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(ValueILike::new(("person", "name"), &name)))
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
-
+      .query_count(self.client)
+      .await? as usize;
     let people = person_select_columns()
       .transform(|x| self.person_joins(x, &language))
       .where_expression(Expression::new(ValueILike::new(("person", "name"), &name)))
@@ -193,14 +186,14 @@ impl<'a> DefaultPersonRepository<'a> {
     select
       .left_join::<DbPersonTranslation>(
         Some("person_translation"),
-        Expression::column_equal("person_translation", "language", language).and(Expression::new(ColumnEqual::new(
+        Expression::value_equal("person_translation", "language", language).and(Expression::new(ColumnEqual::new(
           ("person_translation", "fktranslation"),
           ("person", "id"),
         ))),
       )
       .left_join::<DbPersonTranslation>(
         Some("person_translation_fallback"),
-        Expression::column_equal("person_translation_fallback", "language", self.default_language)
+        Expression::value_equal("person_translation_fallback", "language", self.default_language)
           .and(Expression::new(ColumnEqual::new(
             ("person_translation_fallback", "fktranslation"),
             ("person", "id"),

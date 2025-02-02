@@ -41,7 +41,7 @@ impl MutBookCharacterRepository for DefaultMutBookCharacterRepository<'_> {
     let characters = to_i32(characters);
 
     Delete::new::<DbBookCharacter>(
-      Expression::column_equal(DbBookCharacter::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
+      Expression::value_equal(DbBookCharacter::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
         (DbBookCharacter::TABLE_NAME, "fkcharacter"),
         &characters,
       ))),

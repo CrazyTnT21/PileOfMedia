@@ -49,7 +49,7 @@ impl MutRoleService for DefaultMutRoleService<'_> {
   }
 }
 
-impl<'a> DefaultMutRoleService<'a> {
+impl DefaultMutRoleService<'_> {
   async fn validate_delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutRoleServiceError>> {
     if ids.is_empty() {
       return Err(ClientError(MutRoleServiceError::NoIdsProvided));

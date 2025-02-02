@@ -137,12 +137,7 @@ impl DefaultMutBookRepository<'_> {
       .returning_transaction("id", self.transaction)
       .await?;
 
-    let (book_count,) = Select::new::<DbBook>()
-      .count()
-      .get_single(self.transaction.client())
-      .await?
-      .ok_or("DbBook count returned no columns")?;
-    let book_count = book_count as i32;
+    let book_count = Select::new::<DbBook>().query_count(self.transaction.client()).await? as i32;
 
     Insert::new::<DbBookStatistic>(["fkbook", "fkrating", "popularity", "rank"])
       .values([&book_id, &rating_id, &book_count, &book_count])

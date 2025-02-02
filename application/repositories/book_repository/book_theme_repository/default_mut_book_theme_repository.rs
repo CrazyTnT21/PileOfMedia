@@ -40,12 +40,9 @@ impl MutBookThemeRepository for DefaultMutBookThemeRepository<'_> {
     let book_id = book_id as i32;
     let themes = to_i32(themes);
 
-    Delete::new::<DbBookTheme>(
-      Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
-        (DbBookTheme::TABLE_NAME, "fktheme"),
-        &themes,
-      ))),
-    )
+    Delete::new::<DbBookTheme>(Expression::value_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id).and(
+      Expression::new(ValueIn::new((DbBookTheme::TABLE_NAME, "fktheme"), &themes)),
+    ))
     .execute_transaction(self.transaction)
     .await?;
     Ok(())

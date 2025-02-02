@@ -40,12 +40,9 @@ impl MutBookGenreRepository for DefaultMutBookGenreRepository<'_> {
     let book_id = book_id as i32;
     let genres = to_i32(genres);
 
-    Delete::new::<DbBookGenre>(
-      Expression::column_equal(DbBookGenre::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
-        (DbBookGenre::TABLE_NAME, "fkgenre"),
-        &genres,
-      ))),
-    )
+    Delete::new::<DbBookGenre>(Expression::value_equal(DbBookGenre::TABLE_NAME, "fkbook", book_id).and(
+      Expression::new(ValueIn::new((DbBookGenre::TABLE_NAME, "fkgenre"), &genres)),
+    ))
     .execute_transaction(self.transaction)
     .await?;
     Ok(())

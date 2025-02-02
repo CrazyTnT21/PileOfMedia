@@ -127,12 +127,9 @@ impl BookRepository for DefaultBookRepository<'_> {
     let db_language = DbLanguage::from(language);
 
     let total = Select::new::<DbBook>()
-      .count()
       .transform(|x| book_joins(x, &db_language, &self.default_language))
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let books = book_select(&db_language, &self.default_language)
       .pagination(pagination)
@@ -166,7 +163,6 @@ impl BookRepository for DefaultBookRepository<'_> {
     let db_language = DbLanguage::from(language);
 
     let total = Select::new::<DbBook>()
-      .count()
       .transform(|x| book_joins(x, &db_language, &self.default_language))
       .where_expression(
         Expression::new(ValueILike::new(("book_translation", "title"), &title)).or(Expression::new(ValueILike::new(
@@ -174,11 +170,8 @@ impl BookRepository for DefaultBookRepository<'_> {
           &title,
         ))),
       )
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let books = book_select(&db_language, &self.default_language)
       .where_expression(
@@ -251,7 +244,7 @@ impl BookRepository for DefaultBookRepository<'_> {
   async fn get_by_slug(&self, slug: &Slug, language: Language) -> Result<Option<Book>, Box<dyn Error>> {
     let db_language = DbLanguage::from(language);
     let slug = slug.to_string();
-    let select = book_select(&db_language, &self.default_language).where_expression(Expression::column_equal(
+    let select = book_select(&db_language, &self.default_language).where_expression(Expression::value_equal(
       DbBook::TABLE_NAME,
       "slug",
       slug,

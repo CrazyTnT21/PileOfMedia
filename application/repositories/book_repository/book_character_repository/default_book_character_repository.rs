@@ -59,11 +59,8 @@ impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
         (DbBookCharacter::TABLE_NAME, "fkbook"),
         book_id,
       )))
-      .count()
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let character_books_ids = Select::new::<DbBookCharacter>()
       .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
@@ -100,7 +97,7 @@ impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
         (DbBookCharacter::TABLE_NAME, "fkcharacter"),
         &characters,
       )))
-      .where_expression(Expression::column_equal(DbBookCharacter::TABLE_NAME, "fkbook", book_id))
+      .where_expression(Expression::value_equal(DbBookCharacter::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
       .into_iter()

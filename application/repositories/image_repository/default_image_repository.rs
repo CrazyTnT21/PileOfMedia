@@ -30,12 +30,7 @@ impl<'a> DefaultImageRepository<'a> {
 #[async_trait]
 impl ImageRepository for DefaultImageRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, Box<dyn Error>> {
-    let total = Select::new::<DbImage>()
-      .count()
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+    let total = Select::new::<DbImage>().query_count(self.client).await? as usize;
 
     let images = Select::new::<DbImage>()
       .columns::<DbImage>("image")
@@ -113,7 +108,7 @@ fn to_entity(image: DbImage, versions: &mut Vec<DbImageData>) -> Image {
   image.to_entity(get_versions(id as u32, versions))
 }
 
-impl<'a> DefaultImageRepository<'a> {
+impl DefaultImageRepository<'_> {
   async fn get_image_data(&self, image_ids: &[u32]) -> Result<Vec<DbImageData>, Box<dyn Error>> {
     let image_ids = to_i32(image_ids);
 

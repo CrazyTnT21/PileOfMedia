@@ -1,5 +1,8 @@
 use crate::select::condition::Condition;
+use crate::select::conditions::column_equal::ColumnEqual;
 use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::selector::Selector;
 use crate::select::to_sql_value::ToSqlValue;
 use tokio_postgres::types::ToSql;
 
@@ -23,8 +26,14 @@ impl<'a> Expression<'a> {
       ors: vec![],
     }
   }
-  pub fn column_equal(from: &'a str, column: &'a str, value: impl ToSqlValue<'a> + 'a) -> Expression<'a> {
+  pub fn value_equal(from: &'a str, column: &'a str, value: impl ToSqlValue<'a> + 'a) -> Expression<'a> {
     Expression::new(ValueEqual::new((from, column), value))
+  }
+  pub fn value_i_like(selector: impl Selector + 'a, value: &'a String) -> Expression<'a> {
+    Expression::new(ValueILike::new(selector, value))
+  }
+  pub fn column_equal(selector: impl Selector + 'a, second_selector: impl Selector + 'a) -> Expression<'a> {
+    Expression::new(ColumnEqual::new(selector, second_selector))
   }
 
   pub fn values(&self) -> Vec<&IntoSql> {

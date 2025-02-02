@@ -22,19 +22,16 @@ use crate::select::expression::Expression;
 
 pub struct DefaultMutGenreRepository<'a> {
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   genre_repository: Arc<dyn GenreRepository + 'a>,
 }
 
 impl<'a> DefaultMutGenreRepository<'a> {
   pub fn new(
     transaction: &'a Transaction<'a>,
-    default_language: Language,
     genre_repository: Arc<dyn GenreRepository + 'a>,
   ) -> DefaultMutGenreRepository<'a> {
     DefaultMutGenreRepository {
       transaction,
-      default_language,
       genre_repository,
     }
   }
@@ -45,10 +42,10 @@ impl MutGenreRepository for DefaultMutGenreRepository<'_> {
   async fn create(&self, item: CreatePartialGenre) -> Result<Genre, Box<dyn Error>> {
     let id = self.insert_genre(&item).await? as u32;
     self.insert_translation(&item, id).await?;
-
+    let languages: Vec<Language> = item.translations.keys().copied().collect();
     let genre = self
       .genre_repository
-      .get_by_id(id, self.default_language)
+      .get_by_id(id, &languages)
       .await?
       .expect("Genre was just created");
     Ok(genre)

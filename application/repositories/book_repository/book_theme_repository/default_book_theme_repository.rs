@@ -59,11 +59,8 @@ impl BookThemeRepository for DefaultBookThemeRepository<'_> {
         (DbBookTheme::TABLE_NAME, "fkbook"),
         book_id,
       )))
-      .count()
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let theme_ids: Vec<u32> = Select::new::<DbBookTheme>()
       .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
@@ -95,7 +92,7 @@ impl BookThemeRepository for DefaultBookThemeRepository<'_> {
         (DbBookTheme::TABLE_NAME, "fktheme"),
         &themes,
       )))
-      .where_expression(Expression::column_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id))
+      .where_expression(Expression::value_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id))
       .query(self.client)
       .await?
       .into_iter()

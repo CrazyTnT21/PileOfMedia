@@ -49,7 +49,7 @@ impl MutThemeService for DefaultMutThemeService<'_> {
   }
 }
 
-impl<'a> DefaultMutThemeService<'a> {
+impl DefaultMutThemeService<'_> {
   async fn validate_delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutThemeServiceError>> {
     if ids.is_empty() {
       return Err(ClientError(MutThemeServiceError::NoIdsProvided));

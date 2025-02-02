@@ -93,7 +93,7 @@ impl MutBookService for DefaultMutBookService<'_> {
   }
 }
 
-impl<'a> DefaultMutBookService<'a> {
+impl DefaultMutBookService<'_> {
   async fn validate_delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutBookServiceError>> {
     if ids.is_empty() {
       return Err(ClientError(MutBookServiceError::NoIdsProvided));

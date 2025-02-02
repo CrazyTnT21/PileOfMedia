@@ -51,7 +51,7 @@ impl MutFranchiseService for DefaultMutFranchiseService<'_> {
   }
 }
 
-impl<'a> DefaultMutFranchiseService<'a> {
+impl DefaultMutFranchiseService<'_> {
   async fn validate_delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutFranchiseServiceError>> {
     if ids.is_empty() {
       return Err(ClientError(MutFranchiseServiceError::NoIdsProvided));

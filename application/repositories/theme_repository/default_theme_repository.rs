@@ -44,12 +44,9 @@ impl ThemeRepository for DefaultThemeRepository<'_> {
     let language = DbLanguage::from(language);
 
     let total = Select::new::<DbTheme>()
-      .count()
       .transform(|x| self.theme_joins(x, &language))
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let themes = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
@@ -101,7 +98,6 @@ impl ThemeRepository for DefaultThemeRepository<'_> {
     let name = format!("%{name}%");
 
     let total = Select::new::<DbTheme>()
-      .count()
       .transform(|x| self.theme_joins(x, &language))
       .where_expression(
         Expression::new(ValueILike::new(("theme_translation", "name"), &name)).or(Expression::new(ValueILike::new(
@@ -109,10 +105,8 @@ impl ThemeRepository for DefaultThemeRepository<'_> {
           &name,
         ))),
       )
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let themes = theme_select_columns()
       .transform(|x| self.theme_joins(x, &language))
@@ -156,14 +150,14 @@ impl<'a> DefaultThemeRepository<'a> {
     select
       .left_join::<DbThemeTranslation>(
         Some("theme_translation"),
-        Expression::column_equal("theme_translation", "language", language).and(Expression::new(ColumnEqual::new(
+        Expression::value_equal("theme_translation", "language", language).and(Expression::new(ColumnEqual::new(
           ("theme_translation", "fktranslation"),
           ("theme", "id"),
         ))),
       )
       .left_join::<DbThemeTranslation>(
         Some("theme_translation_fallback"),
-        Expression::column_equal("theme_translation_fallback", "language", self.default_language)
+        Expression::value_equal("theme_translation_fallback", "language", self.default_language)
           .and(Expression::new(ColumnEqual::new(
             ("theme_translation_fallback", "fktranslation"),
             ("theme", "id"),

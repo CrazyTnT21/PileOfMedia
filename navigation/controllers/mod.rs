@@ -43,20 +43,32 @@ pub fn route_controllers(app_state: AppState) -> Router {
     .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", doc))
 }
 
-fn convert_to_language(value: Option<&AcceptLanguage>) -> Option<Language> {
-  Language::from_str(&value?.value).ok()
+fn convert_to_language(value: &AcceptLanguage) -> Option<Language> {
+  Language::from_str(&value.value).ok()
 }
 
 fn get_language(mut languages: Vec<AcceptLanguage>, default_language: Language) -> Language {
   languages.sort();
-  let language = convert_to_language(languages.first()).unwrap_or(default_language);
+  let language = languages
+    .first()
+    .and_then(convert_to_language)
+    .unwrap_or(default_language);
 
   language
 }
-
+fn map_accept_languages(languages: &[AcceptLanguage]) -> Vec<Language> {
+  languages.iter().filter_map(convert_to_language).collect()
+}
 fn content_language_header(language: Language) -> HeaderMap {
   let mut headers = HeaderMap::new();
   append_content_language_header(&mut headers, language);
+  headers
+}
+fn map_language_header(languages: &[Language]) -> HeaderMap {
+  let mut headers = HeaderMap::new();
+  for lang in languages {
+    append_content_language_header(&mut headers, *lang);
+  }
   headers
 }
 

@@ -23,9 +23,7 @@ impl<T: FromMultiPart, S: Send + Sync> FromRequest<S> for MultiPartRequest<T> {
     Ok(multipart)
   }
 }
-pub async fn serialize_parts<'a>(
-  mut multipart: Multipart,
-) -> Result<HashMap<Option<String>, Vec<Bytes>>, MultipartError> {
+pub async fn serialize_parts(mut multipart: Multipart) -> Result<HashMap<Option<String>, Vec<Bytes>>, MultipartError> {
   let mut result: HashMap<Option<String>, Vec<Bytes>> = HashMap::new();
   while let Some(value) = multipart.next_field().await? {
     let previous = result.get_mut(&value.name().map(std::string::ToString::to_string));

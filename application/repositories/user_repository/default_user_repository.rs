@@ -37,12 +37,7 @@ impl<'a> DefaultUserRepository<'a> {
 #[async_trait]
 impl UserRepository for DefaultUserRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
-    let total = Select::new::<DbUser>()
-      .count()
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+    let total = Select::new::<DbUser>().query_count(self.client).await? as usize;
 
     let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
@@ -87,12 +82,9 @@ impl UserRepository for DefaultUserRepository<'_> {
     let name = format!("%{name}%");
 
     let total = Select::new::<DbUser>()
-      .count()
       .where_expression(Expression::new(ValueILike::new((DbUser::TABLE_NAME, "name"), &name)))
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
@@ -126,7 +118,7 @@ fn to_entity(user: (DbUser,), image: Option<Image>) -> User {
   user.0.to_entity(image)
 }
 
-impl<'a> DefaultUserRepository<'a> {
+impl DefaultUserRepository<'_> {
   async fn to_entities(&self, items: Vec<(DbUser,)>) -> Result<Vec<User>, Box<dyn Error>> {
     let image_ids: Vec<u32> = items
       .iter()

@@ -17,7 +17,6 @@ use crate::select::selector::Selector;
 
 mod column_table;
 pub mod combined_tuple;
-pub mod comparison;
 pub mod condition;
 pub mod conditions;
 pub mod expression;
@@ -27,7 +26,7 @@ pub mod selector;
 pub mod to_sql_value;
 
 //TODO: Prepared version
-pub struct Select<'a, T: FromRow<DbType = T> + CombinedType> {
+pub struct Select<'a, T: FromRow<DbType=T> + CombinedType> {
   marker: PhantomData<T>,
   offset: Option<usize>,
   limit: Option<usize>,
@@ -64,18 +63,18 @@ impl<'a> Select<'a, ()> {
   }
 }
 
-impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
+impl<'a, T: from_row::FromRow<DbType=T> + CombinedType> Select<'a, T> {
   pub const fn alias(mut self, alias: &'a str) -> Self {
     self.alias = Some(alias);
     self
   }
-  pub fn column<C: FromRow<DbType = C>>(
+  pub fn column<C: FromRow<DbType=C>>(
     mut self,
     from: &'a str,
     column: &'a str,
   ) -> Select<'a, <T as CombinedType>::Combined<C>>
   where
-    <T as CombinedType>::Combined<C>: FromRow<DbType = <T as CombinedType>::Combined<C>>,
+    <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>>,
   {
     self.columns.push(SelectElement::Column(ColumnTable {
       columns: vec![column],
@@ -85,7 +84,7 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
   }
   fn create_new_select<C>(self) -> Select<'a, <T as CombinedType>::Combined<C>>
   where
-    <T as CombinedType>::Combined<C>: FromRow<DbType = <T as CombinedType>::Combined<C>>,
+    <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>>,
   {
     Select::<<T as CombinedType>::Combined<C>> {
       marker: PhantomData,
@@ -102,16 +101,28 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
       having: self.having,
     }
   }
-  pub fn columns<C: from_row::RowColumns + FromRow<DbType = C>>(
+  pub fn columns<C: from_row::RowColumns + FromRow<DbType=C>>(
     mut self,
     from: &'a str,
   ) -> Select<'a, <T as CombinedType>::Combined<C>>
   where
-    <T as CombinedType>::Combined<C>: FromRow<DbType = <T as CombinedType>::Combined<C>>,
+    <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>>,
   {
     self.columns.push(SelectElement::Column(ColumnTable {
       columns: C::COLUMNS.iter().map(|x| x.0).collect::<Vec<&'static str>>(),
       alias: from,
+    }));
+    self.create_new_select::<C>()
+  }
+  pub fn columns_table<C: from_row::RowColumns + FromRow<DbType=C> + Table>(
+    mut self,
+  ) -> Select<'a, <T as CombinedType>::Combined<C>>
+  where
+    <T as CombinedType>::Combined<C>: FromRow<DbType=<T as CombinedType>::Combined<C>>,
+  {
+    self.columns.push(SelectElement::Column(ColumnTable {
+      columns: C::COLUMNS.iter().map(|x| x.0).collect::<Vec<&'static str>>(),
+      alias: C::TABLE_NAME,
     }));
     self.create_new_select::<C>()
   }
@@ -174,7 +185,7 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
     self
   }
 
-  pub fn transform<A: CombinedType + FromRow<DbType = A>>(
+  pub fn transform<A: CombinedType + FromRow<DbType=A>>(
     self,
     function: impl FnOnce(Self) -> Select<'a, A>,
   ) -> Select<'a, A> {
@@ -199,7 +210,7 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
 
   pub fn count(mut self) -> Select<'a, <T as CombinedType>::Combined<i64>>
   where
-    <T as CombinedType>::Combined<i64>: FromRow<DbType = <T as CombinedType>::Combined<i64>>,
+    <T as CombinedType>::Combined<i64>: FromRow<DbType=<T as CombinedType>::Combined<i64>>,
   {
     self.columns.push(SelectElement::Raw("COUNT(*)"));
     self.create_new_select::<i64>()
@@ -368,5 +379,29 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
         .await?
         .map(|x| T::from_row(&x, 0)),
     )
+  }
+}
+
+impl<'a> Select<'a, ()> {
+  /// # Panics
+  ///
+  /// Will panic if the database returns more than one row.
+  pub async fn query_count(self, connection: &'a Client) -> Result<i64, Box<dyn Error>> {
+    let result = self
+      .count()
+      .get_single(connection)
+      .await?
+      .expect("Count should return one row");
+    Ok(result.0)
+  }
+}
+impl<'a, T: from_row::FromRow<DbType=T>> Select<'a, (T,)> {
+  pub async fn query_destruct(self, connection: &'a Client) -> Result<Vec<T>, Box<dyn Error>> {
+    let result: Vec<T> = self.query(connection)
+      .await?
+      .into_iter()
+      .map(|(x, )| x)
+      .collect();
+    Ok(result)
   }
 }

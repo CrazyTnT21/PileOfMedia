@@ -1,3 +1,4 @@
+pub mod available_translations;
 pub mod entities;
 pub mod enums;
 pub mod file_name;

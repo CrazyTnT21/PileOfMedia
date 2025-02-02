@@ -61,7 +61,7 @@ impl MutAccountService for DefaultMutAccountService<'_> {
   }
 }
 
-impl<'a> DefaultMutAccountService<'a> {
+impl DefaultMutAccountService<'_> {
   async fn validate_create(&self, account: &CreateAccount) -> Result<(), ServiceError<MutAccountServiceError>> {
     let data = &account.account;
     if data.email.0.is_empty() {

@@ -48,7 +48,7 @@ impl MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'_> {
       .collect();
 
     Delete::new::<DbBookInvolved>(
-      Expression::column_equal(DbBookInvolved::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
+      Expression::value_equal(DbBookInvolved::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
         (
           (DbBookInvolved::TABLE_NAME, "fkperson"),
           (DbBookInvolved::TABLE_NAME, "fkrole"),

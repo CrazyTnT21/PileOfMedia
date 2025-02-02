@@ -44,12 +44,9 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let language = DbLanguage::from(language);
 
     let total = Select::new::<DbRole>()
-      .count()
       .transform(|x| self.role_joins(x, &language))
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let roles = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
@@ -101,7 +98,6 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let name = format!("%{name}%");
 
     let total = Select::new::<DbRole>()
-      .count()
       .transform(|x| self.role_joins(x, &language))
       .where_expression(
         Expression::new(ValueILike::new(("role_translation", "name"), &name)).or(Expression::new(ValueILike::new(
@@ -109,10 +105,8 @@ impl RoleRepository for DefaultRoleRepository<'_> {
           &name,
         ))),
       )
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+      .query_count(self.client)
+      .await? as usize;
 
     let roles = role_select_columns()
       .transform(|x| self.role_joins(x, &language))
@@ -155,14 +149,14 @@ impl<'a> DefaultRoleRepository<'a> {
     select
       .left_join::<DbRoleTranslation>(
         Some("role_translation"),
-        Expression::column_equal("role_translation", "language", language).and(Expression::new(ColumnEqual::new(
+        Expression::value_equal("role_translation", "language", language).and(Expression::new(ColumnEqual::new(
           ("role_translation", "fktranslation"),
           ("role", "id"),
         ))),
       )
       .left_join::<DbRoleTranslation>(
         Some("role_translation_fallback"),
-        Expression::column_equal("role_translation_fallback", "language", self.default_language)
+        Expression::value_equal("role_translation_fallback", "language", self.default_language)
           .and(Expression::new(ColumnEqual::new(
             ("role_translation_fallback", "fktranslation"),
             ("role", "id"),

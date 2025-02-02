@@ -36,12 +36,7 @@ impl<'a> DefaultAccountRepository<'a> {
 #[async_trait]
 impl AccountRepository for DefaultAccountRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, Box<dyn Error>> {
-    let total = Select::new::<DbAccount>()
-      .count()
-      .get_single(self.client)
-      .await?
-      .expect("Count should return one row");
-    let total = total.0 as usize;
+    let total = Select::new::<DbAccount>().query_count(self.client).await? as usize;
 
     let accounts = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
@@ -133,7 +128,7 @@ fn to_entity(account: (DbAccount,), user: User) -> Account {
   account.0.to_entity(user)
 }
 
-impl<'a> DefaultAccountRepository<'a> {
+impl DefaultAccountRepository<'_> {
   async fn to_entities(&self, items: Vec<(DbAccount,)>) -> Result<Vec<Account>, Box<dyn Error>> {
     let user_ids: Vec<u32> = items.iter().map(|x| x.0.fk_user as u32).collect();
 

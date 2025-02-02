@@ -155,8 +155,8 @@ pub fn get_genre_service<'a>(genre_repository: Arc<dyn GenreRepository + 'a>) ->
   DefaultGenreService::new(genre_repository)
 }
 
-pub fn get_genre_repository(client: &Client, language: Language) -> impl GenreRepository + '_ {
-  DefaultGenreRepository::new(client, language)
+pub fn get_genre_repository(client: &Client) -> impl GenreRepository + '_ {
+  DefaultGenreRepository::new(client)
 }
 
 pub fn get_theme_service<'a>(theme_repository: Arc<dyn ThemeRepository + 'a>) -> impl ThemeService + 'a {
@@ -201,11 +201,10 @@ pub fn get_book_genre_service<'a>(
 
 pub fn get_book_genre_repository<'a>(
   client: &'a Client,
-  language: Language,
   book_repository: Arc<dyn BookRepository + 'a>,
   genre_repository: Arc<dyn GenreRepository + 'a>,
 ) -> impl BookGenreRepository + 'a {
-  DefaultBookGenreRepository::new(client, language, book_repository, genre_repository)
+  DefaultBookGenreRepository::new(client, book_repository, genre_repository)
 }
 
 pub fn get_book_theme_service<'a>(
@@ -492,19 +491,17 @@ pub fn get_mut_person_repository<'a>(
 }
 
 pub fn get_mut_genre_service<'a>(
-  default_language: Language,
   genre_repository: Arc<dyn GenreRepository + 'a>,
   mut_genre_repository: Arc<dyn MutGenreRepository + 'a>,
 ) -> impl MutGenreService + 'a {
-  DefaultMutGenreService::new(default_language, genre_repository, mut_genre_repository)
+  DefaultMutGenreService::new(genre_repository, mut_genre_repository)
 }
 
 pub fn get_mut_genre_repository<'a>(
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   genre_repository: Arc<dyn GenreRepository + 'a>,
 ) -> impl MutGenreRepository + 'a {
-  DefaultMutGenreRepository::new(transaction, default_language, genre_repository)
+  DefaultMutGenreRepository::new(transaction, genre_repository)
 }
 
 pub fn get_mut_theme_service<'a>(

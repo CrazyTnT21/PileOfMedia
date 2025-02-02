@@ -69,7 +69,7 @@ impl MutPersonService for DefaultMutPersonService<'_> {
   }
 }
 
-impl<'a> DefaultMutPersonService<'a> {
+impl DefaultMutPersonService<'_> {
   async fn validate_delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutPersonServiceError>> {
     if ids.is_empty() {
       return Err(ClientError(MutPersonServiceError::NoIdsProvided));
