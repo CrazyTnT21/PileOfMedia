@@ -11,13 +11,13 @@ use domain::pagination::Pagination;
 
 #[async_trait]
 pub trait RoleRepository: Send + Sync {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Role>, Box<dyn Error>>;
-  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Role>, Box<dyn Error>>;
-  async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Role>, Box<dyn Error>>;
+  async fn get(&self, languages: &[Language], pagination: Pagination) -> Result<ItemsTotal<Role>, Box<dyn Error>>;
+  async fn get_by_id(&self, id: u32, languages: &[Language]) -> Result<Option<Role>, Box<dyn Error>>;
+  async fn get_by_ids(&self, ids: &[u32], languages: &[Language]) -> Result<Vec<Role>, Box<dyn Error>>;
   async fn get_by_name(
     &self,
     name: &str,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Role>, Box<dyn Error>>;
 

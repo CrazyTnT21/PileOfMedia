@@ -152,7 +152,7 @@ pub fn get_involved_service(connection: &Client) -> impl BookInvolvedService + '
     DEFAULT_LANGUAGE,
     image_repository.clone(),
   ));
-  let role_repository = Arc::new(get_role_repository(connection, DEFAULT_LANGUAGE));
+  let role_repository = Arc::new(get_role_repository(connection));
   let repository = Arc::new(get_book_involved_repository(
     connection,
     DEFAULT_LANGUAGE,
@@ -182,7 +182,7 @@ pub fn get_mut_involved_service<'a>(
     image_repository.clone(),
     franchise_repository,
   ));
-  let role_repository = Arc::new(get_role_repository(client, DEFAULT_LANGUAGE));
+  let role_repository = Arc::new(get_role_repository(client));
   let person_repository = Arc::new(get_person_repository(
     client,
     DEFAULT_LANGUAGE,
@@ -233,7 +233,7 @@ pub fn get_mut_service<'a>(
     display_path,
     path,
   ));
-  let role_repository = Arc::new(get_role_repository(client, DEFAULT_LANGUAGE));
+  let role_repository = Arc::new(get_role_repository(client));
   let person_repository = Arc::new(get_person_repository(
     client,
     DEFAULT_LANGUAGE,

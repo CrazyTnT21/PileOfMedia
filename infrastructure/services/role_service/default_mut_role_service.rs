@@ -14,19 +14,16 @@ use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;
 
 pub struct DefaultMutRoleService<'a> {
-  default_language: Language,
   role_repository: Arc<dyn RoleRepository + 'a>,
   mut_role_repository: Arc<dyn MutRoleRepository + 'a>,
 }
 
 impl<'a> DefaultMutRoleService<'a> {
   pub fn new(
-    default_language: Language,
     role_repository: Arc<dyn RoleRepository + 'a>,
     mut_role_repository: Arc<dyn MutRoleRepository + 'a>,
   ) -> DefaultMutRoleService<'a> {
     DefaultMutRoleService {
-      default_language,
       role_repository,
       mut_role_repository,
     }
@@ -65,15 +62,9 @@ impl DefaultMutRoleService<'_> {
   async fn validate_translations(
     &self,
     translations: &HashMap<Language, CreateRoleTranslation>,
-    default_language: &Language,
   ) -> Result<(), ServiceError<MutRoleServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutRoleServiceError::NoTranslationsProvided));
-    }
-    if !translations.contains_key(default_language) {
-      return Err(ClientError(MutRoleServiceError::NoTranslationInLanguageProvided(
-        *default_language,
-      )));
     }
     for item in translations.values() {
       if item.name.is_empty() {
@@ -93,9 +84,7 @@ impl DefaultMutRoleService<'_> {
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateRole) -> Result<(), ServiceError<MutRoleServiceError>> {
-    self
-      .validate_translations(&item.translations, &self.default_language)
-      .await?;
+    self.validate_translations(&item.translations).await?;
     Ok(())
   }
 }

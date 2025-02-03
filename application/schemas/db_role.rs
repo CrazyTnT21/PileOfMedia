@@ -1,4 +1,5 @@
-use crate::schemas::db_role_translation::DbRoleTranslation;
+use domain::available_translations::AvailableTranslations;
+use domain::entities::role::role_translation::RoleTranslation;
 use domain::entities::role::Role;
 use from_row::FromRow;
 use tokio_postgres::Row;
@@ -10,11 +11,10 @@ pub struct DbRole {
 }
 
 impl DbRole {
-  pub fn to_entity(self, role_translation: DbRoleTranslation) -> Role {
+  pub const fn to_entity(self, translations: AvailableTranslations<RoleTranslation>) -> Role {
     Role {
       id: self.id as u32,
-      name: role_translation.name,
-      language: role_translation.language.into(),
+      translations,
     }
   }
 }

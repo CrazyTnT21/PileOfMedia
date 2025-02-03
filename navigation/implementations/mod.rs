@@ -312,8 +312,8 @@ pub fn get_role_service<'a>(role_repository: Arc<dyn RoleRepository + 'a>) -> im
   DefaultRoleService::new(role_repository)
 }
 
-pub fn get_role_repository(client: &Client, language: Language) -> impl RoleRepository + '_ {
-  DefaultRoleRepository::new(client, language)
+pub fn get_role_repository(client: &Client) -> impl RoleRepository + '_ {
+  DefaultRoleRepository::new(client)
 }
 
 pub fn get_file_service<'a>(file_repository: Arc<dyn FileRepository + 'a>) -> impl FileService + 'a {
@@ -520,19 +520,17 @@ pub fn get_mut_theme_repository<'a>(
 }
 
 pub fn get_mut_role_service<'a>(
-  default_language: Language,
   role_repository: Arc<dyn RoleRepository + 'a>,
   mut_role_repository: Arc<dyn MutRoleRepository + 'a>,
 ) -> impl MutRoleService + 'a {
-  DefaultMutRoleService::new(default_language, role_repository, mut_role_repository)
+  DefaultMutRoleService::new(role_repository, mut_role_repository)
 }
 
 pub fn get_mut_role_repository<'a>(
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   role_repository: Arc<dyn RoleRepository + 'a>,
 ) -> impl MutRoleRepository + 'a {
-  DefaultMutRoleRepository::new(transaction, default_language, role_repository)
+  DefaultMutRoleRepository::new(transaction, role_repository)
 }
 pub fn get_mut_franchise_service<'a>(
   default_language: Language,

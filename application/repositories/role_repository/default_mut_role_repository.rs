@@ -22,19 +22,16 @@ use crate::select::expression::Expression;
 
 pub struct DefaultMutRoleRepository<'a> {
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   role_repository: Arc<dyn RoleRepository + 'a>,
 }
 
 impl<'a> DefaultMutRoleRepository<'a> {
   pub fn new(
     transaction: &'a Transaction<'a>,
-    default_language: Language,
     role_repository: Arc<dyn RoleRepository + 'a>,
   ) -> DefaultMutRoleRepository<'a> {
     DefaultMutRoleRepository {
       transaction,
-      default_language,
       role_repository,
     }
   }
@@ -45,10 +42,10 @@ impl MutRoleRepository for DefaultMutRoleRepository<'_> {
   async fn create(&self, item: CreatePartialRole) -> Result<Role, Box<dyn Error>> {
     let id = self.insert_role(&item).await? as u32;
     self.insert_translation(&item, id).await?;
-
+    let languages: Vec<Language> = item.translations.keys().copied().collect();
     let role = self
       .role_repository
-      .get_by_id(id, self.default_language)
+      .get_by_id(id, &languages)
       .await?
       .expect("Role was just created");
     Ok(role)
@@ -57,14 +54,11 @@ impl MutRoleRepository for DefaultMutRoleRepository<'_> {
   async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let ids = to_i32(ids);
 
-    Delete::new::<DbRoleTranslation>(Expression::new(ValueIn::new(
-      (DbRoleTranslation::TABLE_NAME, "fktranslation"),
-      &ids,
-    )))
-    .execute_transaction(self.transaction)
-    .await?;
+    Delete::new::<DbRoleTranslation>(fk_translation_in_ids(&ids))
+      .execute_transaction(self.transaction)
+      .await?;
 
-    Delete::new::<DbRole>(Expression::new(ValueIn::new((DbRole::TABLE_NAME, "id"), &ids)))
+    Delete::new::<DbRole>(role_id_in_ids(&ids))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())
@@ -93,4 +87,10 @@ impl DefaultMutRoleRepository<'_> {
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }
+}
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn role_id_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbRole::TABLE_NAME, "id"), ids))
 }
