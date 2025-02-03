@@ -4,8 +4,6 @@ use async_trait::async_trait;
 
 use domain::entities::person::create_person::CreatePerson;
 use domain::entities::person::Person;
-use domain::enums::language::Language;
-
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
 
@@ -22,7 +20,6 @@ pub enum MutPersonServiceError {
   NoIdsProvided,
   NonExistentPeople(Vec<u32>),
   NoTranslationsProvided,
-  NoTranslationInLanguageProvided(Language),
 }
 
 impl Display for MutPersonServiceError {
@@ -38,11 +35,6 @@ impl Display for MutPersonServiceError {
         MutPersonServiceError::NonExistentPeople(x) =>
           format!("The following people do not exist: [{}]", x.join_comma()),
         MutPersonServiceError::NoTranslationsProvided => "No translations provided".to_string(),
-        MutPersonServiceError::NoTranslationInLanguageProvided(language) => format!(
-          "No translation in '{}' ({}) provided",
-          language,
-          language.language_code()
-        ),
       }
     )
   }

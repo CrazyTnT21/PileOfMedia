@@ -4,7 +4,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::person::create_partial_person::CreatePartialPerson;
+use domain::entities::person::create_partial_person::{CreatePartialPerson, CreatePartialPersonTranslation};
 use domain::entities::person::Person;
 use domain::enums::language::Language;
 use from_row::Table;
@@ -22,19 +22,16 @@ use crate::select::expression::Expression;
 
 pub struct DefaultMutPersonRepository<'a> {
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   person_repository: Arc<dyn PersonRepository + 'a>,
 }
 
 impl<'a> DefaultMutPersonRepository<'a> {
   pub fn new(
     transaction: &'a Transaction<'a>,
-    default_language: Language,
     person_repository: Arc<dyn PersonRepository + 'a>,
   ) -> DefaultMutPersonRepository<'a> {
     DefaultMutPersonRepository {
       transaction,
-      default_language,
       person_repository,
     }
   }
@@ -46,9 +43,10 @@ impl MutPersonRepository for DefaultMutPersonRepository<'_> {
     let id = self.insert_person(&item).await? as u32;
     self.insert_translation(&item, id).await?;
 
+    let languages: Vec<Language> = item.translations.keys().copied().collect();
     let person = self
       .person_repository
-      .get_by_id(id, self.default_language)
+      .get_by_id(id, &languages)
       .await?
       .expect("Person was just created");
     Ok(person)
@@ -89,14 +87,14 @@ impl DefaultMutPersonRepository<'_> {
   }
   async fn insert_translation(&self, item: &CreatePartialPerson, id: u32) -> Result<(), Box<dyn Error>> {
     let id = id as i32;
-    let translations: Vec<(&Option<String>, DbLanguage)> = item
+    let translations: Vec<(DbLanguage, &CreatePartialPersonTranslation)> = item
       .translations
       .iter()
-      .map(|x| (&x.1.description, DbLanguage::from(*x.0)))
+      .map(|(language, item)| (DbLanguage::from(*language), item))
       .collect();
     let mut insert = Insert::new::<DbPersonTranslation>(["description", "fktranslation", "language"]);
-    for (description, language) in &translations {
-      insert.values_ref([*description, &id, language]);
+    for (language, item) in &translations {
+      insert.values_ref([&item.description, &id, language]);
     }
     insert.execute_transaction(self.transaction).await?;
     Ok(())

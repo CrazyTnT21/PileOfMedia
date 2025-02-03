@@ -177,10 +177,9 @@ pub fn get_person_service<'a>(person_repository: Arc<dyn PersonRepository + 'a>)
 
 pub fn get_person_repository<'a>(
   client: &'a Client,
-  language: Language,
   image_repository: Arc<dyn ImageRepository + 'a>,
 ) -> impl PersonRepository + 'a {
-  DefaultPersonRepository::new(client, language, image_repository)
+  DefaultPersonRepository::new(client, image_repository)
 }
 
 pub fn get_character_service<'a>(
@@ -470,25 +469,18 @@ pub fn get_mut_book_repository<'a>(
 }
 
 pub fn get_mut_person_service<'a>(
-  default_language: Language,
   person_repository: Arc<dyn PersonRepository + 'a>,
   mut_person_repository: Arc<dyn MutPersonRepository + 'a>,
   mut_image_service: Arc<dyn MutImageService + 'a>,
 ) -> impl MutPersonService + 'a {
-  DefaultMutPersonService::new(
-    default_language,
-    person_repository,
-    mut_person_repository,
-    mut_image_service,
-  )
+  DefaultMutPersonService::new(person_repository, mut_person_repository, mut_image_service)
 }
 
 pub fn get_mut_person_repository<'a>(
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   person_repository: Arc<dyn PersonRepository + 'a>,
 ) -> impl MutPersonRepository + 'a {
-  DefaultMutPersonRepository::new(transaction, default_language, person_repository)
+  DefaultMutPersonRepository::new(transaction, person_repository)
 }
 
 pub fn get_mut_genre_service<'a>(

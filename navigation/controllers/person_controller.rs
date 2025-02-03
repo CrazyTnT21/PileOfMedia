@@ -1,3 +1,5 @@
+use domain::entities::person::create_person::CreatePerson;
+use multipart::MultiPartRequest;
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};
@@ -7,15 +9,9 @@ use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use tokio_postgres::{Client, Transaction};
 
-use domain::entities::person::create_person::CreatePerson;
-use multipart::MultiPartRequest;
-use services::person_service::mut_person_service::MutPersonService;
-use services::person_service::PersonService;
-
 use crate::app_state::AppState;
 use crate::controllers::{
-  append_content_language_header, content_language_header, convert_error, convert_service_error, get_language,
-  set_pagination_limit, DEFAULT_LANGUAGE,
+  convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
@@ -31,6 +27,8 @@ use crate::openapi::params::query::page::PageParam;
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
+use services::person_service::mut_person_service::MutPersonService;
+use services::person_service::PersonService;
 
 pub mod person_doc;
 
@@ -45,11 +43,10 @@ pub fn routes(app_state: AppState) -> Router {
 }
 
 #[utoipa::path(get, path = "",
-    responses(
-        (status = 200, description = "Returned people", body = PeopleTotal), ServerError, BadRequest
-    ),
-    params(AcceptLanguageParam, PageParam, CountParam),
-    tag = "People"
+  responses(
+    (status = 200, description = "Returned people", body = PeopleTotal), ServerError, BadRequest),
+  params(AcceptLanguageParam, PageParam, CountParam),
+  tag = "People"
 )]
 async fn get_items(
   AcceptLanguageHeader(languages): AcceptLanguageHeader,
@@ -59,26 +56,24 @@ async fn get_items(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for people in {}", language);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for people in {:?}", &languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(language, pagination.into()).await {
+  match service.get(&languages, pagination.into()).await {
     Ok(people) => Ok((StatusCode::OK, content_language, Json(people))),
     Err(error) => Err(convert_service_error(error)),
   }
 }
 
 #[utoipa::path(get, path = "/{id}",
-    responses(
-        (status = 200, description = "Returned person based on the id", body = Person), ServerError, BadRequest, NotFound
-    ),
-    params(IdParam, AcceptLanguageParam),
-    tag = "People"
+  responses(
+    (status = 200, description = "Returned person based on the id", body = Person), ServerError, BadRequest, NotFound
+  ),
+  params(IdParam, AcceptLanguageParam),
+  tag = "People"
 )]
 async fn get_by_id(
   Path(id): Path<u32>,
@@ -88,14 +83,11 @@ async fn get_by_id(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for a person with id {} in {:?}", id, &languages);
 
-  println!("Route for a person with id {} in {}", id, language);
-
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_id(id, language).await {
+  match service.get_by_id(id, &languages).await {
     Ok(item) => match item {
       None => Err((StatusCode::NOT_FOUND, "".to_string())),
       Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
@@ -105,11 +97,11 @@ async fn get_by_id(
 }
 
 #[utoipa::path(get, path = "/name/{name}",
-    responses(
-        (status = 200, description = "Returned People based on the name", body = PeopleTotal), ServerError, BadRequest
-    ),
-    params(NameParam, AcceptLanguageParam, PageParam, CountParam),
-    tag = "People"
+  responses(
+    (status = 200, description = "Returned people based on the name", body = PeopleTotal), ServerError, BadRequest
+  ),
+  params(NameParam, AcceptLanguageParam, PageParam, CountParam),
+  tag = "People"
 )]
 async fn get_by_name(
   Path(name): Path<String>,
@@ -120,25 +112,24 @@ async fn get_by_name(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for people with the name {} in {}", name, language);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for people with the name {} in {:?}", name, &languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_name(&name, language, pagination.into()).await {
+  match service.get_by_name(&name, &languages, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
 }
+
 #[utoipa::path(post, path = "",
-    responses(
-        (status = 201, description = "Person successfully created", body = Person), ServerError, BadRequest
-    ),
-    request_body(content_type = ["multipart/form-data"], content = CreatePerson),
-    tag = "People"
+  responses(
+    (status = 201, description = "Person successfully created", body = Person), ServerError, BadRequest
+  ),
+  request_body(content_type = ["multipart/form-data"], content = CreatePerson),
+  tag = "People"
 )]
 async fn create_item(
   State(app_state): State<AppState>,
@@ -162,11 +153,11 @@ async fn create_item(
 }
 
 #[utoipa::path(delete, path = "/{id}",
-    responses(
-        (status = 204, description = "Person successfully deleted"), ServerError, BadRequest
-    ),
-    params(("id" = u32, Path, description = "Id of the item to delete")),
-    tag = "People"
+  responses(
+    (status = 204, description = "Person successfully deleted"), ServerError, BadRequest
+  ),
+  params(("id" = u32, Path, description = "Id of the item to delete")),
+  tag = "People"
 )]
 async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> impl IntoResponse {
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
@@ -188,8 +179,8 @@ async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> 
 
 fn get_service(connection: &Client) -> impl PersonService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let repository = Arc::new(get_person_repository(connection, DEFAULT_LANGUAGE, image_repository));
-  get_person_service(repository)
+  let repository = get_person_repository(connection, image_repository);
+  get_person_service(Arc::new(repository))
 }
 
 fn get_mut_service<'a>(
@@ -199,16 +190,8 @@ fn get_mut_service<'a>(
   path: &'a str,
 ) -> impl MutPersonService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
-  let person_repository = Arc::new(get_person_repository(
-    client,
-    DEFAULT_LANGUAGE,
-    image_repository.clone(),
-  ));
-  let mut_person_repository = Arc::new(get_mut_person_repository(
-    transaction,
-    DEFAULT_LANGUAGE,
-    person_repository.clone(),
-  ));
+  let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
+  let mut_person_repository = Arc::new(get_mut_person_repository(transaction, person_repository.clone()));
   let mut_file_repository = Arc::new(get_mut_file_repository());
   let file_repository = Arc::new(get_file_repository());
   let mut_image_repository = Arc::new(get_mut_image_repository(
@@ -224,10 +207,5 @@ fn get_mut_service<'a>(
     display_path,
     path,
   ));
-  get_mut_person_service(
-    DEFAULT_LANGUAGE,
-    person_repository,
-    mut_person_repository,
-    mut_image_service,
-  )
+  get_mut_person_service(person_repository, mut_person_repository, mut_image_service)
 }

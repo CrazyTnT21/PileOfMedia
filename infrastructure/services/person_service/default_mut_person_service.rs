@@ -16,7 +16,6 @@ use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::{ClientError, ServerError};
 
 pub struct DefaultMutPersonService<'a> {
-  default_language: Language,
   person_repository: Arc<dyn PersonRepository + 'a>,
   mut_person_repository: Arc<dyn MutPersonRepository + 'a>,
   mut_image_service: Arc<dyn MutImageService + 'a>,
@@ -24,13 +23,11 @@ pub struct DefaultMutPersonService<'a> {
 
 impl<'a> DefaultMutPersonService<'a> {
   pub fn new(
-    default_language: Language,
     person_repository: Arc<dyn PersonRepository + 'a>,
     mut_person_repository: Arc<dyn MutPersonRepository + 'a>,
     mut_image_service: Arc<dyn MutImageService + 'a>,
   ) -> DefaultMutPersonService<'a> {
     DefaultMutPersonService {
-      default_language,
       person_repository,
       mut_person_repository,
       mut_image_service,
@@ -87,15 +84,9 @@ impl DefaultMutPersonService<'_> {
   async fn validate_translations(
     &self,
     translations: &HashMap<Language, CreatePersonTranslation>,
-    default_language: &Language,
   ) -> Result<(), ServiceError<MutPersonServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutPersonServiceError::NoTranslationsProvided));
-    }
-    if !translations.contains_key(default_language) {
-      return Err(ClientError(MutPersonServiceError::NoTranslationInLanguageProvided(
-        *default_language,
-      )));
     }
     for item in translations.values() {
       if let Some(description) = &item.description {
@@ -129,9 +120,7 @@ impl DefaultMutPersonService<'_> {
       return Err(ClientError(MutPersonServiceError::InvalidName(data.name.clone())));
     }
 
-    self
-      .validate_translations(&data.translations, &self.default_language)
-      .await?;
+    self.validate_translations(&data.translations).await?;
     Ok(())
   }
 }

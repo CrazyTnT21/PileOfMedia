@@ -1,5 +1,6 @@
 use crate::entities::character::character_translation::CharacterTranslation;
 use crate::entities::genre::genre_translation::GenreTranslation;
+use crate::entities::person::person_translation::PersonTranslation;
 use crate::entities::role::role_translation::RoleTranslation;
 use crate::entities::theme::theme_translation::ThemeTranslation;
 use crate::enums::language::Language;
@@ -12,7 +13,8 @@ use std::collections::HashMap;
   GenreAvailableTranslations = AvailableTranslations < GenreTranslation >,
   ThemeAvailableTranslations = AvailableTranslations < ThemeTranslation >,
   CharacterAvailableTranslations = AvailableTranslations < CharacterTranslation >,
-  RoleAvailableTranslations = AvailableTranslations<RoleTranslation>
+  RoleAvailableTranslations = AvailableTranslations < RoleTranslation >,
+  PersonAvailableTranslations = AvailableTranslations < PersonTranslation >
 ))]
 pub struct AvailableTranslations<T> {
   pub available_languages: Vec<Language>,

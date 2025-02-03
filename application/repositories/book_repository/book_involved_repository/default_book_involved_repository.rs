@@ -100,7 +100,7 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
     role_ids.dedup();
 
     //TODO
-    let people = self.person_repository.get_by_ids(&person_ids, language).await?;
+    let people = self.person_repository.get_by_ids(&person_ids, &[language]).await?;
     let roles = self.role_repository.get_by_ids(&role_ids, &[language]).await?;
 
     let items: Vec<BookInvolved> = involved

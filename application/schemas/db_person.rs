@@ -1,11 +1,10 @@
 use chrono::NaiveDate;
-use tokio_postgres::Row;
-
+use domain::available_translations::AvailableTranslations;
 use domain::entities::image::Image;
+use domain::entities::person::person_translation::PersonTranslation;
 use domain::entities::person::Person;
 use from_row::FromRow;
-
-use crate::schemas::db_person_translation::DbPersonTranslation;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "person"]
@@ -23,17 +22,16 @@ pub struct DbPerson {
 }
 
 impl DbPerson {
-  pub fn to_entity(self, translation: DbPersonTranslation, image: Option<Image>) -> Person {
+  pub fn to_entity(self, translations: AvailableTranslations<PersonTranslation>, image: Option<Image>) -> Person {
     Person {
       id: self.id as u32,
       name: self.name,
       first_name: self.first_name,
       last_name: self.last_name,
-      description: translation.description,
       birthday: self.birthday,
       height_cm: self.height.map(|x| x as u16),
       image,
-      language: translation.language.into(),
+      translations,
     }
   }
 }
