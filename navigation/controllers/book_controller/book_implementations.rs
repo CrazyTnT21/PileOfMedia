@@ -105,10 +105,9 @@ pub fn get_character_service(connection: &Client) -> impl BookCharacterService +
     image_repository.clone(),
     franchise_repository,
   ));
-  let character_repository = Arc::new(get_character_repository(connection, DEFAULT_LANGUAGE, image_repository));
+  let character_repository = Arc::new(get_character_repository(connection, image_repository));
   let repository = Arc::new(get_book_character_repository(
     connection,
-    DEFAULT_LANGUAGE,
     book_repository,
     character_repository,
   ));
@@ -127,13 +126,9 @@ pub fn get_mut_character_service<'a>(
     image_repository.clone(),
     franchise_repository,
   ));
-  let character_repository = Arc::new(get_character_repository(client, DEFAULT_LANGUAGE, image_repository));
-  let book_character_repository = get_book_character_repository(
-    client,
-    DEFAULT_LANGUAGE,
-    book_repository.clone(),
-    character_repository.clone(),
-  );
+  let character_repository = Arc::new(get_character_repository(client, image_repository));
+  let book_character_repository =
+    get_book_character_repository(client, book_repository.clone(), character_repository.clone());
   let repository = get_mut_book_character_repository(transaction);
   get_mut_book_character_service(
     book_repository,
@@ -224,11 +219,7 @@ pub fn get_mut_service<'a>(
   let genre_repository = Arc::new(get_genre_repository(client));
   let mut_book_genre_repository = Arc::new(get_mut_book_genre_repository(transaction));
   let mut_file_service = Arc::new(get_mut_file_service(mut_file_repository.clone()));
-  let character_repository = Arc::new(get_character_repository(
-    client,
-    DEFAULT_LANGUAGE,
-    image_repository.clone(),
-  ));
+  let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
   let mut_book_character_repository = Arc::new(get_mut_book_character_repository(transaction));
   let mut_image_repository = Arc::new(get_mut_image_repository(
     transaction,

@@ -1,3 +1,4 @@
+use crate::entities::character::character_translation::CharacterTranslation;
 use crate::entities::genre::genre_translation::GenreTranslation;
 use crate::entities::theme::theme_translation::ThemeTranslation;
 use crate::enums::language::Language;
@@ -8,7 +9,8 @@ use std::collections::HashMap;
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[cfg_attr(feature = "utoipa", aliases(
   GenreAvailableTranslations = AvailableTranslations < GenreTranslation >,
-  ThemeAvailableTranslations = AvailableTranslations < ThemeTranslation >
+  ThemeAvailableTranslations = AvailableTranslations < ThemeTranslation >,
+  CharacterAvailableTranslations = AvailableTranslations < CharacterTranslation >
 ))]
 pub struct AvailableTranslations<T> {
   pub available_languages: Vec<Language>,

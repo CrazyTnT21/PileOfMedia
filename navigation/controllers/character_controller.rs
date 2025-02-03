@@ -11,8 +11,7 @@ use tokio_postgres::{Client, Transaction};
 
 use crate::app_state::AppState;
 use crate::controllers::{
-  append_content_language_header, content_language_header, convert_error, convert_service_error, get_language,
-  set_pagination_limit, DEFAULT_LANGUAGE,
+  convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
@@ -46,8 +45,7 @@ pub fn routes(app_state: AppState) -> Router {
 
 #[utoipa::path(get, path = "",
   responses(
-    (status = 200, description = "Returned characters", body = CharactersTotal), ServerError, BadRequest
-  ),
+    (status = 200, description = "Returned characters", body = CharactersTotal), ServerError, BadRequest),
   params(AcceptLanguageParam, PageParam, CountParam),
   tag = "Characters"
 )]
@@ -59,15 +57,13 @@ async fn get_items(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for characters in {}", language);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for characters in {:?}", &languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(language, pagination.into()).await {
+  match service.get(&languages, pagination.into()).await {
     Ok(characters) => Ok((StatusCode::OK, content_language, Json(characters))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -88,14 +84,11 @@ async fn get_by_id(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for a character with id {} in {:?}", id, &languages);
 
-  println!("Route for a character with id {} in {}", id, language);
-
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_id(id, language).await {
+  match service.get_by_id(id, &languages).await {
     Ok(item) => match item {
       None => Err((StatusCode::NOT_FOUND, "".to_string())),
       Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
@@ -120,15 +113,13 @@ async fn get_by_name(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for characters with the name {} in {}", name, language);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for characters with the name {} in {:?}", name, &languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_name(&name, language, pagination.into()).await {
+  match service.get_by_name(&name, &languages, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -189,8 +180,8 @@ async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> 
 
 fn get_service(connection: &Client) -> impl CharacterService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let repository = Arc::new(get_character_repository(connection, DEFAULT_LANGUAGE, image_repository));
-  get_character_service(repository)
+  let repository = get_character_repository(connection, image_repository);
+  get_character_service(Arc::new(repository))
 }
 
 fn get_mut_service<'a>(
@@ -200,11 +191,7 @@ fn get_mut_service<'a>(
   path: &'a str,
 ) -> impl MutCharacterService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
-  let character_repository = Arc::new(get_character_repository(
-    client,
-    DEFAULT_LANGUAGE,
-    image_repository.clone(),
-  ));
+  let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
   let mut_character_repository = Arc::new(get_mut_character_repository(transaction, character_repository.clone()));
   let mut_file_repository = Arc::new(get_mut_file_repository());
   let file_repository = Arc::new(get_file_repository());

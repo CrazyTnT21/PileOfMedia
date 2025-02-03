@@ -1,3 +1,4 @@
+use domain::available_translations::CharacterAvailableTranslations;
 use domain::available_translations::GenreAvailableTranslations;
 use domain::available_translations::ThemeAvailableTranslations;
 use domain::entities::account::create_account::CreateAccount;
@@ -12,6 +13,7 @@ use domain::entities::book::create_book::CreateBookData;
 use domain::entities::book::create_book::CreateBookTranslation;
 use domain::entities::book::create_book::CreateCover;
 use domain::entities::book::Book;
+use domain::entities::character::character_translation::CharacterTranslation;
 use domain::entities::character::create_character::CreateCharacter;
 use domain::entities::character::create_character::CreateCharacterData;
 use domain::entities::character::create_character::CreateCharacterTranslation;
@@ -140,6 +142,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     ThemeTranslation,
     CreateCharacter,
     CreateCharacterData,
-    CreateCharacterTranslation
+    CreateCharacterTranslation,
+    CharacterAvailableTranslations,
+    CharacterTranslation
   )))]
 pub(crate) struct ApiDoc;

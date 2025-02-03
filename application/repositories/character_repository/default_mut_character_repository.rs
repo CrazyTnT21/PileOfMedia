@@ -45,10 +45,10 @@ impl MutCharacterRepository for DefaultMutCharacterRepository<'_> {
     let id = self.insert_character(&item).await? as u32;
     self.insert_translation(&item, id).await?;
 
-    //TODO
+    let languages: Vec<Language> = item.translations.keys().copied().collect();
     let character = self
       .character_repository
-      .get_by_id(id, *item.translations.keys().collect::<Vec<&Language>>()[0])
+      .get_by_id(id, &languages)
       .await?
       .expect("Character was just created");
     Ok(character)

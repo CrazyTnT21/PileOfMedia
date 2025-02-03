@@ -271,20 +271,16 @@ async fn get_characters(
   Path(id): Path<u32>,
   AcceptLanguageHeader(languages): AcceptLanguageHeader,
   State(app_state): State<AppState>,
-  Query(mut pagination): Query<QueryPagination>,
 ) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_character_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
-  set_pagination_limit(&mut pagination);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
 
-  println!("Route for characters from a book with the id {} in {}", id, language);
+  println!("Route for characters from a book with the id {} in {:?}", id, languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(id, language, pagination.into()).await {
+  match service.get(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }

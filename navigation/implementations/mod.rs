@@ -191,10 +191,9 @@ pub fn get_character_service<'a>(
 
 pub fn get_character_repository<'a>(
   client: &'a Client,
-  language: Language,
   image_repository: Arc<dyn ImageRepository + 'a>,
 ) -> impl CharacterRepository + 'a {
-  DefaultCharacterRepository::new(client, language, image_repository)
+  DefaultCharacterRepository::new(client, image_repository)
 }
 
 pub fn get_book_genre_service<'a>(
@@ -233,11 +232,10 @@ pub fn get_book_character_service<'a>(
 
 pub fn get_book_character_repository<'a>(
   client: &'a Client,
-  language: Language,
   book_repository: Arc<dyn BookRepository + 'a>,
   character_repository: Arc<dyn CharacterRepository + 'a>,
 ) -> impl BookCharacterRepository + 'a {
-  DefaultBookCharacterRepository::new(client, language, book_repository, character_repository)
+  DefaultBookCharacterRepository::new(client, book_repository, character_repository)
 }
 
 pub fn get_mut_book_theme_service<'a>(
