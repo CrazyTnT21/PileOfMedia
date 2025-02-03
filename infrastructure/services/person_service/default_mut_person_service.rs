@@ -56,7 +56,7 @@ impl MutPersonService for DefaultMutPersonService<'_> {
       first_name: data.first_name,
       last_name: data.last_name,
       birthday: data.birthday,
-      height: data.height,
+      height_cm: data.height_cm,
       image,
       translations,
     };

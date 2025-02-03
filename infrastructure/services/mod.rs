@@ -4,7 +4,7 @@ use services::traits::service_error::ServiceError;
 
 pub mod account_service;
 pub mod book_service;
-pub mod default_character_service;
+pub mod character_service;
 pub mod file_service;
 pub mod franchise_service;
 pub mod genre_service;

@@ -1,13 +1,13 @@
+use domain::entities::character::create_character::CreateCharacter;
+use multipart::MultiPartRequest;
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{delete, get, post};
 use axum::{Json, Router};
-use tokio_postgres::Client;
-
-use services::character_service::CharacterService;
+use tokio_postgres::{Client, Transaction};
 
 use crate::app_state::AppState;
 use crate::controllers::{
@@ -16,7 +16,11 @@ use crate::controllers::{
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
-use crate::implementations::{get_character_repository, get_character_service, get_image_repository};
+use crate::implementations::{
+  get_character_repository, get_character_service, get_file_repository, get_image_repository,
+  get_mut_character_repository, get_mut_character_service, get_mut_file_repository, get_mut_file_service,
+  get_mut_image_repository, get_mut_image_service,
+};
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::name::NameParam;
@@ -25,13 +29,17 @@ use crate::openapi::params::query::page::PageParam;
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
+use services::character_service::mut_character_service::MutCharacterService;
+use services::character_service::CharacterService;
 
 pub mod character_doc;
 
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
+    .route("/", post(create_item))
     .route("/:id", get(get_by_id))
+    .route("/:id", delete(delete_item))
     .route("/name/:name", get(get_by_name))
     .with_state(app_state)
 }
@@ -126,8 +134,92 @@ async fn get_by_name(
   }
 }
 
+#[utoipa::path(post, path = "",
+  responses(
+    (status = 201, description = "Character successfully created", body = Character), ServerError, BadRequest
+  ),
+  request_body(content_type = ["multipart/form-data"], content = CreateCharacter),
+  tag = "Characters"
+)]
+async fn create_item(
+  State(app_state): State<AppState>,
+  MultiPartRequest(create_character): MultiPartRequest<CreateCharacter>,
+) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client, &app_state.display_path, &app_state.content_path);
+
+    println!("Route for creating a character");
+
+    match service.create(create_character).await {
+      Ok(character) => Ok((StatusCode::CREATED, Json(character))),
+      Err(error) => Err(convert_service_error(error)),
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
+#[utoipa::path(delete, path = "/{id}",
+  responses(
+    (status = 204, description = "Character successfully deleted"), ServerError, BadRequest
+  ),
+  params(("id" = u32, Path, description = "Id of the item to delete")),
+  tag = "Characters"
+)]
+async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_service(&transaction, client, &app_state.display_path, &app_state.content_path);
+
+    println!("Route for deleting a character");
+
+    match service.delete(&[id]).await {
+      Ok(()) => Ok(StatusCode::NO_CONTENT),
+      Err(error) => Err(convert_service_error(error)),
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
 fn get_service(connection: &Client) -> impl CharacterService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let repository = get_character_repository(connection, DEFAULT_LANGUAGE, image_repository);
-  get_character_service(Arc::new(repository))
+  let repository = Arc::new(get_character_repository(connection, DEFAULT_LANGUAGE, image_repository));
+  get_character_service(repository)
+}
+
+fn get_mut_service<'a>(
+  transaction: &'a Transaction<'a>,
+  client: &'a Client,
+  display_path: &'a str,
+  path: &'a str,
+) -> impl MutCharacterService + 'a {
+  let image_repository = Arc::new(get_image_repository(client));
+  let character_repository = Arc::new(get_character_repository(
+    client,
+    DEFAULT_LANGUAGE,
+    image_repository.clone(),
+  ));
+  let mut_character_repository = Arc::new(get_mut_character_repository(transaction, character_repository.clone()));
+  let mut_file_repository = Arc::new(get_mut_file_repository());
+  let file_repository = Arc::new(get_file_repository());
+  let mut_image_repository = Arc::new(get_mut_image_repository(
+    transaction,
+    image_repository,
+    mut_file_repository.clone(),
+    file_repository,
+  ));
+  let mut_file_service = Arc::new(get_mut_file_service(mut_file_repository));
+  let mut_image_service = Arc::new(get_mut_image_service(
+    mut_image_repository,
+    mut_file_service,
+    display_path,
+    path,
+  ));
+  get_mut_character_service(character_repository, mut_character_repository, mut_image_service)
 }

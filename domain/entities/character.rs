@@ -1,3 +1,6 @@
+pub mod create_character;
+pub mod create_partial_character;
+
 use crate::entities::image::Image;
 use crate::enums::language::Language;
 use chrono::NaiveDate;
@@ -12,7 +15,7 @@ pub struct Character {
   pub last_name: Option<String>,
   pub description: Option<String>,
   pub birthday: Option<NaiveDate>,
-  pub height: Option<u32>,
+  pub height_cm: Option<u32>,
   pub image: Option<Image>,
   pub language: Language,
 }

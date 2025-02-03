@@ -1,6 +1,6 @@
 pub mod account_repository;
 pub mod book_repository;
-pub mod default_character_repository;
+pub mod character_repository;
 pub mod file_repository;
 pub mod franchise_repository;
 pub mod genre_repository;

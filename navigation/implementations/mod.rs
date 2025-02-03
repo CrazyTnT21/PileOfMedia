@@ -14,7 +14,8 @@ use application::repositories::book_repository::book_theme_repository::default_b
 use application::repositories::book_repository::book_theme_repository::default_mut_book_theme_repository::DefaultMutBookThemeRepository;
 use application::repositories::book_repository::default_book_repository::DefaultBookRepository;
 use application::repositories::book_repository::default_mut_book_repository::DefaultMutBookRepository;
-use application::repositories::default_character_repository::DefaultCharacterRepository;
+use application::repositories::character_repository::default_character_repository::DefaultCharacterRepository;
+use application::repositories::character_repository::default_mut_character_repository::DefaultMutCharacterRepository;
 use application::repositories::file_repository::default_file_repository::DefaultFileRepository;
 use application::repositories::file_repository::default_mut_file_repository::DefaultMutFileRepository;
 use application::repositories::franchise_repository::default_franchise_repository::DefaultFranchiseRepository;
@@ -44,7 +45,8 @@ use infrastructure::services::book_service::book_theme_service::default_book_the
 use infrastructure::services::book_service::book_theme_service::default_mut_book_theme_service::DefaultMutBookThemeService;
 use infrastructure::services::book_service::default_book_service::DefaultBookService;
 use infrastructure::services::book_service::default_mut_book_service::DefaultMutBookService;
-use infrastructure::services::default_character_service::DefaultCharacterService;
+use infrastructure::services::character_service::default_character_service::DefaultCharacterService;
+use infrastructure::services::character_service::default_mut_character_service::DefaultMutCharacterService;
 use infrastructure::services::file_service::default_file_service::DefaultFileService;
 use infrastructure::services::file_service::default_mut_file_service::DefaultMutFileService;
 use infrastructure::services::franchise_service::default_franchise_service::DefaultFranchiseService;
@@ -73,6 +75,7 @@ use repositories::book_repository::book_theme_repository::mut_book_theme_reposit
 use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::mut_book_repository::MutBookRepository;
 use repositories::book_repository::BookRepository;
+use repositories::character_repository::mut_character_repository::MutCharacterRepository;
 use repositories::character_repository::CharacterRepository;
 use repositories::file_repository::mut_file_repository::MutFileRepository;
 use repositories::file_repository::FileRepository;
@@ -102,6 +105,7 @@ use services::book_service::book_theme_service::mut_book_theme_service::MutBookT
 use services::book_service::book_theme_service::BookThemeService;
 use services::book_service::mut_book_service::MutBookService;
 use services::book_service::BookService;
+use services::character_service::mut_character_service::MutCharacterService;
 use services::character_service::CharacterService;
 use services::file_service::mut_file_service::MutFileService;
 use services::file_service::FileService;
@@ -546,4 +550,18 @@ pub fn get_mut_franchise_repository<'a>(
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
 ) -> impl MutFranchiseRepository + 'a {
   DefaultMutFranchiseRepository::new(transaction, default_language, franchise_repository)
+}
+pub fn get_mut_character_service<'a>(
+  character_repository: Arc<dyn CharacterRepository + 'a>,
+  mut_character_repository: Arc<dyn MutCharacterRepository + 'a>,
+  mut_image_service: Arc<dyn MutImageService + 'a>,
+) -> impl MutCharacterService + 'a {
+  DefaultMutCharacterService::new(character_repository, mut_character_repository, mut_image_service)
+}
+
+pub fn get_mut_character_repository<'a>(
+  transaction: &'a Transaction<'a>,
+  character_repository: Arc<dyn CharacterRepository + 'a>,
+) -> impl MutCharacterRepository + 'a {
+  DefaultMutCharacterRepository::new(transaction, character_repository)
 }

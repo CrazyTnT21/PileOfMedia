@@ -31,7 +31,7 @@ impl DbPerson {
       last_name: self.last_name,
       description: translation.description,
       birthday: self.birthday,
-      height: self.height.map(|x| x as u16),
+      height_cm: self.height.map(|x| x as u16),
       image,
       language: translation.language.into(),
     }

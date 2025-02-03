@@ -80,7 +80,7 @@ impl DefaultMutPersonRepository<'_> {
         &item.first_name,
         &item.last_name,
         &item.birthday,
-        &item.height.map(|x| x as i16),
+        &item.height_cm.map(|x| x as i16),
         &image_id,
       ])
       .returning_transaction("id", self.transaction)

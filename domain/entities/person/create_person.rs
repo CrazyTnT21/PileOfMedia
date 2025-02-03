@@ -21,7 +21,7 @@ pub struct CreatePersonData {
   pub first_name: Option<String>,
   pub last_name: Option<String>,
   pub birthday: Option<NaiveDate>,
-  pub height: Option<u16>,
+  pub height_cm: Option<u16>,
   pub translations: HashMap<Language, CreatePersonTranslation>,
 }
 

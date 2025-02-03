@@ -16,7 +16,7 @@ pub struct Person {
   pub last_name: Option<String>,
   pub description: Option<String>,
   pub birthday: Option<NaiveDate>,
-  pub height: Option<u16>,
+  pub height_cm: Option<u16>,
   pub image: Option<Image>,
   pub language: Language,
 }

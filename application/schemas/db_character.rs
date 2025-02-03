@@ -26,7 +26,7 @@ impl DbCharacter {
       last_name: translation.last_name,
       description: translation.description,
       birthday: self.birthday,
-      height: self.height.map(|x| x as u32),
+      height_cm: self.height.map(|x| x as u32),
       image,
       language: translation.language.into(),
     }

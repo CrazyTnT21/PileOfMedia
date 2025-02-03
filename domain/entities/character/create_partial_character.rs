@@ -1,26 +1,26 @@
 use std::collections::HashMap;
 
-use crate::entities::image::Image;
 use chrono::NaiveDate;
 
+use crate::entities::image::Image;
 use crate::enums::language::Language;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct CreatePartialPerson {
-  pub name: String,
-  pub first_name: Option<String>,
-  pub last_name: Option<String>,
+pub struct CreatePartialCharacter {
   pub birthday: Option<NaiveDate>,
-  pub height_cm: Option<u16>,
+  pub height_cm: Option<u32>,
   pub image: Option<Image>,
-  pub translations: HashMap<Language, CreatePartialPersonTranslation>,
+  pub translations: HashMap<Language, CreatePartialCharacterTranslation>,
 }
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct CreatePartialPersonTranslation {
+pub struct CreatePartialCharacterTranslation {
+  pub name: String,
+  pub first_name: Option<String>,
+  pub last_name: Option<String>,
   pub description: Option<String>,
 }
