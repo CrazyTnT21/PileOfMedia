@@ -54,14 +54,11 @@ impl MutGenreRepository for DefaultMutGenreRepository<'_> {
   async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let ids = to_i32(ids);
 
-    Delete::new::<DbGenreTranslation>(Expression::new(ValueIn::new(
-      (DbGenreTranslation::TABLE_NAME, "fktranslation"),
-      &ids,
-    )))
-    .execute_transaction(self.transaction)
-    .await?;
+    Delete::new::<DbGenreTranslation>(fk_translation_in_ids(&ids))
+      .execute_transaction(self.transaction)
+      .await?;
 
-    Delete::new::<DbGenre>(Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), &ids)))
+    Delete::new::<DbGenre>(genre_id_in_ids(&ids))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())
@@ -90,4 +87,11 @@ impl DefaultMutGenreRepository<'_> {
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }
+}
+
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbGenreTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn genre_id_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), ids))
 }

@@ -5,7 +5,7 @@ use crate::controllers::book_controller::book_implementations::{
 };
 use crate::controllers::{
   append_content_language_header, content_language_header, convert_error, convert_service_error, get_language,
-  set_pagination_limit, DEFAULT_LANGUAGE,
+  map_accept_languages, map_language_header, set_pagination_limit, DEFAULT_LANGUAGE,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
@@ -212,27 +212,23 @@ async fn get_by_slug(
   responses(
     (status = 200, description = "Returned genres based on the book id", body = GenresTotal), ServerError, BadRequest
   ),
-  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  params(IdParam, AcceptLanguageParam),
   tag = "Books"
 )]
 async fn get_genres(
   Path(id): Path<u32>,
   AcceptLanguageHeader(languages): AcceptLanguageHeader,
   State(app_state): State<AppState>,
-  Query(mut pagination): Query<QueryPagination>,
 ) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_genre_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
-  set_pagination_limit(&mut pagination);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
 
-  println!("Route for genres from a book with the id {} in {}", id, language);
+  println!("Route for genres from a book with the id {} in {:?}", id, languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(id, language, pagination.into()).await {
+  match service.get(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -242,27 +238,23 @@ async fn get_genres(
   responses(
     (status = 200, description = "Returned themes based on the book id", body = ThemesTotal), ServerError, BadRequest
   ),
-  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  params(IdParam, AcceptLanguageParam),
   tag = "Books"
 )]
 async fn get_themes(
   Path(id): Path<u32>,
   AcceptLanguageHeader(languages): AcceptLanguageHeader,
   State(app_state): State<AppState>,
-  Query(mut pagination): Query<QueryPagination>,
 ) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_theme_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
-  set_pagination_limit(&mut pagination);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
 
-  println!("Route for themes from a book with the id {} in {}", id, language);
+  println!("Route for themes from a book with the id {} in {:?}", id, languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(id, language, pagination.into()).await {
+  match service.get(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }

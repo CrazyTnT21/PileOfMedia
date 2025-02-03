@@ -15,14 +15,14 @@ use crate::traits::service_error::ServiceError;
 pub trait ThemeService: Send + Sync {
   async fn get(
     &self,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>>;
-  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Theme>, ServiceError<ThemeServiceError>>;
+  async fn get_by_id(&self, id: u32, languages: &[Language]) -> Result<Option<Theme>, ServiceError<ThemeServiceError>>;
   async fn get_by_name(
     &self,
     name: &str,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>>;
 }

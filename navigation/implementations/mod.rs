@@ -163,8 +163,8 @@ pub fn get_theme_service<'a>(theme_repository: Arc<dyn ThemeRepository + 'a>) ->
   DefaultThemeService::new(theme_repository)
 }
 
-pub fn get_theme_repository(client: &Client, language: Language) -> impl ThemeRepository + '_ {
-  DefaultThemeRepository::new(client, language)
+pub fn get_theme_repository(client: &Client) -> impl ThemeRepository + '_ {
+  DefaultThemeRepository::new(client)
 }
 
 pub fn get_person_service<'a>(person_repository: Arc<dyn PersonRepository + 'a>) -> impl PersonService + 'a {
@@ -215,11 +215,10 @@ pub fn get_book_theme_service<'a>(
 
 pub fn get_book_theme_repository<'a>(
   client: &'a Client,
-  language: Language,
   book_repository: Arc<dyn BookRepository + 'a>,
   theme_repository: Arc<dyn ThemeRepository + 'a>,
 ) -> impl BookThemeRepository + 'a {
-  DefaultBookThemeRepository::new(client, language, book_repository, theme_repository)
+  DefaultBookThemeRepository::new(client, book_repository, theme_repository)
 }
 
 pub fn get_book_character_service<'a>(
@@ -505,19 +504,17 @@ pub fn get_mut_genre_repository<'a>(
 }
 
 pub fn get_mut_theme_service<'a>(
-  default_language: Language,
   theme_repository: Arc<dyn ThemeRepository + 'a>,
   mut_theme_repository: Arc<dyn MutThemeRepository + 'a>,
 ) -> impl MutThemeService + 'a {
-  DefaultMutThemeService::new(default_language, theme_repository, mut_theme_repository)
+  DefaultMutThemeService::new(theme_repository, mut_theme_repository)
 }
 
 pub fn get_mut_theme_repository<'a>(
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   theme_repository: Arc<dyn ThemeRepository + 'a>,
 ) -> impl MutThemeRepository + 'a {
-  DefaultMutThemeRepository::new(transaction, default_language, theme_repository)
+  DefaultMutThemeRepository::new(transaction, theme_repository)
 }
 
 pub fn get_mut_role_service<'a>(

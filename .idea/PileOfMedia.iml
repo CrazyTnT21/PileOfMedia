@@ -7,13 +7,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/navigation/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/application/from_row/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/application/from_row_macro/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/domain/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Application/from_row/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Application/from_row_macro/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/application/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/domain/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/openapi/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/core/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/core/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/src/navigation/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />

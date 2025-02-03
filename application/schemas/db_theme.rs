@@ -1,9 +1,8 @@
-use tokio_postgres::Row;
-
+use domain::available_translations::AvailableTranslations;
+use domain::entities::theme::theme_translation::ThemeTranslation;
 use domain::entities::theme::Theme;
 use from_row::FromRow;
-
-use crate::schemas::db_theme_translation::DbThemeTranslation;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "theme"]
@@ -12,11 +11,10 @@ pub struct DbTheme {
 }
 
 impl DbTheme {
-  pub fn to_entity(self, translation: DbThemeTranslation) -> Theme {
+  pub const fn to_entity(self, translations: AvailableTranslations<ThemeTranslation>) -> Theme {
     Theme {
       id: self.id as u32,
-      name: translation.name,
-      language: translation.language.into(),
+      translations,
     }
   }
 }

@@ -4,8 +4,6 @@ use async_trait::async_trait;
 
 use domain::entities::genre::Genre;
 use domain::enums::language::Language;
-use domain::items_total::ItemsTotal;
-use domain::pagination::Pagination;
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use services::book_service::book_genre_service::{BookGenreService, BookGenreServiceError};
 use services::traits::service_error::ServiceError;
@@ -22,12 +20,7 @@ impl<'a> DefaultBookGenreService<'a> {
 
 #[async_trait]
 impl BookGenreService for DefaultBookGenreService<'_> {
-  async fn get(
-    &self,
-    book_id: u32,
-    language: Language,
-    pagination: Pagination,
-  ) -> Result<ItemsTotal<Genre>, ServiceError<BookGenreServiceError>> {
-    Ok(self.book_genre_repository.get(book_id, language, pagination).await?)
+  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<Genre>, ServiceError<BookGenreServiceError>> {
+    Ok(self.book_genre_repository.get(book_id, languages).await?)
   }
 }

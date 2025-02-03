@@ -24,22 +24,22 @@ impl<'a> DefaultThemeService<'a> {
 impl ThemeService for DefaultThemeService<'_> {
   async fn get(
     &self,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
-    Ok(self.theme_repository.get(language, pagination).await?)
+    Ok(self.theme_repository.get(languages, pagination).await?)
   }
 
-  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Theme>, ServiceError<ThemeServiceError>> {
-    Ok(self.theme_repository.get_by_id(id, language).await?)
+  async fn get_by_id(&self, id: u32, languages: &[Language]) -> Result<Option<Theme>, ServiceError<ThemeServiceError>> {
+    Ok(self.theme_repository.get_by_id(id, languages).await?)
   }
 
   async fn get_by_name(
     &self,
     name: &str,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>> {
-    Ok(self.theme_repository.get_by_name(name, language, pagination).await?)
+    Ok(self.theme_repository.get_by_name(name, languages, pagination).await?)
   }
 }

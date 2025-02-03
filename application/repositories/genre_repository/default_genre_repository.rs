@@ -18,7 +18,6 @@ use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_genre::DbGenre;
 use crate::schemas::db_genre_translation::DbGenreTranslation;
 use crate::select::combined_tuple::CombinedType;
-use crate::select::conditions::column_equal::ColumnEqual;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_in::ValueIn;
@@ -40,13 +39,14 @@ impl GenreRepository for DefaultGenreRepository<'_> {
   async fn get(&self, languages: &[Language], pagination: Pagination) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
     let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
     let total = Select::new::<DbGenre>()
-      .transform(|x| inner_join_translation(x, &db_languages))
+      .transform(inner_join_translation)
       .query_count(self.client)
       .await? as usize;
 
     let genres = Select::new::<DbGenre>()
+      .distinct_on(DbGenre::TABLE_NAME, "id")
       .columns_table::<DbGenre>()
-      .inner_join::<DbGenreTranslation>(None, in_languages(&db_languages).and(genre_id_equal_fk_translation()))
+      .transform(inner_join_translation)
       .pagination(pagination)
       .query_destruct(self.client)
       .await?;
@@ -71,14 +71,11 @@ impl GenreRepository for DefaultGenreRepository<'_> {
 
     let genres = Select::new::<DbGenre>()
       .columns_table::<DbGenre>()
+      .distinct_on(DbGenre::TABLE_NAME, "id")
       .inner_join::<DbGenreTranslation>(
         None,
-        Expression::new(ValueEqual::new(("genre", "id"), id)).and(Expression::new(ColumnEqual::new(
-          (DbGenre::TABLE_NAME, "id"),
-          (DbGenreTranslation::TABLE_NAME, "fktranslation"),
-        ))),
+        Expression::new(ValueEqual::new((DbGenre::TABLE_NAME, "id"), id)).and(genre_id_equal_fk_translation()),
       )
-      .limit(1)
       .get_single(self.client)
       .await?;
     let Some(item) = genres else {
@@ -97,7 +94,7 @@ impl GenreRepository for DefaultGenreRepository<'_> {
       .collect();
     let mut available = self.available_languages(&[id]).await?;
     let item = item.0.to_entity(AvailableTranslations {
-      languages: available.remove(&id).unwrap(),
+      available_languages: available.remove(&id).unwrap(),
       translations: HashMap::from_iter(translations),
     });
     Ok(Some(item))
@@ -109,7 +106,8 @@ impl GenreRepository for DefaultGenreRepository<'_> {
 
     let genres = Select::new::<DbGenre>()
       .columns_table::<DbGenre>()
-      .inner_join::<DbGenreTranslation>(None, in_languages(&db_languages).and(genre_id_equal_fk_translation()))
+      .distinct_on(DbGenre::TABLE_NAME, "id")
+      .transform(inner_join_translation)
       .where_expression(Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), &ids)))
       .query_destruct(self.client)
       .await?;
@@ -147,6 +145,7 @@ impl GenreRepository for DefaultGenreRepository<'_> {
 
     let genres = Select::new::<DbGenre>()
       .columns_table::<DbGenre>()
+      .distinct_on(DbGenre::TABLE_NAME, "id")
       .transform(|x| inner_join_translation_on_name(x, &name, &db_languages))
       .pagination(pagination)
       .query_destruct(self.client)
@@ -250,7 +249,7 @@ fn genre_id_equal_fk_translation<'a>() -> Expression<'a> {
 fn genre_translation_with_name(name: &String) -> Expression {
   Expression::new(ValueILike::new((DbGenreTranslation::TABLE_NAME, "name"), name))
 }
-fn inner_join_translation_on_name<'a, T: FromRow<DbType=T> + CombinedType>(
+fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
   select: Select<'a, T>,
   name: &'a String,
   db_languages: &'a [DbLanguage],
@@ -272,17 +271,14 @@ fn to_entities(
     .map(|genre| {
       let id = genre.id;
       genre.to_entity(AvailableTranslations {
-        languages: available.remove(&id).unwrap(),
+        available_languages: available.remove(&id).unwrap(),
         translations: HashMap::from_iter(translations.remove(&id).unwrap()),
       })
     })
     .collect()
 }
-fn inner_join_translation<'a, T: FromRow<DbType=T> + CombinedType>(
-  select: Select<'a, T>,
-  db_languages: &'a [DbLanguage],
-) -> Select<'a, T> {
-  select.inner_join::<DbGenreTranslation>(None, genre_id_equal_fk_translation().and(in_languages(db_languages)))
+fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<T>) -> Select<T> {
+  select.inner_join::<DbGenreTranslation>(None, genre_id_equal_fk_translation())
 }
 fn in_languages(languages: &[DbLanguage]) -> Expression {
   Expression::new(ValueIn::new((DbGenreTranslation::TABLE_NAME, "language"), languages))

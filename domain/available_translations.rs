@@ -1,4 +1,5 @@
 use crate::entities::genre::genre_translation::GenreTranslation;
+use crate::entities::theme::theme_translation::ThemeTranslation;
 use crate::enums::language::Language;
 use std::collections::HashMap;
 
@@ -6,9 +7,10 @@ use std::collections::HashMap;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[cfg_attr(feature = "utoipa", aliases(
-  GenreAvailableTranslations = AvailableTranslations < GenreTranslation >
+  GenreAvailableTranslations = AvailableTranslations < GenreTranslation >,
+  ThemeAvailableTranslations = AvailableTranslations < ThemeTranslation >
 ))]
 pub struct AvailableTranslations<T> {
-  pub languages: Vec<Language>,
+  pub available_languages: Vec<Language>,
   pub translations: HashMap<Language, T>,
 }

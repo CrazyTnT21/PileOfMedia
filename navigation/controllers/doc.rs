@@ -1,4 +1,5 @@
 use domain::available_translations::GenreAvailableTranslations;
+use domain::available_translations::ThemeAvailableTranslations;
 use domain::entities::account::create_account::CreateAccount;
 use domain::entities::account::create_account::CreateAccountData;
 use domain::entities::account::Email;
@@ -34,6 +35,7 @@ use domain::entities::role::create_role::CreateRoleTranslation;
 use domain::entities::role::Role;
 use domain::entities::theme::create_theme::CreateTheme;
 use domain::entities::theme::create_theme::CreateThemeTranslation;
+use domain::entities::theme::theme_translation::ThemeTranslation;
 use domain::entities::theme::Theme;
 use domain::entities::user::create_user::CreateUser;
 use domain::entities::user::create_user::CreateUserData;
@@ -130,6 +132,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     BookStatistic,
     Rating,
     GenreAvailableTranslations,
-    GenreTranslation
+    GenreTranslation,
+    ThemeAvailableTranslations,
+    ThemeTranslation
   )))]
 pub(crate) struct ApiDoc;

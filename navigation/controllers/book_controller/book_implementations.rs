@@ -68,13 +68,8 @@ pub fn get_theme_service(connection: &Client) -> impl BookThemeService + '_ {
     image_repository.clone(),
     franchise_repository,
   ));
-  let theme_repository = Arc::new(get_theme_repository(connection, DEFAULT_LANGUAGE));
-  let repository = Arc::new(get_book_theme_repository(
-    connection,
-    DEFAULT_LANGUAGE,
-    book_repository,
-    theme_repository,
-  ));
+  let theme_repository = Arc::new(get_theme_repository(connection));
+  let repository = Arc::new(get_book_theme_repository(connection, book_repository, theme_repository));
   get_book_theme_service(repository)
 }
 
@@ -90,13 +85,8 @@ pub fn get_mut_theme_service<'a>(
     image_repository.clone(),
     franchise_repository,
   ));
-  let theme_repository = Arc::new(get_theme_repository(client, DEFAULT_LANGUAGE));
-  let book_theme_repository = get_book_theme_repository(
-    client,
-    DEFAULT_LANGUAGE,
-    book_repository.clone(),
-    theme_repository.clone(),
-  );
+  let theme_repository = Arc::new(get_theme_repository(client));
+  let book_theme_repository = get_book_theme_repository(client, book_repository.clone(), theme_repository.clone());
   let repository = get_mut_book_theme_repository(transaction);
   get_mut_book_theme_service(
     book_repository,
@@ -267,7 +257,7 @@ pub fn get_mut_service<'a>(
     image_repository,
     franchise_repository.clone(),
   ));
-  let theme_repository = Arc::new(get_theme_repository(client, DEFAULT_LANGUAGE));
+  let theme_repository = Arc::new(get_theme_repository(client));
   let mut_book_theme_repository = Arc::new(get_mut_book_theme_repository(transaction));
   let mut_book_repository = Arc::new(get_mut_book_repository(
     transaction,

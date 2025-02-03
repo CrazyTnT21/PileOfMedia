@@ -22,19 +22,16 @@ use crate::select::expression::Expression;
 
 pub struct DefaultMutThemeRepository<'a> {
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   theme_repository: Arc<dyn ThemeRepository + 'a>,
 }
 
 impl<'a> DefaultMutThemeRepository<'a> {
   pub fn new(
     transaction: &'a Transaction<'a>,
-    default_language: Language,
     theme_repository: Arc<dyn ThemeRepository + 'a>,
   ) -> DefaultMutThemeRepository<'a> {
     DefaultMutThemeRepository {
       transaction,
-      default_language,
       theme_repository,
     }
   }
@@ -45,10 +42,10 @@ impl MutThemeRepository for DefaultMutThemeRepository<'_> {
   async fn create(&self, item: CreatePartialTheme) -> Result<Theme, Box<dyn Error>> {
     let id = self.insert_theme(&item).await? as u32;
     self.insert_translation(&item, id).await?;
-
+    let languages: Vec<Language> = item.translations.keys().copied().collect();
     let theme = self
       .theme_repository
-      .get_by_id(id, self.default_language)
+      .get_by_id(id, &languages)
       .await?
       .expect("Theme was just created");
     Ok(theme)
@@ -57,14 +54,11 @@ impl MutThemeRepository for DefaultMutThemeRepository<'_> {
   async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let ids = to_i32(ids);
 
-    Delete::new::<DbThemeTranslation>(Expression::new(ValueIn::new(
-      (DbThemeTranslation::TABLE_NAME, "fktranslation"),
-      &ids,
-    )))
-    .execute_transaction(self.transaction)
-    .await?;
+    Delete::new::<DbThemeTranslation>(fk_translation_in_ids(&ids))
+      .execute_transaction(self.transaction)
+      .await?;
 
-    Delete::new::<DbTheme>(Expression::new(ValueIn::new((DbTheme::TABLE_NAME, "id"), &ids)))
+    Delete::new::<DbTheme>(theme_id_in_ids(&ids))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())
@@ -93,4 +87,10 @@ impl DefaultMutThemeRepository<'_> {
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }
+}
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbThemeTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn theme_id_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbTheme::TABLE_NAME, "id"), ids))
 }

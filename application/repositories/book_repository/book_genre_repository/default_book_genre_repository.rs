@@ -4,16 +4,14 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
-use crate::convert_to_sql::to_i32;
 use domain::entities::genre::Genre;
 use domain::enums::language::Language;
-use domain::items_total::ItemsTotal;
-use domain::pagination::Pagination;
 use from_row::Table;
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use repositories::book_repository::BookRepository;
 use repositories::genre_repository::GenreRepository;
 
+use crate::convert_to_sql::to_i32;
 use crate::schemas::db_book_genre::DbBookGenre;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_in::ValueIn;
@@ -42,21 +40,8 @@ impl<'a> DefaultBookGenreRepository<'a> {
 
 #[async_trait]
 impl BookGenreRepository for DefaultBookGenreRepository<'_> {
-  async fn get(
-    &self,
-    book_id: u32,
-    language: Language,
-    pagination: Pagination,
-  ) -> Result<ItemsTotal<Genre>, Box<dyn Error>> {
+  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<Genre>, Box<dyn Error>> {
     let book_id = book_id as i32;
-
-    let total = Select::new::<DbBookGenre>()
-      .where_expression(Expression::new(ValueEqual::new(
-        (DbBookGenre::TABLE_NAME, "fkbook"),
-        book_id,
-      )))
-      .query_count(self.client)
-      .await? as usize;
 
     let genre_ids: Vec<u32> = Select::new::<DbBookGenre>()
       .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
@@ -64,15 +49,13 @@ impl BookGenreRepository for DefaultBookGenreRepository<'_> {
         (DbBookGenre::TABLE_NAME, "fkbook"),
         book_id,
       )))
-      .pagination(pagination)
       .query(self.client)
       .await?
       .into_iter()
       .map(|x| x.0 as u32)
       .collect();
-    //TODO
-    let items = self.genre_repository.get_by_ids(&genre_ids, &[language]).await?;
-    Ok(ItemsTotal { items, total })
+    let items = self.genre_repository.get_by_ids(&genre_ids, languages).await?;
+    Ok(items)
   }
 
   async fn filter_existing(&self, book_id: u32, genres: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {
