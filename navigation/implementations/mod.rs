@@ -141,8 +141,8 @@ pub fn get_image_repository(client: &Client) -> impl ImageRepository + '_ {
   DefaultImageRepository::new(client)
 }
 
-pub fn get_franchise_repository(client: &Client, language: Language) -> impl FranchiseRepository + '_ {
-  DefaultFranchiseRepository::new(client, language)
+pub fn get_franchise_repository(client: &Client) -> impl FranchiseRepository + '_ {
+  DefaultFranchiseRepository::new(client)
 }
 
 pub fn get_franchise_service<'a>(
@@ -524,19 +524,17 @@ pub fn get_mut_role_repository<'a>(
   DefaultMutRoleRepository::new(transaction, role_repository)
 }
 pub fn get_mut_franchise_service<'a>(
-  default_language: Language,
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
   mut_franchise_repository: Arc<dyn MutFranchiseRepository + 'a>,
 ) -> impl MutFranchiseService + 'a {
-  DefaultMutFranchiseService::new(default_language, franchise_repository, mut_franchise_repository)
+  DefaultMutFranchiseService::new(franchise_repository, mut_franchise_repository)
 }
 
 pub fn get_mut_franchise_repository<'a>(
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
 ) -> impl MutFranchiseRepository + 'a {
-  DefaultMutFranchiseRepository::new(transaction, default_language, franchise_repository)
+  DefaultMutFranchiseRepository::new(transaction, franchise_repository)
 }
 pub fn get_mut_character_service<'a>(
   character_repository: Arc<dyn CharacterRepository + 'a>,

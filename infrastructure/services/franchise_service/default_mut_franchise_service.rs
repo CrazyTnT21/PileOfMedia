@@ -16,19 +16,16 @@ use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;
 
 pub struct DefaultMutFranchiseService<'a> {
-  default_language: Language,
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
   mut_franchise_repository: Arc<dyn MutFranchiseRepository + 'a>,
 }
 
 impl<'a> DefaultMutFranchiseService<'a> {
   pub fn new(
-    default_language: Language,
     franchise_repository: Arc<dyn FranchiseRepository + 'a>,
     mut_franchise_repository: Arc<dyn MutFranchiseRepository + 'a>,
   ) -> DefaultMutFranchiseService<'a> {
     DefaultMutFranchiseService {
-      default_language,
       franchise_repository,
       mut_franchise_repository,
     }
@@ -67,15 +64,9 @@ impl DefaultMutFranchiseService<'_> {
   async fn validate_translations(
     &self,
     translations: &HashMap<Language, CreateFranchiseTranslation>,
-    default_language: &Language,
   ) -> Result<(), ServiceError<MutFranchiseServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutFranchiseServiceError::NoTranslationsProvided));
-    }
-    if !translations.contains_key(default_language) {
-      return Err(ClientError(MutFranchiseServiceError::NoTranslationInLanguageProvided(
-        *default_language,
-      )));
     }
     for item in translations.values() {
       if item.name.is_empty() {
@@ -95,9 +86,7 @@ impl DefaultMutFranchiseService<'_> {
     Ok(hash_map)
   }
   async fn validate_create(&self, item: &CreateFranchise) -> Result<(), ServiceError<MutFranchiseServiceError>> {
-    self
-      .validate_translations(&item.translations, &self.default_language)
-      .await?;
+    self.validate_translations(&item.translations).await?;
     Ok(())
   }
 }

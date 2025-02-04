@@ -1,4 +1,5 @@
 use domain::available_translations::CharacterAvailableTranslations;
+use domain::available_translations::FranchiseAvailableTranslations;
 use domain::available_translations::GenreAvailableTranslations;
 use domain::available_translations::PersonAvailableTranslations;
 use domain::available_translations::RoleAvailableTranslations;
@@ -21,6 +22,7 @@ use domain::entities::character::create_character::CreateCharacterTranslation;
 use domain::entities::character::Character;
 use domain::entities::franchise::create_franchise::CreateFranchise;
 use domain::entities::franchise::create_franchise::CreateFranchiseTranslation;
+use domain::entities::franchise::franchise_translation::FranchiseTranslation;
 use domain::entities::franchise::Franchise;
 use domain::entities::genre::create_genre::CreateGenre;
 use domain::entities::genre::create_genre::CreateGenreTranslation;
@@ -146,6 +148,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     RoleAvailableTranslations,
     PersonTranslation,
     PersonAvailableTranslations,
-    Involved
+    Involved,
+    FranchiseTranslation,
+    FranchiseAvailableTranslations,
   )))]
 pub(crate) struct ApiDoc;

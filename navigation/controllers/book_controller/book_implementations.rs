@@ -24,7 +24,7 @@ use tokio_postgres::{Client, Transaction};
 
 pub fn get_genre_service(connection: &Client) -> impl BookGenreService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let franchise_repository = Arc::new(get_franchise_repository(connection, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(connection));
   let book_repository = Arc::new(get_book_repository(
     connection,
     DEFAULT_LANGUAGE,
@@ -41,7 +41,7 @@ pub fn get_mut_genre_service<'a>(
   client: &'a Client,
 ) -> impl MutBookGenreService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
-  let franchise_repository = Arc::new(get_franchise_repository(client, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(client));
   let book_repository = Arc::new(get_book_repository(
     client,
     DEFAULT_LANGUAGE,
@@ -61,7 +61,7 @@ pub fn get_mut_genre_service<'a>(
 
 pub fn get_theme_service(connection: &Client) -> impl BookThemeService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let franchise_repository = Arc::new(get_franchise_repository(connection, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(connection));
   let book_repository = Arc::new(get_book_repository(
     connection,
     DEFAULT_LANGUAGE,
@@ -78,7 +78,7 @@ pub fn get_mut_theme_service<'a>(
   client: &'a Client,
 ) -> impl MutBookThemeService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
-  let franchise_repository = Arc::new(get_franchise_repository(client, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(client));
   let book_repository = Arc::new(get_book_repository(
     client,
     DEFAULT_LANGUAGE,
@@ -98,7 +98,7 @@ pub fn get_mut_theme_service<'a>(
 
 pub fn get_character_service(connection: &Client) -> impl BookCharacterService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let franchise_repository = Arc::new(get_franchise_repository(connection, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(connection));
   let book_repository = Arc::new(get_book_repository(
     connection,
     DEFAULT_LANGUAGE,
@@ -119,7 +119,7 @@ pub fn get_mut_character_service<'a>(
   client: &'a Client,
 ) -> impl MutBookCharacterService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
-  let franchise_repository = Arc::new(get_franchise_repository(client, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(client));
   let book_repository = Arc::new(get_book_repository(
     client,
     DEFAULT_LANGUAGE,
@@ -140,7 +140,7 @@ pub fn get_mut_character_service<'a>(
 
 pub fn get_involved_service(connection: &Client) -> impl BookInvolvedService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let franchise_repository = Arc::new(get_franchise_repository(connection, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(connection));
   let book_repository = Arc::new(get_book_repository(
     connection,
     DEFAULT_LANGUAGE,
@@ -160,7 +160,7 @@ pub fn get_involved_service(connection: &Client) -> impl BookInvolvedService + '
 
 pub fn get_service(connection: &Client) -> impl BookService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
-  let franchise_repository = Arc::new(get_franchise_repository(connection, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(connection));
   let repository = get_book_repository(connection, DEFAULT_LANGUAGE, image_repository, franchise_repository);
   get_book_service(Arc::new(repository))
 }
@@ -170,7 +170,7 @@ pub fn get_mut_involved_service<'a>(
   client: &'a Client,
 ) -> impl MutBookInvolvedService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
-  let franchise_repository = Arc::new(get_franchise_repository(client, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(client));
   let book_repository = Arc::new(get_book_repository(
     client,
     DEFAULT_LANGUAGE,
@@ -227,7 +227,7 @@ pub fn get_mut_service<'a>(
   let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
   let mut_book_involved_repository = Arc::new(get_mut_book_involved_repository(transaction));
 
-  let franchise_repository = Arc::new(get_franchise_repository(client, DEFAULT_LANGUAGE));
+  let franchise_repository = Arc::new(get_franchise_repository(client));
   let book_repository = Arc::new(get_book_repository(
     client,
     DEFAULT_LANGUAGE,

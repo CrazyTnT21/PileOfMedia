@@ -1,4 +1,5 @@
-use crate::schemas::db_franchise_translation::DbFranchiseTranslation;
+use domain::available_translations::AvailableTranslations;
+use domain::entities::franchise::franchise_translation::FranchiseTranslation;
 use domain::entities::franchise::Franchise;
 use from_row::FromRow;
 use tokio_postgres::Row;
@@ -10,11 +11,10 @@ pub struct DbFranchise {
 }
 
 impl DbFranchise {
-  pub fn to_entity(self, db_franchise_translation: DbFranchiseTranslation) -> Franchise {
+  pub const fn to_entity(self, translations: AvailableTranslations<FranchiseTranslation>) -> Franchise {
     Franchise {
       id: self.id as u32,
-      name: db_franchise_translation.name,
-      language: db_franchise_translation.language.into(),
+      translations,
     }
   }
 }

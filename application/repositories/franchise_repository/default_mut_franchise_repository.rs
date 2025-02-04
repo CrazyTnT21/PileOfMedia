@@ -22,19 +22,16 @@ use crate::select::expression::Expression;
 
 pub struct DefaultMutFranchiseRepository<'a> {
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
 }
 
 impl<'a> DefaultMutFranchiseRepository<'a> {
   pub fn new(
     transaction: &'a Transaction<'a>,
-    default_language: Language,
     franchise_repository: Arc<dyn FranchiseRepository + 'a>,
   ) -> DefaultMutFranchiseRepository<'a> {
     DefaultMutFranchiseRepository {
       transaction,
-      default_language,
       franchise_repository,
     }
   }
@@ -45,10 +42,10 @@ impl MutFranchiseRepository for DefaultMutFranchiseRepository<'_> {
   async fn create(&self, item: CreatePartialFranchise) -> Result<Franchise, Box<dyn Error>> {
     let id = self.insert_franchise(&item).await? as u32;
     self.insert_translation(&item, id).await?;
-
+    let languages: Vec<Language> = item.translations.keys().copied().collect();
     let franchise = self
       .franchise_repository
-      .get_by_id(id, self.default_language)
+      .get_by_id(id, &languages)
       .await?
       .expect("Franchise was just created");
     Ok(franchise)
@@ -57,14 +54,11 @@ impl MutFranchiseRepository for DefaultMutFranchiseRepository<'_> {
   async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let ids = to_i32(ids);
 
-    Delete::new::<DbFranchiseTranslation>(Expression::new(ValueIn::new(
-      (DbFranchiseTranslation::TABLE_NAME, "fktranslation"),
-      &ids,
-    )))
-    .execute_transaction(self.transaction)
-    .await?;
+    Delete::new::<DbFranchiseTranslation>(fk_translation_in_ids(&ids))
+      .execute_transaction(self.transaction)
+      .await?;
 
-    Delete::new::<DbFranchise>(Expression::new(ValueIn::new((DbFranchise::TABLE_NAME, "id"), &ids)))
+    Delete::new::<DbFranchise>(franchise_id_in_ids(&ids))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())
@@ -93,4 +87,10 @@ impl DefaultMutFranchiseRepository<'_> {
     insert.execute_transaction(self.transaction).await?;
     Ok(())
   }
+}
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbFranchiseTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn franchise_id_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbFranchise::TABLE_NAME, "id"), ids))
 }

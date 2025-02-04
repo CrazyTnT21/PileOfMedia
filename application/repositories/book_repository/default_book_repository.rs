@@ -61,10 +61,12 @@ impl<'a> DefaultBookRepository<'a> {
     let image_ids = image_ids(&items);
     let franchise_ids = franchise_ids(&items);
     let images = self.image_repository.get_by_ids(&image_ids).await?;
-    let franchises = match franchise_ids.is_empty() {
-      true => vec![],
-      false => self.franchise_repository.get_by_ids(&franchise_ids, language).await?,
-    };
+
+    //TODO
+    let franchises = self
+      .franchise_repository
+      .get_by_ids(&franchise_ids, &[language])
+      .await?;
 
     items
       .into_iter()
@@ -93,9 +95,11 @@ impl<'a> DefaultBookRepository<'a> {
       .get_by_id(book_translation.fk_cover as u32)
       .await?
       .unwrap();
+
+    //TODO
     let franchise = match item.0.fk_franchise {
       None => None,
-      Some(value) => self.franchise_repository.get_by_id(value as u32, language).await?,
+      Some(value) => self.franchise_repository.get_by_id(value as u32, &[language]).await?,
     };
     Ok(item.0.to_entity(book_translation, image, franchise))
   }

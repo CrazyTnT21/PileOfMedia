@@ -24,30 +24,30 @@ impl<'a> DefaultFranchiseService<'a> {
 impl FranchiseService for DefaultFranchiseService<'_> {
   async fn get(
     &self,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Franchise>, ServiceError<FranchiseServiceError>> {
-    Ok(self.franchise_repository.get(language, pagination).await?)
+    Ok(self.franchise_repository.get(languages, pagination).await?)
   }
 
   async fn get_by_id(
     &self,
     id: u32,
-    language: Language,
+    languages: &[Language],
   ) -> Result<Option<Franchise>, ServiceError<FranchiseServiceError>> {
-    Ok(self.franchise_repository.get_by_id(id, language).await?)
+    Ok(self.franchise_repository.get_by_id(id, languages).await?)
   }
 
   async fn get_by_name(
     &self,
     name: &str,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Franchise>, ServiceError<FranchiseServiceError>> {
     Ok(
       self
         .franchise_repository
-        .get_by_name(name, language, pagination)
+        .get_by_name(name, languages, pagination)
         .await?,
     )
   }

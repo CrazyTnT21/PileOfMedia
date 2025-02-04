@@ -5,16 +5,15 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
-use domain::entities::franchise::create_franchise::CreateFranchise;
 use tokio_postgres::{Client, Transaction};
 
+use domain::entities::franchise::create_franchise::CreateFranchise;
 use services::franchise_service::mut_franchise_service::MutFranchiseService;
 use services::franchise_service::FranchiseService;
 
 use crate::app_state::AppState;
 use crate::controllers::{
-  append_content_language_header, content_language_header, convert_error, convert_service_error, get_language,
-  set_pagination_limit, DEFAULT_LANGUAGE,
+  convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
@@ -44,8 +43,7 @@ pub fn routes(app_state: AppState) -> Router {
 
 #[utoipa::path(get, path = "",
   responses(
-    (status = 200, description = "Returned franchises", body = FranchisesTotal), ServerError, BadRequest
-  ),
+    (status = 200, description = "Returned franchises", body = FranchisesTotal), ServerError, BadRequest),
   params(AcceptLanguageParam, PageParam, CountParam),
   tag = "Franchises"
 )]
@@ -57,15 +55,13 @@ async fn get_items(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for franchises in {}", language);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for franchises in {:?}", &languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(language, pagination.into()).await {
+  match service.get(&languages, pagination.into()).await {
     Ok(franchises) => Ok((StatusCode::OK, content_language, Json(franchises))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -86,14 +82,11 @@ async fn get_by_id(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for a franchise with id {} in {:?}", id, &languages);
 
-  println!("Route for a franchise with id {} in {}", id, language);
-
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_id(id, language).await {
+  match service.get_by_id(id, &languages).await {
     Ok(item) => match item {
       None => Err((StatusCode::NOT_FOUND, "".to_string())),
       Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
@@ -118,22 +111,20 @@ async fn get_by_name(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for franchises with the name {} in {}", name, language);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
+  println!("Route for franchises with the name {} in {:?}", name, &languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_name(&name, language, pagination.into()).await {
+  match service.get_by_name(&name, &languages, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
 }
 
 fn get_service(connection: &Client) -> impl FranchiseService + '_ {
-  let repository = get_franchise_repository(connection, DEFAULT_LANGUAGE);
+  let repository = get_franchise_repository(connection);
   get_franchise_service(Arc::new(repository))
 }
 
@@ -191,11 +182,7 @@ async fn delete_item(Path(id): Path<u32>, State(app_state): State<AppState>) -> 
 }
 
 fn get_mut_service<'a>(transaction: &'a Transaction<'a>, client: &'a Client) -> impl MutFranchiseService + 'a {
-  let franchise_repository = Arc::new(get_franchise_repository(client, DEFAULT_LANGUAGE));
-  let mut_franchise_repository = Arc::new(get_mut_franchise_repository(
-    transaction,
-    DEFAULT_LANGUAGE,
-    franchise_repository.clone(),
-  ));
-  get_mut_franchise_service(DEFAULT_LANGUAGE, franchise_repository, mut_franchise_repository)
+  let franchise_repository = Arc::new(get_franchise_repository(client));
+  let mut_franchise_repository = Arc::new(get_mut_franchise_repository(transaction, franchise_repository.clone()));
+  get_mut_franchise_service(franchise_repository, mut_franchise_repository)
 }
