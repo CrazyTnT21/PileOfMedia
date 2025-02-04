@@ -1,5 +1,5 @@
-use crate::entities::person::person_role::PersonRole;
 use crate::entities::person::Person;
+use crate::entities::role::Role;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
@@ -7,7 +7,7 @@ use std::fmt::{Display, Formatter};
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Involved {
   pub person: Person,
-  pub role: PersonRole,
+  pub roles: Vec<Role>,
 }
 
 #[derive(Debug, Clone)]

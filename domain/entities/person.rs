@@ -1,6 +1,5 @@
 pub mod create_partial_person;
 pub mod create_person;
-pub mod person_role;
 pub mod person_translation;
 
 use crate::available_translations::AvailableTranslations;

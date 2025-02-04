@@ -151,7 +151,6 @@ pub fn get_involved_service(connection: &Client) -> impl BookInvolvedService + '
   let role_repository = Arc::new(get_role_repository(connection));
   let repository = Arc::new(get_book_involved_repository(
     connection,
-    DEFAULT_LANGUAGE,
     book_repository,
     person_repository,
     role_repository,
@@ -182,7 +181,6 @@ pub fn get_mut_involved_service<'a>(
   let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
   let book_involved_repository = get_book_involved_repository(
     client,
-    DEFAULT_LANGUAGE,
     book_repository.clone(),
     person_repository.clone(),
     role_repository.clone(),

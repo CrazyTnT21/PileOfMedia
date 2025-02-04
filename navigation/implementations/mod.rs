@@ -299,12 +299,11 @@ pub fn get_book_involved_service<'a>(
 
 pub fn get_book_involved_repository<'a>(
   client: &'a Client,
-  language: Language,
   book_repository: Arc<dyn BookRepository + 'a>,
   person_repository: Arc<dyn PersonRepository + 'a>,
   role_repository: Arc<dyn RoleRepository + 'a>,
 ) -> impl BookInvolvedRepository + 'a {
-  DefaultBookInvolvedRepository::new(client, language, book_repository, person_repository, role_repository)
+  DefaultBookInvolvedRepository::new(client, book_repository, person_repository, role_repository)
 }
 
 pub fn get_role_service<'a>(role_repository: Arc<dyn RoleRepository + 'a>) -> impl RoleService + 'a {

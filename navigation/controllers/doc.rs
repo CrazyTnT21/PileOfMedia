@@ -8,7 +8,6 @@ use domain::entities::account::create_account::CreateAccountData;
 use domain::entities::account::Email;
 use domain::entities::account::Password;
 use domain::entities::book::book_character::BookCharacter;
-use domain::entities::book::book_involved::BookInvolved;
 use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::create_book::CreateBook;
 use domain::entities::book::create_book::CreateBookData;
@@ -30,11 +29,11 @@ use domain::entities::genre::Genre;
 use domain::entities::image::create_image::CreateImage;
 use domain::entities::image::image_data::ImageData;
 use domain::entities::image::Image;
+use domain::entities::involved::Involved;
 use domain::entities::involved::InvolvedId;
 use domain::entities::person::create_person::CreatePerson;
 use domain::entities::person::create_person::CreatePersonData;
 use domain::entities::person::create_person::CreatePersonTranslation;
-use domain::entities::person::person_role::PersonRole;
 use domain::entities::person::person_translation::PersonTranslation;
 use domain::entities::person::Person;
 use domain::entities::rating::Rating;
@@ -50,8 +49,6 @@ use domain::entities::user::create_user::CreateUser;
 use domain::entities::user::create_user::CreateUserData;
 use domain::entities::user::User;
 use domain::enums::language::Language;
-use domain::items_total::BookCharactersTotal;
-use domain::items_total::BookInvolvedTotal;
 use domain::items_total::BooksTotal;
 use domain::items_total::CharactersTotal;
 use domain::items_total::FranchisesTotal;
@@ -97,8 +94,6 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     ImageData,
     Franchise,
     Role,
-    PersonRole,
-    BookInvolved,
     BookCharacter,
     User,
     InvolvedId,
@@ -117,8 +112,6 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     PeopleTotal,
     CharactersTotal,
     RolesTotal,
-    BookInvolvedTotal,
-    BookCharactersTotal,
     UsersTotal,
     FranchisesTotal,
     Language,
@@ -152,6 +145,7 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     RoleTranslation,
     RoleAvailableTranslations,
     PersonTranslation,
-    PersonAvailableTranslations
+    PersonAvailableTranslations,
+    Involved
   )))]
 pub(crate) struct ApiDoc;

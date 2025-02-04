@@ -262,9 +262,9 @@ async fn get_themes(
 
 #[utoipa::path(get, path = "/{id}/characters",
   responses(
-    (status = 200, description = "Returned characters based on the book id", body = BookCharactersTotal), ServerError, BadRequest
+    (status = 200, description = "Returned characters based on the book id", body = Vec<BookCharacter>), ServerError, BadRequest
   ),
-  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  params(IdParam, AcceptLanguageParam),
   tag = "Books"
 )]
 async fn get_characters(
@@ -288,32 +288,28 @@ async fn get_characters(
 
 #[utoipa::path(get, path = "/{id}/involved",
   responses(
-    (status = 200, description = "Returned people involved based on the book id", body = BookInvolvedTotal), ServerError, BadRequest
+    (status = 200, description = "Returned people involved based on the book id", body = Vec<Involved>), ServerError, BadRequest
   ),
-  params(IdParam, AcceptLanguageParam, PageParam, CountParam),
+  params(IdParam, AcceptLanguageParam),
   tag = "Books"
 )]
 async fn get_involved(
   Path(id): Path<u32>,
   AcceptLanguageHeader(languages): AcceptLanguageHeader,
   State(app_state): State<AppState>,
-  Query(mut pagination): Query<QueryPagination>,
 ) -> impl IntoResponse {
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_involved_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
-  set_pagination_limit(&mut pagination);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
 
   println!(
-    "Route for people involved from a book with the id {} in {}",
-    id, language
+    "Route for people involved from a book with the id {} in {:?}",
+    id, languages
   );
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(id, language, pagination.into()).await {
+  match service.get(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }

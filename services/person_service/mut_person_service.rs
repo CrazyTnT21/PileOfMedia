@@ -2,10 +2,10 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use domain::entities::person::create_person::CreatePerson;
-use domain::entities::person::Person;
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
+use domain::entities::person::create_person::CreatePerson;
+use domain::entities::person::Person;
 
 #[async_trait]
 pub trait MutPersonService: Send + Sync {
