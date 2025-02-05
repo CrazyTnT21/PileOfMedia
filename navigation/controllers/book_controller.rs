@@ -4,8 +4,7 @@ use crate::controllers::book_controller::book_implementations::{
   get_mut_involved_service, get_mut_service, get_mut_theme_service, get_service, get_theme_service,
 };
 use crate::controllers::{
-  append_content_language_header, content_language_header, convert_error, convert_service_error, get_language,
-  map_accept_languages, map_language_header, set_pagination_limit, DEFAULT_LANGUAGE,
+  convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
@@ -80,15 +79,13 @@ async fn get_items(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for books in {}", language);
+  println!("Route for books in {:?}", languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get(language, pagination.into()).await {
+  match service.get(&languages, pagination.into()).await {
     Ok(books) => Ok((StatusCode::OK, content_language, Json(books))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -109,14 +106,12 @@ async fn get_by_id(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
 
-  println!("Route for a book with id {} in {}", id, language);
+  println!("Route for a book with id {} in {:?}", id, languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_id(id, language).await {
+  match service.get_by_id(id, &languages).await {
     Ok(item) => match item {
       None => Err((StatusCode::NOT_FOUND, "".to_string())),
       Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
@@ -164,15 +159,13 @@ async fn get_by_title(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for books with the title {} in {}", title, language);
+  println!("Route for books with the title {} in {:?}", title, languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_title(&title, language, pagination.into()).await {
+  match service.get_by_title(&title, &languages, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -192,14 +185,12 @@ async fn get_by_slug(
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  let language = get_language(languages, DEFAULT_LANGUAGE);
+  let languages = map_accept_languages(&languages);
+  let content_language = map_language_header(&languages);
 
-  println!("Route for a book with slug {} in {}", slug, language);
+  println!("Route for a book with slug {} in {:?}", slug, languages);
 
-  let mut content_language = content_language_header(language);
-  append_content_language_header(&mut content_language, DEFAULT_LANGUAGE);
-
-  match service.get_by_slug(&slug, language).await {
+  match service.get_by_slug(&slug, &languages).await {
     Ok(item) => match item {
       None => Err((StatusCode::NOT_FOUND, "".to_string())),
       Some(item) => Ok((StatusCode::OK, content_language, Json(item))),

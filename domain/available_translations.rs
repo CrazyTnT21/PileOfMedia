@@ -1,3 +1,4 @@
+use crate::entities::book::book_translation::BookTranslation;
 use crate::entities::character::character_translation::CharacterTranslation;
 use crate::entities::franchise::franchise_translation::FranchiseTranslation;
 use crate::entities::genre::genre_translation::GenreTranslation;
@@ -16,7 +17,8 @@ use std::collections::HashMap;
   CharacterAvailableTranslations = AvailableTranslations < CharacterTranslation >,
   RoleAvailableTranslations = AvailableTranslations < RoleTranslation >,
   PersonAvailableTranslations = AvailableTranslations < PersonTranslation >,
-  FranchiseAvailableTranslations = AvailableTranslations < FranchiseTranslation >
+  FranchiseAvailableTranslations = AvailableTranslations < FranchiseTranslation >,
+  BookAvailableTranslations = AvailableTranslations < BookTranslation >
 ))]
 pub struct AvailableTranslations<T> {
   pub available_languages: Vec<Language>,

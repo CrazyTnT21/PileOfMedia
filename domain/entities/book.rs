@@ -1,13 +1,14 @@
 use chrono::NaiveDate;
 
+use crate::available_translations::AvailableTranslations;
+use crate::entities::book::book_translation::BookTranslation;
 use crate::entities::franchise::Franchise;
-use crate::entities::image::Image;
-use crate::enums::language::Language;
 use crate::slug::Slug;
 
 pub mod book_character;
 pub mod book_involved;
 pub mod book_statistic;
+pub mod book_translation;
 pub mod create_book;
 pub mod create_partial_book;
 
@@ -16,11 +17,10 @@ pub mod create_partial_book;
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Book {
   pub id: u32,
-  pub title: String,
   pub slug: Slug,
-  pub description: Option<String>,
   pub published: Option<NaiveDate>,
-  pub cover: Image,
   pub franchise: Option<Franchise>,
-  pub language: Language,
+  pub translations: BookAvailableTranslations,
 }
+
+type BookAvailableTranslations = AvailableTranslations<BookTranslation>;

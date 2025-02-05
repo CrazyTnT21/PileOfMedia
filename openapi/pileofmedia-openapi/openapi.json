@@ -6,7 +6,7 @@
     "license": {
       "name": ""
     },
-    "version": "0.1.3"
+    "version": "0.2.0"
   },
   "paths": {
     "/accounts/login": {
@@ -572,31 +572,6 @@
               "type": "string",
               "nullable": true
             }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "The current page",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "minimum": 0
-            }
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "description": "The amount of items to query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "maximum": 50,
-              "minimum": 0
-            }
           }
         ],
         "responses": {
@@ -605,7 +580,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BookCharactersTotal"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BookCharacter"
+                  }
                 }
               }
             }
@@ -769,31 +747,6 @@
             "schema": {
               "type": "string",
               "nullable": true
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "The current page",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "minimum": 0
-            }
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "description": "The amount of items to query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "maximum": 50,
-              "minimum": 0
             }
           }
         ],
@@ -968,31 +921,6 @@
               "type": "string",
               "nullable": true
             }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "The current page",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "minimum": 0
-            }
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "description": "The amount of items to query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "maximum": 50,
-              "minimum": 0
-            }
           }
         ],
         "responses": {
@@ -1001,7 +929,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BookInvolvedTotal"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Involved"
+                  }
                 }
               }
             }
@@ -1242,31 +1173,6 @@
               "type": "string",
               "nullable": true
             }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "The current page",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "minimum": 0
-            }
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "description": "The amount of items to query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true,
-              "maximum": 50,
-              "minimum": 0
-            }
           }
         ],
         "responses": {
@@ -1488,6 +1394,54 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Characters"
+        ],
+        "operationId": "create_item",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCharacter"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Character successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Character"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/characters/name/{name}": {
@@ -1628,6 +1582,50 @@
           },
           "404": {
             "description": ""
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Characters"
+        ],
+        "operationId": "delete_item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the item to delete",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Character successfully deleted"
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "description": "",
@@ -2463,7 +2461,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Returned People based on the name",
+            "description": "Returned people based on the name",
             "content": {
               "application/json": {
                 "schema": {
@@ -3453,19 +3451,10 @@
         "type": "object",
         "required": [
           "id",
-          "title",
           "slug",
-          "cover",
-          "language"
+          "translations"
         ],
         "properties": {
-          "cover": {
-            "$ref": "#/components/schemas/Image"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
           "franchise": {
             "allOf": [
               {
@@ -3479,9 +3468,6 @@
             "format": "int32",
             "minimum": 0
           },
-          "language": {
-            "$ref": "#/components/schemas/Language"
-          },
           "published": {
             "type": "string",
             "format": "date",
@@ -3490,8 +3476,29 @@
           "slug": {
             "$ref": "#/components/schemas/Slug"
           },
-          "title": {
-            "type": "string"
+          "translations": {
+            "$ref": "#/components/schemas/BookAvailableTranslations"
+          }
+        }
+      },
+      "BookAvailableTranslations": {
+        "type": "object",
+        "required": [
+          "available_languages",
+          "translations"
+        ],
+        "properties": {
+          "available_languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BookTranslation"
+            }
           }
         }
       },
@@ -3503,44 +3510,6 @@
         "properties": {
           "character": {
             "$ref": "#/components/schemas/Character"
-          }
-        }
-      },
-      "BookCharactersTotal": {
-        "type": "object",
-        "required": [
-          "items",
-          "total"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BookCharacter"
-            }
-          },
-          "total": {
-            "type": "integer",
-            "minimum": 0
-          }
-        }
-      },
-      "BookInvolvedTotal": {
-        "type": "object",
-        "required": [
-          "items",
-          "total"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Involved"
-            }
-          },
-          "total": {
-            "type": "integer",
-            "minimum": 0
           }
         }
       },
@@ -3584,6 +3553,25 @@
           }
         }
       },
+      "BookTranslation": {
+        "type": "object",
+        "required": [
+          "title",
+          "cover"
+        ],
+        "properties": {
+          "cover": {
+            "$ref": "#/components/schemas/Image"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
       "BooksTotal": {
         "type": "object",
         "required": [
@@ -3607,8 +3595,7 @@
         "type": "object",
         "required": [
           "id",
-          "name",
-          "language"
+          "translations"
         ],
         "properties": {
           "birthday": {
@@ -3616,15 +3603,7 @@
             "format": "date",
             "nullable": true
           },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "first_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "height": {
+          "height_cm": {
             "type": "integer",
             "format": "int32",
             "nullable": true,
@@ -3643,8 +3622,45 @@
             ],
             "nullable": true
           },
-          "language": {
-            "$ref": "#/components/schemas/Language"
+          "translations": {
+            "$ref": "#/components/schemas/CharacterAvailableTranslations"
+          }
+        }
+      },
+      "CharacterAvailableTranslations": {
+        "type": "object",
+        "required": [
+          "available_languages",
+          "translations"
+        ],
+        "properties": {
+          "available_languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CharacterTranslation"
+            }
+          }
+        }
+      },
+      "CharacterTranslation": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "first_name": {
+            "type": "string",
+            "nullable": true
           },
           "last_name": {
             "type": "string",
@@ -3812,6 +3828,73 @@
           }
         }
       },
+      "CreateCharacter": {
+        "type": "object",
+        "required": [
+          "character"
+        ],
+        "properties": {
+          "character": {
+            "$ref": "#/components/schemas/CreateCharacterData"
+          },
+          "image": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateImage"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "CreateCharacterData": {
+        "type": "object",
+        "required": [
+          "translations"
+        ],
+        "properties": {
+          "birthday": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "height_cm": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "minimum": 0
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CreateCharacterTranslation"
+            }
+          }
+        }
+      },
+      "CreateCharacterTranslation": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "first_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "CreateCover": {
         "oneOf": [
           {
@@ -3928,7 +4011,7 @@
             "type": "string",
             "nullable": true
           },
-          "height": {
+          "height_cm": {
             "type": "integer",
             "format": "int32",
             "nullable": true,
@@ -4049,8 +4132,7 @@
         "type": "object",
         "required": [
           "id",
-          "name",
-          "language"
+          "translations"
         ],
         "properties": {
           "id": {
@@ -4058,9 +4140,38 @@
             "format": "int32",
             "minimum": 0
           },
-          "language": {
-            "$ref": "#/components/schemas/Language"
+          "translations": {
+            "$ref": "#/components/schemas/FranchiseAvailableTranslations"
+          }
+        }
+      },
+      "FranchiseAvailableTranslations": {
+        "type": "object",
+        "required": [
+          "available_languages",
+          "translations"
+        ],
+        "properties": {
+          "available_languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
           },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FranchiseTranslation"
+            }
+          }
+        }
+      },
+      "FranchiseTranslation": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
           "name": {
             "type": "string"
           }
@@ -4089,8 +4200,7 @@
         "type": "object",
         "required": [
           "id",
-          "name",
-          "language"
+          "translations"
         ],
         "properties": {
           "id": {
@@ -4098,9 +4208,38 @@
             "format": "int32",
             "minimum": 0
           },
-          "language": {
-            "$ref": "#/components/schemas/Language"
+          "translations": {
+            "$ref": "#/components/schemas/GenreAvailableTranslations"
+          }
+        }
+      },
+      "GenreAvailableTranslations": {
+        "type": "object",
+        "required": [
+          "available_languages",
+          "translations"
+        ],
+        "properties": {
+          "available_languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
           },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/GenreTranslation"
+            }
+          }
+        }
+      },
+      "GenreTranslation": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
           "name": {
             "type": "string"
           }
@@ -4172,14 +4311,17 @@
         "type": "object",
         "required": [
           "person",
-          "role"
+          "roles"
         ],
         "properties": {
           "person": {
             "$ref": "#/components/schemas/Person"
           },
-          "role": {
-            "$ref": "#/components/schemas/PersonRole"
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            }
           }
         }
       },
@@ -4271,7 +4413,7 @@
         "required": [
           "id",
           "name",
-          "language"
+          "translations"
         ],
         "properties": {
           "birthday": {
@@ -4279,15 +4421,11 @@
             "format": "date",
             "nullable": true
           },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
           "first_name": {
             "type": "string",
             "nullable": true
           },
-          "height": {
+          "height_cm": {
             "type": "integer",
             "format": "int32",
             "nullable": true,
@@ -4306,26 +4444,45 @@
             ],
             "nullable": true
           },
-          "language": {
-            "$ref": "#/components/schemas/Language"
-          },
           "last_name": {
             "type": "string",
             "nullable": true
           },
           "name": {
             "type": "string"
+          },
+          "translations": {
+            "$ref": "#/components/schemas/PersonAvailableTranslations"
           }
         }
       },
-      "PersonRole": {
+      "PersonAvailableTranslations": {
         "type": "object",
         "required": [
-          "role"
+          "available_languages",
+          "translations"
         ],
         "properties": {
-          "role": {
-            "$ref": "#/components/schemas/Role"
+          "available_languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PersonTranslation"
+            }
+          }
+        }
+      },
+      "PersonTranslation": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -4357,8 +4514,7 @@
         "type": "object",
         "required": [
           "id",
-          "name",
-          "language"
+          "translations"
         ],
         "properties": {
           "id": {
@@ -4366,9 +4522,38 @@
             "format": "int32",
             "minimum": 0
           },
-          "language": {
-            "$ref": "#/components/schemas/Language"
+          "translations": {
+            "$ref": "#/components/schemas/RoleAvailableTranslations"
+          }
+        }
+      },
+      "RoleAvailableTranslations": {
+        "type": "object",
+        "required": [
+          "available_languages",
+          "translations"
+        ],
+        "properties": {
+          "available_languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
           },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RoleTranslation"
+            }
+          }
+        }
+      },
+      "RoleTranslation": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
           "name": {
             "type": "string"
           }
@@ -4400,8 +4585,7 @@
         "type": "object",
         "required": [
           "id",
-          "name",
-          "language"
+          "translations"
         ],
         "properties": {
           "id": {
@@ -4409,9 +4593,38 @@
             "format": "int32",
             "minimum": 0
           },
-          "language": {
-            "$ref": "#/components/schemas/Language"
+          "translations": {
+            "$ref": "#/components/schemas/ThemeAvailableTranslations"
+          }
+        }
+      },
+      "ThemeAvailableTranslations": {
+        "type": "object",
+        "required": [
+          "available_languages",
+          "translations"
+        ],
+        "properties": {
+          "available_languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Language"
+            }
           },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ThemeTranslation"
+            }
+          }
+        }
+      },
+      "ThemeTranslation": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
           "name": {
             "type": "string"
           }

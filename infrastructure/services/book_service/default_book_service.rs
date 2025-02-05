@@ -27,26 +27,30 @@ impl<'a> DefaultBookService<'a> {
 impl BookService for DefaultBookService<'_> {
   async fn get(
     &self,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
-    Ok(self.book_repository.get(language, pagination).await?)
+    Ok(self.book_repository.get(languages, pagination).await?)
   }
 
-  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, ServiceError<BookServiceError>> {
-    Ok(self.book_repository.get_by_id(id, language).await?)
+  async fn get_by_id(&self, id: u32, languages: &[Language]) -> Result<Option<Book>, ServiceError<BookServiceError>> {
+    Ok(self.book_repository.get_by_id(id, languages).await?)
   }
 
   async fn get_by_title(
     &self,
     title: &str,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, ServiceError<BookServiceError>> {
-    Ok(self.book_repository.get_by_title(title, language, pagination).await?)
+    Ok(self.book_repository.get_by_title(title, languages, pagination).await?)
   }
-  async fn get_by_slug(&self, slug: &Slug, language: Language) -> Result<Option<Book>, ServiceError<BookServiceError>> {
-    Ok(self.book_repository.get_by_slug(slug, language).await?)
+  async fn get_by_slug(
+    &self,
+    slug: &Slug,
+    languages: &[Language],
+  ) -> Result<Option<Book>, ServiceError<BookServiceError>> {
+    Ok(self.book_repository.get_by_slug(slug, languages).await?)
   }
 
   async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, ServiceError<BookServiceError>> {

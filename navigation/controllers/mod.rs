@@ -8,7 +8,6 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use domain::enums::language::Language;
-use domain::enums::language::Language::EN;
 use services::traits::service_error::ServiceError;
 
 use crate::app_state::AppState;
@@ -47,22 +46,8 @@ fn convert_to_language(value: &AcceptLanguage) -> Option<Language> {
   Language::from_str(&value.value).ok()
 }
 
-fn get_language(mut languages: Vec<AcceptLanguage>, default_language: Language) -> Language {
-  languages.sort();
-  let language = languages
-    .first()
-    .and_then(convert_to_language)
-    .unwrap_or(default_language);
-
-  language
-}
 fn map_accept_languages(languages: &[AcceptLanguage]) -> Vec<Language> {
   languages.iter().filter_map(convert_to_language).collect()
-}
-fn content_language_header(language: Language) -> HeaderMap {
-  let mut headers = HeaderMap::new();
-  append_content_language_header(&mut headers, language);
-  headers
 }
 fn map_language_header(languages: &[Language]) -> HeaderMap {
   let mut headers = HeaderMap::new();
@@ -82,9 +67,6 @@ fn append_content_language_header(headers: &mut HeaderMap, language: Language) -
   headers.insert("content-language", value.parse().unwrap());
   headers
 }
-
-//TODO: Make configurable
-pub const DEFAULT_LANGUAGE: Language = EN;
 
 pub fn convert_service_error<T: Display>(service_error: ServiceError<T>) -> (StatusCode, String) {
   match service_error {

@@ -10,24 +10,20 @@ use domain::entities::account::create_partial_account::CreatePartialAccount;
 use domain::entities::account::Account;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
 use repositories::account_repository::AccountRepository;
-use repositories::user_repository::UserRepository;
 
 pub struct DefaultMutAccountRepository<'a> {
   transaction: &'a Transaction<'a>,
   account_repository: Arc<dyn AccountRepository + 'a>,
-  user_repository: Arc<dyn UserRepository + 'a>,
 }
 
 impl<'a> DefaultMutAccountRepository<'a> {
   pub fn new(
     transaction: &'a Transaction<'a>,
     account_repository: Arc<dyn AccountRepository + 'a>,
-    user_repository: Arc<dyn UserRepository + 'a>,
   ) -> DefaultMutAccountRepository<'a> {
     DefaultMutAccountRepository {
       transaction,
       account_repository,
-      user_repository,
     }
   }
 }

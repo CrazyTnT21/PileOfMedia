@@ -494,12 +494,7 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    /** @description The current page */
-                    page?: number | null;
-                    /** @description The amount of items to query */
-                    count?: number | null;
-                };
+                query?: never;
                 header?: {
                     /** @description The language of the items */
                     "Accept-Language"?: string | null;
@@ -518,7 +513,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["BookCharactersTotal"];
+                        "application/json": components["schemas"]["BookCharacter"][];
                     };
                 };
                 400: {
@@ -646,12 +641,7 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    /** @description The current page */
-                    page?: number | null;
-                    /** @description The amount of items to query */
-                    count?: number | null;
-                };
+                query?: never;
                 header?: {
                     /** @description The language of the items */
                     "Accept-Language"?: string | null;
@@ -798,12 +788,7 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    /** @description The current page */
-                    page?: number | null;
-                    /** @description The amount of items to query */
-                    count?: number | null;
-                };
+                query?: never;
                 header?: {
                     /** @description The language of the items */
                     "Accept-Language"?: string | null;
@@ -822,7 +807,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["BookInvolvedTotal"];
+                        "application/json": components["schemas"]["Involved"][];
                     };
                 };
                 400: {
@@ -1012,12 +997,7 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    /** @description The current page */
-                    page?: number | null;
-                    /** @description The amount of items to query */
-                    count?: number | null;
-                };
+                query?: never;
                 header?: {
                     /** @description The language of the items */
                     "Accept-Language"?: string | null;
@@ -1207,7 +1187,46 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": components["schemas"]["CreateCharacter"];
+                };
+            };
+            responses: {
+                /** @description Character successfully created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Character"];
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1333,7 +1352,43 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id of the item to delete */
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Character successfully deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1982,7 +2037,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Returned People based on the name */
+                /** @description Returned people based on the name */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -2814,27 +2869,22 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Book: {
-            cover: components["schemas"]["Image"];
-            description?: string | null;
             franchise?: components["schemas"]["Franchise"] | null;
             /** Format: int32 */
             id: number;
-            language: components["schemas"]["Language"];
             /** Format: date */
             published?: `${number}-${number}-${number}` | null;
             slug: components["schemas"]["Slug"];
-            title: string;
+            translations: components["schemas"]["BookAvailableTranslations"];
+        };
+        BookAvailableTranslations: {
+            available_languages: components["schemas"]["Language"][];
+            translations: {
+                [key: string]: components["schemas"]["BookTranslation"];
+            };
         };
         BookCharacter: {
             character: components["schemas"]["Character"];
-        };
-        BookCharactersTotal: {
-            items: components["schemas"]["BookCharacter"][];
-            total: number;
-        };
-        BookInvolvedTotal: {
-            items: components["schemas"]["Involved"][];
-            total: number;
         };
         BookStatistic: {
             /** Format: date */
@@ -2849,6 +2899,11 @@ export interface components {
             rank: number;
             rating: components["schemas"]["Rating"];
         };
+        BookTranslation: {
+            cover: components["schemas"]["Image"];
+            description?: string | null;
+            title: string;
+        };
         BooksTotal: {
             items: components["schemas"]["Book"][];
             total: number;
@@ -2856,14 +2911,22 @@ export interface components {
         Character: {
             /** Format: date */
             birthday?: `${number}-${number}-${number}` | null;
-            description?: string | null;
-            first_name?: string | null;
             /** Format: int32 */
-            height?: number | null;
+            height_cm?: number | null;
             /** Format: int32 */
             id: number;
             image?: components["schemas"]["Image"] | null;
-            language: components["schemas"]["Language"];
+            translations: components["schemas"]["CharacterAvailableTranslations"];
+        };
+        CharacterAvailableTranslations: {
+            available_languages: components["schemas"]["Language"][];
+            translations: {
+                [key: string]: components["schemas"]["CharacterTranslation"];
+            };
+        };
+        CharacterTranslation: {
+            description?: string | null;
+            first_name?: string | null;
             last_name?: string | null;
             name: string;
         };
@@ -2903,6 +2966,25 @@ export interface components {
             description?: string | null;
             title: string;
         };
+        CreateCharacter: {
+            character: components["schemas"]["CreateCharacterData"];
+            image?: components["schemas"]["CreateImage"] | null;
+        };
+        CreateCharacterData: {
+            /** Format: date */
+            birthday?: `${number}-${number}-${number}` | null;
+            /** Format: int32 */
+            height_cm?: number | null;
+            translations: {
+                [key: string]: components["schemas"]["CreateCharacterTranslation"];
+            };
+        };
+        CreateCharacterTranslation: {
+            description?: string | null;
+            first_name?: string | null;
+            last_name?: string | null;
+            name: string;
+        };
         CreateCover: {
             ImageIndex: number;
         } | {
@@ -2935,7 +3017,7 @@ export interface components {
             birthday?: `${number}-${number}-${number}` | null;
             first_name?: string | null;
             /** Format: int32 */
-            height?: number | null;
+            height_cm?: number | null;
             last_name?: string | null;
             name: string;
             translations: {
@@ -2973,7 +3055,15 @@ export interface components {
         Franchise: {
             /** Format: int32 */
             id: number;
-            language: components["schemas"]["Language"];
+            translations: components["schemas"]["FranchiseAvailableTranslations"];
+        };
+        FranchiseAvailableTranslations: {
+            available_languages: components["schemas"]["Language"][];
+            translations: {
+                [key: string]: components["schemas"]["FranchiseTranslation"];
+            };
+        };
+        FranchiseTranslation: {
             name: string;
         };
         FranchisesTotal: {
@@ -2983,7 +3073,15 @@ export interface components {
         Genre: {
             /** Format: int32 */
             id: number;
-            language: components["schemas"]["Language"];
+            translations: components["schemas"]["GenreAvailableTranslations"];
+        };
+        GenreAvailableTranslations: {
+            available_languages: components["schemas"]["Language"][];
+            translations: {
+                [key: string]: components["schemas"]["GenreTranslation"];
+            };
+        };
+        GenreTranslation: {
             name: string;
         };
         GenresTotal: {
@@ -3004,7 +3102,7 @@ export interface components {
         };
         Involved: {
             person: components["schemas"]["Person"];
-            role: components["schemas"]["PersonRole"];
+            roles: components["schemas"]["Role"][];
         };
         InvolvedId: {
             /** Format: int32 */
@@ -3030,19 +3128,24 @@ export interface components {
         Person: {
             /** Format: date */
             birthday?: `${number}-${number}-${number}` | null;
-            description?: string | null;
             first_name?: string | null;
             /** Format: int32 */
-            height?: number | null;
+            height_cm?: number | null;
             /** Format: int32 */
             id: number;
             image?: components["schemas"]["Image"] | null;
-            language: components["schemas"]["Language"];
             last_name?: string | null;
             name: string;
+            translations: components["schemas"]["PersonAvailableTranslations"];
         };
-        PersonRole: {
-            role: components["schemas"]["Role"];
+        PersonAvailableTranslations: {
+            available_languages: components["schemas"]["Language"][];
+            translations: {
+                [key: string]: components["schemas"]["PersonTranslation"];
+            };
+        };
+        PersonTranslation: {
+            description?: string | null;
         };
         Rating: {
             /** Format: int32 */
@@ -3055,7 +3158,15 @@ export interface components {
         Role: {
             /** Format: int32 */
             id: number;
-            language: components["schemas"]["Language"];
+            translations: components["schemas"]["RoleAvailableTranslations"];
+        };
+        RoleAvailableTranslations: {
+            available_languages: components["schemas"]["Language"][];
+            translations: {
+                [key: string]: components["schemas"]["RoleTranslation"];
+            };
+        };
+        RoleTranslation: {
             name: string;
         };
         RolesTotal: {
@@ -3066,7 +3177,15 @@ export interface components {
         Theme: {
             /** Format: int32 */
             id: number;
-            language: components["schemas"]["Language"];
+            translations: components["schemas"]["ThemeAvailableTranslations"];
+        };
+        ThemeAvailableTranslations: {
+            available_languages: components["schemas"]["Language"][];
+            translations: {
+                [key: string]: components["schemas"]["ThemeTranslation"];
+            };
+        };
+        ThemeTranslation: {
             name: string;
         };
         ThemesTotal: {

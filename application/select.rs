@@ -400,4 +400,8 @@ impl<'a, T: from_row::FromRow<DbType = T>> Select<'a, (T,)> {
     let result: Vec<T> = self.query(connection).await?.into_iter().map(|(x,)| x).collect();
     Ok(result)
   }
+  pub async fn get_single_destruct(self, connection: &'a Client) -> Result<Option<T>, Box<dyn Error>> {
+    let result = self.get_single(connection).await?.map(|(x,)| x);
+    Ok(result)
+  }
 }

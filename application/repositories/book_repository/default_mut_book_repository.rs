@@ -29,7 +29,6 @@ use crate::select::Select;
 
 pub struct DefaultMutBookRepository<'a> {
   transaction: &'a Transaction<'a>,
-  default_language: Language,
   mut_book_genre_repository: Arc<dyn MutBookGenreRepository + 'a>,
   mut_book_character_repository: Arc<dyn MutBookCharacterRepository + 'a>,
   mut_book_theme_repository: Arc<dyn MutBookThemeRepository + 'a>,
@@ -40,7 +39,6 @@ pub struct DefaultMutBookRepository<'a> {
 impl<'a> DefaultMutBookRepository<'a> {
   pub fn new(
     transaction: &'a Transaction<'a>,
-    default_language: Language,
     mut_book_genre_repository: Arc<dyn MutBookGenreRepository + 'a>,
     mut_book_character_repository: Arc<dyn MutBookCharacterRepository + 'a>,
     mut_book_theme_repository: Arc<dyn MutBookThemeRepository + 'a>,
@@ -49,7 +47,6 @@ impl<'a> DefaultMutBookRepository<'a> {
   ) -> DefaultMutBookRepository<'a> {
     DefaultMutBookRepository {
       transaction,
-      default_language,
       mut_book_genre_repository,
       mut_book_character_repository,
       mut_book_theme_repository,
@@ -69,9 +66,10 @@ impl MutBookRepository for DefaultMutBookRepository<'_> {
     self.insert_genres(&item, id).await?;
     self.insert_involved(&item, id).await?;
 
+    let languages: Vec<Language> = item.translations.keys().copied().collect();
     let book = self
       .book_repository
-      .get_by_id(id, self.default_language)
+      .get_by_id(id, &languages)
       .await?
       .expect("Book was just created");
     Ok(book)

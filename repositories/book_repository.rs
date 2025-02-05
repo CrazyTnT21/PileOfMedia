@@ -15,18 +15,18 @@ pub mod mut_book_repository;
 
 #[async_trait]
 pub trait BookRepository: Send + Sync {
-  async fn get(&self, language: Language, pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>>;
-  async fn get_by_id(&self, id: u32, language: Language) -> Result<Option<Book>, Box<dyn Error>>;
+  async fn get(&self, languages: &[Language], pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>>;
+  async fn get_by_id(&self, id: u32, languages: &[Language]) -> Result<Option<Book>, Box<dyn Error>>;
   async fn get_by_title(
     &self,
     title: &str,
-    language: Language,
+    languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, Box<dyn Error>>;
-  async fn get_by_ids(&self, ids: &[u32], language: Language) -> Result<Vec<Book>, Box<dyn Error>>;
+  async fn get_by_ids(&self, ids: &[u32], languages: &[Language]) -> Result<Vec<Book>, Box<dyn Error>>;
 
   async fn filter_existing(&self, book_ids: &[u32]) -> Result<Vec<u32>, Box<dyn Error>>;
 
   async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, Box<dyn Error>>;
-  async fn get_by_slug(&self, slug: &Slug, language: Language) -> Result<Option<Book>, Box<dyn Error>>;
+  async fn get_by_slug(&self, slug: &Slug, languages: &[Language]) -> Result<Option<Book>, Box<dyn Error>>;
 }

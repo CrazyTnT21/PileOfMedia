@@ -12,7 +12,6 @@ use domain::entities::role::Role;
 use domain::enums::language::Language;
 use from_row::Table;
 use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
-use repositories::book_repository::BookRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
 
@@ -24,7 +23,6 @@ use crate::select::Select;
 
 pub struct DefaultBookInvolvedRepository<'a> {
   client: &'a Client,
-  book_repository: Arc<dyn BookRepository + 'a>,
   person_repository: Arc<dyn PersonRepository + 'a>,
   role_repository: Arc<dyn RoleRepository + 'a>,
 }
@@ -32,13 +30,11 @@ pub struct DefaultBookInvolvedRepository<'a> {
 impl<'a> DefaultBookInvolvedRepository<'a> {
   pub fn new(
     client: &'a Client,
-    book_repository: Arc<dyn BookRepository + 'a>,
     person_repository: Arc<dyn PersonRepository + 'a>,
     role_repository: Arc<dyn RoleRepository + 'a>,
   ) -> DefaultBookInvolvedRepository<'a> {
     DefaultBookInvolvedRepository {
       client,
-      book_repository,
       person_repository,
       role_repository,
     }

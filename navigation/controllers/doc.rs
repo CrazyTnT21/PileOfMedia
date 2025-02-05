@@ -1,3 +1,4 @@
+use domain::available_translations::BookAvailableTranslations;
 use domain::available_translations::CharacterAvailableTranslations;
 use domain::available_translations::FranchiseAvailableTranslations;
 use domain::available_translations::GenreAvailableTranslations;
@@ -10,6 +11,7 @@ use domain::entities::account::Email;
 use domain::entities::account::Password;
 use domain::entities::book::book_character::BookCharacter;
 use domain::entities::book::book_statistic::BookStatistic;
+use domain::entities::book::book_translation::BookTranslation;
 use domain::entities::book::create_book::CreateBook;
 use domain::entities::book::create_book::CreateBookData;
 use domain::entities::book::create_book::CreateBookTranslation;
@@ -151,5 +153,7 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     Involved,
     FranchiseTranslation,
     FranchiseAvailableTranslations,
+    BookTranslation,
+    BookAvailableTranslations
   )))]
 pub(crate) struct ApiDoc;

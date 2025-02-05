@@ -168,16 +168,8 @@ fn get_mut_service<'a>(
   let image_repository = Arc::new(get_image_repository(transaction.client()));
   let user_repository = Arc::new(get_user_repository(transaction.client(), image_repository.clone()));
   let account_repository = Arc::new(get_account_repository(transaction.client(), user_repository.clone()));
-  let mut_account_repository = Arc::new(get_mut_account_repository(
-    transaction,
-    account_repository.clone(),
-    user_repository.clone(),
-  ));
-  let mut_user_repository = Arc::new(get_mut_user_repository(
-    transaction,
-    user_repository,
-    image_repository.clone(),
-  ));
+  let mut_account_repository = Arc::new(get_mut_account_repository(transaction, account_repository.clone()));
+  let mut_user_repository = Arc::new(get_mut_user_repository(transaction, user_repository));
   let mut_file_repository = Arc::new(get_mut_file_repository());
   let file_repository = Arc::new(get_file_repository());
   let mut_image_repository = Arc::new(get_mut_image_repository(

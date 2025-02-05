@@ -17,7 +17,6 @@ pub enum MutBookServiceError {
   NoIdsProvided,
   NonExistentBooks(Vec<u32>),
   NoTranslationsProvided,
-  NoTranslationInLanguageProvided(Language),
   NonExistentThemes(Vec<u32>),
   NonExistentGenres(Vec<u32>),
   NonExistentPeople(Vec<u32>),
@@ -45,11 +44,6 @@ impl Display for MutBookServiceError {
         MutBookServiceError::NonExistentPeople(x) => format!("The following people do not exist: [{}]", x.join_comma()),
         MutBookServiceError::NonExistentRoles(x) => format!("The following roles do not exist: [{}]", x.join_comma()),
         MutBookServiceError::NoTranslationsProvided => "No translations provided".to_string(),
-        MutBookServiceError::NoTranslationInLanguageProvided(language) => format!(
-          "No translation in '{}' ({}) provided",
-          language,
-          language.language_code()
-        ),
         MutBookServiceError::InvalidTitle(x) => format!("Title '{x}' in translation is invalid"),
         MutBookServiceError::InvalidDescription(x) => format!("Description '{x}' in translation is invalid"),
         MutBookServiceError::NonExistentTranslationCover(language) => format!(

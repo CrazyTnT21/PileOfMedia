@@ -1,13 +1,11 @@
 use chrono::NaiveDate;
-use tokio_postgres::Row;
-
+use domain::available_translations::AvailableTranslations;
+use domain::entities::book::book_translation::BookTranslation;
 use domain::entities::book::Book;
 use domain::entities::franchise::Franchise;
-use domain::entities::image::Image;
 use domain::slug::Slug;
 use from_row::FromRow;
-
-use crate::schemas::db_book_translation::DbBookTranslation;
+use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
 #[rename = "book"]
@@ -23,16 +21,13 @@ impl DbBook {
   /// # Panics
   ///
   /// Will panic if the book slug is not valid. This could only happen if the value was not validated when inserted.
-  pub fn to_entity(self, book_translation: DbBookTranslation, cover: Image, franchise: Option<Franchise>) -> Book {
+  pub fn to_entity(self, translations: AvailableTranslations<BookTranslation>, franchise: Option<Franchise>) -> Book {
     Book {
       id: self.id as u32,
-      title: book_translation.title,
       slug: Slug::parse(self.slug).unwrap(),
-      description: book_translation.description,
       published: self.published,
-      cover,
       franchise,
-      language: book_translation.language.into(),
+      translations,
     }
   }
 }

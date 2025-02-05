@@ -6,7 +6,6 @@ use domain::entities::book::book_character::BookCharacter;
 use domain::enums::language::Language;
 use from_row::Table;
 use repositories::book_repository::book_character_repository::BookCharacterRepository;
-use repositories::book_repository::BookRepository;
 use repositories::character_repository::CharacterRepository;
 use tokio_postgres::Client;
 
@@ -19,19 +18,16 @@ use crate::select::Select;
 
 pub struct DefaultBookCharacterRepository<'a> {
   client: &'a Client,
-  book_repository: Arc<dyn BookRepository + 'a>,
   character_repository: Arc<dyn CharacterRepository + 'a>,
 }
 
 impl<'a> DefaultBookCharacterRepository<'a> {
   pub fn new(
     client: &'a Client,
-    book_repository: Arc<dyn BookRepository + 'a>,
     character_repository: Arc<dyn CharacterRepository + 'a>,
   ) -> DefaultBookCharacterRepository<'a> {
     DefaultBookCharacterRepository {
       client,
-      book_repository,
       character_repository,
     }
   }

@@ -8,7 +8,6 @@ use domain::entities::genre::Genre;
 use domain::enums::language::Language;
 use from_row::Table;
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
-use repositories::book_repository::BookRepository;
 use repositories::genre_repository::GenreRepository;
 
 use crate::convert_to_sql::to_i32;
@@ -20,19 +19,13 @@ use crate::select::Select;
 
 pub struct DefaultBookGenreRepository<'a> {
   client: &'a Client,
-  book_repository: Arc<dyn BookRepository + 'a>,
   genre_repository: Arc<dyn GenreRepository + 'a>,
 }
 
 impl<'a> DefaultBookGenreRepository<'a> {
-  pub fn new(
-    client: &'a Client,
-    book_repository: Arc<dyn BookRepository + 'a>,
-    genre_repository: Arc<dyn GenreRepository + 'a>,
-  ) -> DefaultBookGenreRepository<'a> {
+  pub fn new(client: &'a Client, genre_repository: Arc<dyn GenreRepository + 'a>) -> DefaultBookGenreRepository<'a> {
     DefaultBookGenreRepository {
       client,
-      book_repository,
       genre_repository,
     }
   }

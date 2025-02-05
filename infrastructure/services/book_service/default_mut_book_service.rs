@@ -24,7 +24,6 @@ use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::{ClientError, ServerError};
 
 pub struct DefaultMutBookService<'a> {
-  default_language: Language,
   book_repository: Arc<dyn BookRepository + 'a>,
   mut_book_repository: Arc<dyn MutBookRepository + 'a>,
   mut_image_service: Arc<dyn MutImageService + 'a>,
@@ -39,7 +38,6 @@ pub struct DefaultMutBookService<'a> {
 impl<'a> DefaultMutBookService<'a> {
   pub fn new(
     //TODO: Refactor dependencies into ValidationService
-    default_language: Language,
     book_repository: Arc<dyn BookRepository + 'a>,
     mut_book_repository: Arc<dyn MutBookRepository + 'a>,
     mut_image_service: Arc<dyn MutImageService + 'a>,
@@ -51,7 +49,6 @@ impl<'a> DefaultMutBookService<'a> {
     role_repository: Arc<dyn RoleRepository + 'a>,
   ) -> DefaultMutBookService<'a> {
     DefaultMutBookService {
-      default_language,
       book_repository,
       mut_book_repository,
       mut_image_service,
@@ -110,16 +107,10 @@ impl DefaultMutBookService<'_> {
   async fn validate_translations(
     &self,
     translations: &HashMap<Language, CreateBookTranslation>,
-    default_language: &Language,
     covers: &[CreateImage],
   ) -> Result<(), ServiceError<MutBookServiceError>> {
     if translations.is_empty() {
       return Err(ClientError(MutBookServiceError::NoTranslationsProvided));
-    }
-    if !translations.contains_key(default_language) {
-      return Err(ClientError(MutBookServiceError::NoTranslationInLanguageProvided(
-        *default_language,
-      )));
     }
     for (current_language, item) in translations {
       if item.title.is_empty() {
@@ -257,9 +248,7 @@ impl DefaultMutBookService<'_> {
         }
       }
     }
-    self
-      .validate_translations(&data.translations, &self.default_language, &item.covers)
-      .await?;
+    self.validate_translations(&data.translations, &item.covers).await?;
     Ok(())
   }
 }
