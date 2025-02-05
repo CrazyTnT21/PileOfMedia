@@ -145,6 +145,7 @@ impl BookRepository for DefaultBookRepository<'_> {
       .into_iter()
       .map(|x| x as u32)
       .collect();
+    dbg!(&book_ids,&languages);
 
     let result = self.get_by_ids(&book_ids, languages).await?;
     Ok(ItemsTotal { items: result, total })
@@ -161,20 +162,29 @@ impl BookRepository for DefaultBookRepository<'_> {
       .query_destruct(self.client)
       .await?;
 
-    let translations = Select::new::<DbBookTranslation>()
+    let mut translations = Select::new::<DbBookTranslation>()
       .columns::<DbBookTranslation>(DbBookTranslation::TABLE_NAME)
       .where_expression(Expression::new(ValueIn::new(
         (DbBookTranslation::TABLE_NAME, "fktranslation"),
         &ids,
       )))
+      .where_expression(in_languages(&db_languages))
       .query_destruct(self.client)
       .await?;
 
+    let no_translations: Vec<i32> = no_translation_ids(&books, &translations);
+    let mut extra_translations = Select::new::<DbBookTranslation>()
+      .distinct_on(DbBookTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbBookTranslation>(DbBookTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
     let image_ids: Vec<u32> = translations.iter().map(|x| x.fk_cover as u32).collect();
     let images = self.image_repository.get_by_ids(&image_ids).await?;
-    let translations: Vec<(Language, i32, BookTranslation)> = book_translation_select(&ids, &db_languages)
-      .query_destruct(self.client)
-      .await?
+    let translations: Vec<(Language, i32, BookTranslation)> = translations
       .into_iter()
       .map(|x| {
         let fk_cover = x.fk_cover;
@@ -372,4 +382,18 @@ fn franchise_ids(items: &[DbBook]) -> Vec<u32> {
   result.sort_unstable();
   result.dedup();
   result
+}
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbBookTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn no_translation_ids(book_ids: &[DbBook], translations: &[DbBookTranslation]) -> Vec<i32> {
+  book_ids
+    .iter()
+    .filter_map(|x| {
+      translations
+        .iter()
+        .find(|y| y.fk_translation == x.id)
+        .map_or(Some(x.id), |_| None)
+    })
+    .collect()
 }

@@ -61,13 +61,26 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
       .await?;
     let character_ids: Vec<i32> = characters.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, CharacterTranslation)> =
-      character_translation_select(&character_ids, &db_languages)
-        .query(self.client)
-        .await?
-        .into_iter()
-        .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
-        .collect();
+    let mut translations = character_translation_select(&character_ids, &db_languages)
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&characters, &translations);
+
+    let mut extra_translations = Select::new::<DbCharacterTranslation>()
+      .distinct_on(DbCharacterTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, CharacterTranslation)> = translations
+      .into_iter()
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .collect();
+
     let translations = map_translation(&characters, translations);
 
     let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.fk_image).collect();
@@ -141,13 +154,25 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     }
     let character_ids: Vec<i32> = characters.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, CharacterTranslation)> =
-      character_translation_select(&character_ids, &db_languages)
-        .query(self.client)
-        .await?
-        .into_iter()
-        .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
-        .collect();
+    let mut translations = character_translation_select(&character_ids, &db_languages)
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&characters, &translations);
+
+    let mut extra_translations = Select::new::<DbCharacterTranslation>()
+      .distinct_on(DbCharacterTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, CharacterTranslation)> = translations
+      .into_iter()
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .collect();
 
     let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.fk_image).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
@@ -182,14 +207,26 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
       .await?;
     let character_ids: Vec<i32> = characters.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, CharacterTranslation)> =
-      character_translation_select(&character_ids, &db_languages)
-        .where_expression(character_translation_with_name(&name))
-        .query(self.client)
-        .await?
-        .into_iter()
-        .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
-        .collect();
+    let mut translations = character_translation_select(&character_ids, &db_languages)
+      .where_expression(character_translation_with_name(&name))
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&characters, &translations);
+
+    let mut extra_translations = Select::new::<DbCharacterTranslation>()
+      .distinct_on(DbCharacterTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, CharacterTranslation)> = translations
+      .into_iter()
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .collect();
 
     let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.fk_image).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
@@ -209,10 +246,7 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
 
     let count = Select::new::<DbCharacter>()
       .column::<i32>(DbCharacter::TABLE_NAME, "id")
-      .where_expression(Expression::new(ValueIn::new(
-        (DbCharacter::TABLE_NAME, "id"),
-        &characters,
-      )))
+      .where_expression(id_in_ids(&characters))
       .query(self.client)
       .await?
       .into_iter()
@@ -335,4 +369,21 @@ fn in_languages(languages: &[DbLanguage]) -> Expression {
 }
 fn to_u32(values: Vec<i32>) -> Vec<u32> {
   values.into_iter().map(|x| x as u32).collect()
+}
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbCharacterTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn id_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbCharacter::TABLE_NAME, "id"), ids))
+}
+fn no_translation_ids(character_ids: &[DbCharacter], translations: &[DbCharacterTranslation]) -> Vec<i32> {
+  character_ids
+    .iter()
+    .filter_map(|x| {
+      translations
+        .iter()
+        .find(|y| y.fk_translation == x.id)
+        .map_or(Some(x.id), |_| None)
+    })
+    .collect()
 }

@@ -52,15 +52,29 @@ impl GenreRepository for DefaultGenreRepository<'_> {
       .await?;
     let genre_ids: Vec<i32> = genres.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, GenreTranslation)> = genre_translation_select(&genre_ids, &db_languages)
-      .query(self.client)
-      .await?
+    let mut translations: Vec<DbGenreTranslation> = genre_translation_select(&genre_ids, &db_languages)
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&genres, &translations);
+
+    let mut extra_translations = Select::new::<DbGenreTranslation>()
+      .distinct_on(DbGenreTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbGenreTranslation>(DbGenreTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, GenreTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
       .collect();
-    let translations = map_translation(&genres, translations);
 
     let available = self.available_languages(&genre_ids).await?;
+    let translations = map_translation(&genres, translations);
+
     let genres = to_entities(genres, available, translations);
     Ok(ItemsTotal { items: genres, total })
   }
@@ -76,24 +90,39 @@ impl GenreRepository for DefaultGenreRepository<'_> {
         None,
         Expression::new(ValueEqual::new((DbGenre::TABLE_NAME, "id"), id)).and(genre_id_equal_fk_translation()),
       )
-      .get_single(self.client)
+      .get_single_destruct(self.client)
       .await?;
     let Some(item) = genres else {
       return Ok(None);
     };
-    let translations: Vec<(Language, GenreTranslation)> = Select::new::<DbGenreTranslation>()
+    let mut translations = Select::new::<DbGenreTranslation>()
       .columns::<DbGenreTranslation>(DbGenreTranslation::TABLE_NAME)
       .where_expression(
-        Expression::value_equal(DbGenreTranslation::TABLE_NAME, "fktranslation", item.0.id)
+        Expression::value_equal(DbGenreTranslation::TABLE_NAME, "fktranslation", item.id)
           .and(in_languages(&db_languages)),
       )
-      .query(self.client)
-      .await?
+      .query_destruct(self.client)
+      .await?;
+    let items = [item];
+    let no_translations: Vec<i32> = no_translation_ids(&items, &translations);
+    let [item] = items;
+
+    let mut extra_translations = Select::new::<DbGenreTranslation>()
+      .distinct_on(DbGenreTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbGenreTranslation>(DbGenreTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, GenreTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.to_entity()))
+      .map(|x| (x.language.into(), x.to_entity()))
       .collect();
+
     let mut available = self.available_languages(&[id]).await?;
-    let item = item.0.to_entity(AvailableTranslations {
+    let item = item.to_entity(AvailableTranslations {
       available_languages: available.remove(&id).unwrap(),
       translations: HashMap::from_iter(translations),
     });
@@ -108,19 +137,33 @@ impl GenreRepository for DefaultGenreRepository<'_> {
       .columns_table::<DbGenre>()
       .distinct_on(DbGenre::TABLE_NAME, "id")
       .transform(inner_join_translation)
-      .where_expression(Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), &ids)))
+      .where_expression(id_in_ids(&ids))
       .query_destruct(self.client)
       .await?;
+
     if genres.is_empty() {
       return Ok(vec![]);
     }
     let genre_ids: Vec<i32> = genres.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, GenreTranslation)> = genre_translation_select(&genre_ids, &db_languages)
-      .query(self.client)
-      .await?
+    let mut translations = genre_translation_select(&genre_ids, &db_languages)
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&genres, &translations);
+
+    let mut extra_translations = Select::new::<DbGenreTranslation>()
+      .distinct_on(DbGenreTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbGenreTranslation>(DbGenreTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, GenreTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
       .collect();
 
     let translations = map_translation(&genres, translations);
@@ -152,12 +195,25 @@ impl GenreRepository for DefaultGenreRepository<'_> {
       .await?;
     let genre_ids: Vec<i32> = genres.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, GenreTranslation)> = genre_translation_select(&genre_ids, &db_languages)
+    let mut translations = genre_translation_select(&genre_ids, &db_languages)
       .where_expression(genre_translation_with_name(&name))
-      .query(self.client)
-      .await?
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&genres, &translations);
+
+    let mut extra_translations = Select::new::<DbGenreTranslation>()
+      .distinct_on(DbGenreTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbGenreTranslation>(DbGenreTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, GenreTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
       .collect();
 
     let translations = map_translation(&genres, translations);
@@ -171,7 +227,7 @@ impl GenreRepository for DefaultGenreRepository<'_> {
 
     let count = Select::new::<DbGenre>()
       .column::<i32>(DbGenre::TABLE_NAME, "id")
-      .where_expression(Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), &genres)))
+      .where_expression(id_in_ids(&genres))
       .query(self.client)
       .await?
       .into_iter()
@@ -220,10 +276,7 @@ fn genre_translation_select<'a>(
 ) -> Select<'a, (DbGenreTranslation,)> {
   Select::new::<DbGenreTranslation>()
     .columns::<DbGenreTranslation>(DbGenreTranslation::TABLE_NAME)
-    .where_expression(Expression::new(ValueIn::new(
-      (DbGenreTranslation::TABLE_NAME, "fktranslation"),
-      genre_ids,
-    )))
+    .where_expression(fk_translation_in_ids(genre_ids))
     .where_expression(in_languages(db_languages))
 }
 fn map_translation(
@@ -283,3 +336,21 @@ fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<
 fn in_languages(languages: &[DbLanguage]) -> Expression {
   Expression::new(ValueIn::new((DbGenreTranslation::TABLE_NAME, "language"), languages))
 }
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbGenreTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn id_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), ids))
+}
+fn no_translation_ids(genre_ids: &[DbGenre], translations: &[DbGenreTranslation]) -> Vec<i32> {
+  genre_ids
+    .iter()
+    .filter_map(|x| {
+      translations
+        .iter()
+        .find(|y| y.fk_translation == x.id)
+        .map_or(Some(x.id), |_| None)
+    })
+    .collect()
+}
+//TODO NonEmptyHashMap

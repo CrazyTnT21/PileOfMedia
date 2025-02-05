@@ -58,12 +58,26 @@ impl PersonRepository for DefaultPersonRepository<'_> {
       .await?;
     let person_ids: Vec<i32> = people.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, PersonTranslation)> = person_translation_select(&person_ids, &db_languages)
-      .query(self.client)
-      .await?
+    let mut translations = person_translation_select(&person_ids, &db_languages)
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&people, &translations);
+
+    let mut extra_translations = Select::new::<DbPersonTranslation>()
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, PersonTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
       .collect();
+
     let translations = map_translation(&people, translations);
 
     let image_ids: Vec<i32> = people.iter().filter_map(|x| x.fk_image).collect();
@@ -86,28 +100,44 @@ impl PersonRepository for DefaultPersonRepository<'_> {
         None,
         Expression::new(ValueEqual::new((DbPerson::TABLE_NAME, "id"), id)).and(person_id_equal_fk_translation()),
       )
-      .get_single(self.client)
+      .get_single_destruct(self.client)
       .await?;
     let Some(item) = people else {
       return Ok(None);
     };
-    let translations: Vec<(Language, PersonTranslation)> = Select::new::<DbPersonTranslation>()
+    let mut translations = Select::new::<DbPersonTranslation>()
       .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
       .where_expression(
-        Expression::value_equal(DbPersonTranslation::TABLE_NAME, "fktranslation", item.0.id)
+        Expression::value_equal(DbPersonTranslation::TABLE_NAME, "fktranslation", item.id)
           .and(in_languages(&db_languages)),
       )
-      .query(self.client)
-      .await?
+      .query_destruct(self.client)
+      .await?;
+
+    let people = [item];
+    let no_translations: Vec<i32> = no_translation_ids(&people, &translations);
+    let [item] = people;
+
+    let mut extra_translations = Select::new::<DbPersonTranslation>()
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, PersonTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.to_entity()))
+      .map(|x| (x.language.into(), x.to_entity()))
       .collect();
+
     let mut available = self.available_languages(&[id]).await?;
-    let image = match item.0.fk_image {
+    let image = match item.fk_image {
       None => None,
       Some(fk_image) => self.image_repository.get_by_id(fk_image as u32).await?,
     };
-    let item = item.0.to_entity(
+    let item = item.to_entity(
       AvailableTranslations {
         available_languages: available.remove(&id).unwrap(),
         translations: HashMap::from_iter(translations),
@@ -132,13 +162,27 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     if people.is_empty() {
       return Ok(vec![]);
     }
+
     let person_ids: Vec<i32> = people.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, PersonTranslation)> = person_translation_select(&person_ids, &db_languages)
-      .query(self.client)
-      .await?
+    let mut translations = person_translation_select(&person_ids, &db_languages)
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&people, &translations);
+
+    let mut extra_translations = Select::new::<DbPersonTranslation>()
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, PersonTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
       .collect();
 
     let image_ids: Vec<i32> = people.iter().filter_map(|x| x.fk_image).collect();
@@ -174,12 +218,25 @@ impl PersonRepository for DefaultPersonRepository<'_> {
       .await?;
     let person_ids: Vec<i32> = people.iter().map(|x| x.id).collect();
 
-    let translations: Vec<(Language, i32, PersonTranslation)> = person_translation_select(&person_ids, &db_languages)
+    let mut translations = person_translation_select(&person_ids, &db_languages)
       .where_expression(person_translation_with_name(&name))
-      .query(self.client)
-      .await?
+      .query_destruct(self.client)
+      .await?;
+
+    let no_translations: Vec<i32> = no_translation_ids(&people, &translations);
+
+    let mut extra_translations = Select::new::<DbPersonTranslation>()
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
+      .where_expression(fk_translation_in_ids(&no_translations))
+      .query_destruct(self.client)
+      .await?;
+
+    translations.append(&mut extra_translations);
+
+    let translations: Vec<(Language, i32, PersonTranslation)> = translations
       .into_iter()
-      .map(|x| (x.0.language.into(), x.0.fk_translation, x.0.to_entity()))
+      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
       .collect();
 
     let image_ids: Vec<i32> = people.iter().filter_map(|x| x.fk_image).collect();
@@ -197,7 +254,7 @@ impl PersonRepository for DefaultPersonRepository<'_> {
 
     let count = Select::new::<DbPerson>()
       .column::<i32>(DbPerson::TABLE_NAME, "id")
-      .where_expression(Expression::new(ValueIn::new((DbPerson::TABLE_NAME, "id"), &people)))
+      .where_expression(id_in_ids(&people))
       .query(self.client)
       .await?
       .into_iter()
@@ -317,4 +374,21 @@ fn in_languages(languages: &[DbLanguage]) -> Expression {
 }
 fn to_u32(values: Vec<i32>) -> Vec<u32> {
   values.into_iter().map(|x| x as u32).collect()
+}
+fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbPersonTranslation::TABLE_NAME, "fktranslation"), ids))
+}
+fn id_in_ids(ids: &[i32]) -> Expression {
+  Expression::new(ValueIn::new((DbPerson::TABLE_NAME, "id"), ids))
+}
+fn no_translation_ids(person_ids: &[DbPerson], translations: &[DbPersonTranslation]) -> Vec<i32> {
+  person_ids
+    .iter()
+    .filter_map(|x| {
+      translations
+        .iter()
+        .find(|y| y.fk_translation == x.id)
+        .map_or(Some(x.id), |_| None)
+    })
+    .collect()
 }
