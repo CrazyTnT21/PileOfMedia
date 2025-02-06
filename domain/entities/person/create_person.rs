@@ -83,7 +83,6 @@ pub mod create_person_part {
     }
   }
 
-  #[async_trait::async_trait]
   impl multipart::FromMultiPart for CreatePerson {
     type Error = CreatePersonPartError;
 

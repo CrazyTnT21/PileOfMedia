@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use axum::async_trait;
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::response::{IntoResponse, Response};
@@ -26,7 +25,6 @@ impl FromStr for JWTAuthorization {
   }
 }
 
-#[async_trait]
 impl<S> FromRequestParts<S> for JWTAuthorization
 where
   S: Send + Sync,

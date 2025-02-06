@@ -1,18 +1,13 @@
-use axum::async_trait;
 use axum::extract::{FromRequest, Multipart, Request};
 use std::collections::HashMap;
 use std::error::Error;
 
-#[async_trait]
-pub trait FromMultiPart {
-  type Error: Error;
-  async fn from_multi_part(multipart: Multipart) -> Result<Self, Self::Error>
-  where
-    Self: Sized;
+pub trait FromMultiPart: Sized {
+  type Error: Error + Send;
+  fn from_multi_part(multipart: Multipart) -> impl std::future::Future<Output = Result<Self, Self::Error>> + Send;
 }
 pub struct MultiPartRequest<T>(pub T);
 
-#[async_trait]
 impl<T: FromMultiPart, S: Send + Sync> FromRequest<S> for MultiPartRequest<T> {
   type Rejection = String;
 

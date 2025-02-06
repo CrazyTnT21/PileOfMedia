@@ -1,11 +1,9 @@
+use axum::http::{HeaderMap, StatusCode};
+use axum::Router;
 use std::error::Error;
 use std::fmt::Display;
 use std::str::FromStr;
-
-use axum::http::{HeaderMap, StatusCode};
-use axum::Router;
 use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
 
 use domain::enums::language::Language;
 use services::traits::service_error::ServiceError;
@@ -28,7 +26,6 @@ pub fn generate_openapi_spec() -> Result<String, impl Error> {
   doc::ApiDoc::openapi().to_pretty_json()
 }
 pub fn route_controllers(app_state: AppState) -> Router {
-  let doc = doc::ApiDoc::openapi();
   Router::new()
     .nest("/books", book_controller::routes(app_state.clone()))
     .nest("/genres", genre_controller::routes(app_state.clone()))
@@ -39,7 +36,7 @@ pub fn route_controllers(app_state: AppState) -> Router {
     .nest("/users", user_controller::routes(app_state.clone()))
     .nest("/franchises", franchise_controller::routes(app_state.clone()))
     .nest("/accounts", account_controller::routes(app_state))
-    .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", doc))
+  // .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", doc))
 }
 
 fn convert_to_language(value: &AcceptLanguage) -> Option<Language> {

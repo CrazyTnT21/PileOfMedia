@@ -295,8 +295,7 @@ fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
 ) -> Select<'a, T> {
   select.inner_join::<DbRoleTranslation>(
     None,
-    Expression::value_i_like((DbRoleTranslation::TABLE_NAME, "name"), name)
-      .and(role_id_equal_fk_translation()),
+    Expression::value_i_like((DbRoleTranslation::TABLE_NAME, "name"), name).and(role_id_equal_fk_translation()),
   )
 }
 fn to_entities(

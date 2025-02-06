@@ -71,7 +71,6 @@ pub mod create_account_part {
       CreateAccountPartError::OtherError(Box::new(value))
     }
   }
-  #[async_trait::async_trait]
   impl multipart::FromMultiPart for CreateAccount {
     type Error = CreateAccountPartError;
 

@@ -94,7 +94,6 @@ pub mod create_book_part {
 
   impl Error for CreateBookPartError {}
 
-  #[async_trait::async_trait]
   impl FromMultiPart for CreateBook {
     type Error = CreateBookPartError;
 

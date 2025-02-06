@@ -1,7 +1,6 @@
 use std::convert::Infallible;
 use std::str::FromStr;
 
-use axum::async_trait;
 use axum::extract::FromRequestParts;
 use axum::http::header::ACCEPT_LANGUAGE;
 use axum::http::request::Parts;
@@ -96,7 +95,6 @@ impl FromStr for AcceptLanguageHeader {
   }
 }
 
-#[async_trait]
 impl<S> FromRequestParts<S> for AcceptLanguageHeader
 where
   S: Send + Sync,

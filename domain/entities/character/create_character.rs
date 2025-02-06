@@ -81,7 +81,6 @@ pub mod create_character_part {
     }
   }
 
-  #[async_trait::async_trait]
   impl multipart::FromMultiPart for CreateCharacter {
     type Error = CreateCharacterPartError;
 

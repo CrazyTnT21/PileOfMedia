@@ -26,8 +26,8 @@ pub mod user_doc;
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
-    .route("/:id", get(get_by_id))
-    .route("/name/:name", get(get_by_name))
+    .route("/{id}", get(get_by_id))
+    .route("/name/{name}", get(get_by_name))
     .with_state(app_state)
 }
 
