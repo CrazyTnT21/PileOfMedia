@@ -157,12 +157,10 @@ impl BookRepository for DefaultBookRepository<'_> {
     languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
-    let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
     let title = format!("%{title}%");
 
     let total = Select::new::<DbBookTranslation>()
       .where_expression(book_translation_with_title(&title))
-      .where_expression(in_languages(&db_languages))
       .query_count(self.client)
       .await? as usize;
 
@@ -170,7 +168,6 @@ impl BookRepository for DefaultBookRepository<'_> {
       .column::<i32>(DbBookTranslation::TABLE_NAME, "fktranslation")
       .distinct_on(DbBookTranslation::TABLE_NAME, "fktranslation")
       .where_expression(book_translation_with_title(&title))
-      .where_expression(in_languages(&db_languages))
       .pagination(pagination)
       .query_destruct(self.client)
       .await?

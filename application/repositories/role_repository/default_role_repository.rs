@@ -183,14 +183,14 @@ impl RoleRepository for DefaultRoleRepository<'_> {
 
     let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
     let total = Select::new::<DbRole>()
-      .transform(|x| inner_join_translation_on_name(x, &name, &db_languages))
+      .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
       .await? as usize;
 
     let roles = Select::new::<DbRole>()
       .columns_table::<DbRole>()
       .distinct_on(DbRole::TABLE_NAME, "id")
-      .transform(|x| inner_join_translation_on_name(x, &name, &db_languages))
+      .transform(|x| inner_join_translation_on_name(x, &name))
       .pagination(pagination)
       .query_destruct(self.client)
       .await?;
@@ -292,12 +292,10 @@ fn role_translation_with_name(name: &String) -> Expression {
 fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
   select: Select<'a, T>,
   name: &'a String,
-  db_languages: &'a [DbLanguage],
 ) -> Select<'a, T> {
   select.inner_join::<DbRoleTranslation>(
     None,
     Expression::value_i_like((DbRoleTranslation::TABLE_NAME, "name"), name)
-      .and(in_languages(db_languages))
       .and(role_id_equal_fk_translation()),
   )
 }

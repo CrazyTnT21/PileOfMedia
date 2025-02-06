@@ -183,14 +183,14 @@ impl GenreRepository for DefaultGenreRepository<'_> {
 
     let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
     let total = Select::new::<DbGenre>()
-      .transform(|x| inner_join_translation_on_name(x, &name, &db_languages))
+      .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
       .await? as usize;
 
     let genres = Select::new::<DbGenre>()
       .columns_table::<DbGenre>()
       .distinct_on(DbGenre::TABLE_NAME, "id")
-      .transform(|x| inner_join_translation_on_name(x, &name, &db_languages))
+      .transform(|x| inner_join_translation_on_name(x, &name))
       .pagination(pagination)
       .query_destruct(self.client)
       .await?;
@@ -292,12 +292,10 @@ fn genre_translation_with_name(name: &String) -> Expression {
 fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
   select: Select<'a, T>,
   name: &'a String,
-  db_languages: &'a [DbLanguage],
 ) -> Select<'a, T> {
   select.inner_join::<DbGenreTranslation>(
     None,
     Expression::value_i_like((DbGenreTranslation::TABLE_NAME, "name"), name)
-      .and(in_languages(db_languages))
       .and(genre_id_equal_fk_translation()),
   )
 }
