@@ -1,21 +1,29 @@
 use std::collections::HashMap;
 use std::error::Error;
-use std::hash::Hash;
 use std::sync::Arc;
 
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
 use domain::available_translations::AvailableTranslations;
+use domain::entities::book::book_character::BookCharacter;
+use domain::entities::book::book_involved::BookInvolved;
 use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::book_translation::BookTranslation;
 use domain::entities::book::Book;
 use domain::entities::franchise::Franchise;
+use domain::entities::genre::Genre;
+use domain::entities::theme::Theme;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use domain::slug::Slug;
+use domain::vec_tuple_to_map::vec_tuple_to_map;
 use from_row::Table;
+use repositories::book_repository::book_character_repository::BookCharacterRepository;
+use repositories::book_repository::book_genre_repository::BookGenreRepository;
+use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
+use repositories::book_repository::book_theme_repository::BookThemeRepository;
 use repositories::book_repository::BookRepository;
 use repositories::franchise_repository::FranchiseRepository;
 use repositories::image_repository::ImageRepository;
@@ -37,6 +45,10 @@ pub struct DefaultBookRepository<'a> {
   client: &'a Client,
   image_repository: Arc<dyn ImageRepository + 'a>,
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+  book_genre_repository: Arc<dyn BookGenreRepository + 'a>,
+  book_theme_repository: Arc<dyn BookThemeRepository + 'a>,
+  book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>,
+  book_character_repository: Arc<dyn BookCharacterRepository + 'a>,
 }
 
 impl<'a> DefaultBookRepository<'a> {
@@ -44,11 +56,19 @@ impl<'a> DefaultBookRepository<'a> {
     client: &'a Client,
     image_repository: Arc<dyn ImageRepository + 'a>,
     franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+    book_genre_repository: Arc<dyn BookGenreRepository + 'a>,
+    book_theme_repository: Arc<dyn BookThemeRepository + 'a>,
+    book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>,
+    book_character_repository: Arc<dyn BookCharacterRepository + 'a>,
   ) -> DefaultBookRepository<'a> {
     DefaultBookRepository {
       client,
       image_repository,
       franchise_repository,
+      book_genre_repository,
+      book_theme_repository,
+      book_involved_repository,
+      book_character_repository,
     }
   }
 }
@@ -72,7 +92,7 @@ impl BookRepository for DefaultBookRepository<'_> {
   }
 
   async fn get_by_id(&self, id: u32, languages: &[Language]) -> Result<Option<Book>, Box<dyn Error>> {
-    let id = id as i32;
+    let db_id = id as i32;
     let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
 
     let book = Select::new::<DbBook>()
@@ -80,7 +100,7 @@ impl BookRepository for DefaultBookRepository<'_> {
       .distinct_on(DbBook::TABLE_NAME, "id")
       .inner_join::<DbBookTranslation>(
         None,
-        Expression::new(ValueEqual::new((DbBook::TABLE_NAME, "id"), id)).and(book_id_equal_fk_translation()),
+        Expression::new(ValueEqual::new((DbBook::TABLE_NAME, "id"), db_id)).and(book_id_equal_fk_translation()),
       )
       .get_single_destruct(self.client)
       .await?;
@@ -103,18 +123,30 @@ impl BookRepository for DefaultBookRepository<'_> {
         (Language::from(x.language), x.to_entity(image))
       })
       .collect();
-    let mut available = self.available_languages(&[id]).await?;
+    let mut available = self.available_languages(&[db_id]).await?;
 
     let franchise = match item.fk_franchise {
       None => None,
       Some(x) => Some(self.franchise_repository.get_by_id(x as u32, languages).await?.unwrap()),
     };
+
+    //TODO futures join!
+    let statistic = self.get_statistics(&[id]).await?.remove(&id).unwrap();
+    let genres = self.book_genre_repository.get_by_id(id, languages).await?;
+    let themes = self.book_theme_repository.get_by_id(id, languages).await?;
+    let involved = self.book_involved_repository.get_by_id(id, languages).await?;
+    let characters = self.book_character_repository.get_by_id(id, languages).await?;
     let item = item.to_entity(
       AvailableTranslations {
-        available_languages: available.remove(&id).unwrap(),
+        available_languages: available.remove(&db_id).unwrap(),
         translations: HashMap::from_iter(translations),
       },
       franchise,
+      genres,
+      themes,
+      involved,
+      characters,
+      statistic,
     );
     Ok(Some(item))
   }
@@ -145,28 +177,29 @@ impl BookRepository for DefaultBookRepository<'_> {
       .into_iter()
       .map(|x| x as u32)
       .collect();
-    dbg!(&book_ids,&languages);
 
     let result = self.get_by_ids(&book_ids, languages).await?;
     Ok(ItemsTotal { items: result, total })
   }
 
   async fn get_by_ids(&self, ids: &[u32], languages: &[Language]) -> Result<Vec<Book>, Box<dyn Error>> {
-    let ids = to_i32(ids);
+    let db_ids = to_i32(ids);
     let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
 
     let books = Select::new::<DbBook>()
       .columns_table::<DbBook>()
       .distinct_on(DbBook::TABLE_NAME, "id")
-      .where_expression(Expression::new(ValueIn::new((DbBook::TABLE_NAME, "id"), &ids)))
+      .where_expression(Expression::new(ValueIn::new((DbBook::TABLE_NAME, "id"), &db_ids)))
       .query_destruct(self.client)
       .await?;
+    let ids: Vec<u32> = books.iter().map(|x| x.id as u32).collect();
+    let db_ids: Vec<i32> = books.iter().map(|x| x.id).collect();
 
     let mut translations = Select::new::<DbBookTranslation>()
       .columns::<DbBookTranslation>(DbBookTranslation::TABLE_NAME)
       .where_expression(Expression::new(ValueIn::new(
         (DbBookTranslation::TABLE_NAME, "fktranslation"),
-        &ids,
+        &db_ids,
       )))
       .where_expression(in_languages(&db_languages))
       .query_destruct(self.client)
@@ -200,8 +233,25 @@ impl BookRepository for DefaultBookRepository<'_> {
     let franchises = self.franchise_repository.get_by_ids(&franchise_ids, languages).await?;
 
     let translations = map_translation(&books, translations);
-    let available = self.available_languages(&ids).await?;
-    let books = to_entities(books, available, translations, franchises);
+    let available = self.available_languages(&db_ids).await?;
+
+    let statistics = self.get_statistics(&ids).await?;
+    let genres = self.book_genre_repository.get_by_ids(&ids, languages).await?;
+    let themes = self.book_theme_repository.get_by_ids(&ids, languages).await?;
+    let involved = self.book_involved_repository.get_by_ids(&ids, languages).await?;
+    let characters = self.book_character_repository.get_by_ids(&ids, languages).await?;
+
+    let books = to_entities(
+      books,
+      available,
+      translations,
+      franchises,
+      genres,
+      themes,
+      involved,
+      characters,
+      statistics,
+    );
     Ok(books)
   }
 
@@ -219,9 +269,8 @@ impl BookRepository for DefaultBookRepository<'_> {
     Ok(filtered)
   }
 
-  async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, Box<dyn Error>> {
+  async fn get_statistics(&self, book_ids: &[u32]) -> Result<HashMap<u32, BookStatistic>, Box<dyn Error>> {
     let ids = to_i32(book_ids);
-
     let statistics = Select::new::<DbBookStatistic>()
       .columns::<DbBookStatistic>(DbBookStatistic::TABLE_NAME)
       .columns::<DbRating>(DbRating::TABLE_NAME)
@@ -239,7 +288,7 @@ impl BookRepository for DefaultBookRepository<'_> {
       .query(self.client)
       .await?
       .into_iter()
-      .map(|(statistic, rating)| statistic.to_entity(rating.to_entity()))
+      .map(|(statistic, rating)| (statistic.fk_book as u32, statistic.to_entity(rating.to_entity())))
       .collect();
 
     Ok(statistics)
@@ -285,20 +334,6 @@ impl DefaultBookRepository<'_> {
 fn book_slug_equal_slug(slug: &str) -> Expression {
   Expression::value_equal(DbBook::TABLE_NAME, "slug", slug)
 }
-fn vec_tuple_to_map<K: Hash + Eq, V>(values: Vec<(K, V)>) -> HashMap<K, Vec<V>> {
-  let mut map = HashMap::new();
-  for (key, value) in values {
-    match map.get_mut(&key) {
-      None => {
-        map.insert(key, vec![value]);
-      }
-      Some(v) => {
-        v.push(value);
-      }
-    }
-  }
-  map
-}
 
 fn book_id_equal_fk_translation<'a>() -> Expression<'a> {
   Expression::column_equal(
@@ -317,18 +352,6 @@ fn fk_translation_equal_id<'a>(id: i32) -> Expression<'a> {
   Expression::value_equal(DbBookTranslation::TABLE_NAME, "fktranslation", id)
 }
 
-fn book_translation_select<'a>(
-  book_ids: &'a [i32],
-  db_languages: &'a [DbLanguage],
-) -> Select<'a, (DbBookTranslation,)> {
-  Select::new::<DbBookTranslation>()
-    .columns::<DbBookTranslation>(DbBookTranslation::TABLE_NAME)
-    .where_expression(Expression::new(ValueIn::new(
-      (DbBookTranslation::TABLE_NAME, "fktranslation"),
-      book_ids,
-    )))
-    .where_expression(in_languages(db_languages))
-}
 fn map_translation(
   books: &[DbBook],
   translations: Vec<(Language, i32, BookTranslation)>,
@@ -348,6 +371,11 @@ fn to_entities(
   mut available: HashMap<i32, Vec<Language>>,
   mut translations: HashMap<i32, Vec<(Language, BookTranslation)>>,
   franchises: Vec<Franchise>,
+  genres: HashMap<u32, Vec<Genre>>,
+  themes: HashMap<u32, Vec<Theme>>,
+  involved: HashMap<u32, Vec<BookInvolved>>,
+  characters: HashMap<u32, Vec<BookCharacter>>,
+  mut statistics: HashMap<u32, BookStatistic>,
 ) -> Vec<Book> {
   books
     .into_iter()
@@ -362,6 +390,11 @@ fn to_entities(
           translations: HashMap::from_iter(translations.remove(&id).unwrap()),
         },
         franchise,
+        genres.get(&(id as u32)).cloned().unwrap_or_default(),
+        themes.get(&(id as u32)).cloned().unwrap_or_default(),
+        involved.get(&(id as u32)).cloned().unwrap_or_default(),
+        characters.get(&(id as u32)).cloned().unwrap_or_default(),
+        statistics.remove(&(id as u32)).unwrap(),
       )
     })
     .collect()

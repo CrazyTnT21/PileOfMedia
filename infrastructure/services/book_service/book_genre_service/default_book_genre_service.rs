@@ -20,7 +20,11 @@ impl<'a> DefaultBookGenreService<'a> {
 
 #[async_trait]
 impl BookGenreService for DefaultBookGenreService<'_> {
-  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<Genre>, ServiceError<BookGenreServiceError>> {
-    Ok(self.book_genre_repository.get(book_id, languages).await?)
+  async fn get_by_id(
+    &self,
+    book_id: u32,
+    languages: &[Language],
+  ) -> Result<Vec<Genre>, ServiceError<BookGenreServiceError>> {
+    Ok(self.book_genre_repository.get_by_id(book_id, languages).await?)
   }
 }

@@ -5,6 +5,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
+use crate::convert_to_sql::to_i32;
+use crate::schemas::db_book_involved::DbBookInvolved;
+use crate::select::conditions::value_equal::ValueEqual;
+use crate::select::conditions::value_in::ValueIn;
+use crate::select::expression::Expression;
+use crate::select::Select;
 use domain::entities::book::book_involved::BookInvolved;
 use domain::entities::involved::InvolvedId;
 use domain::entities::person::Person;
@@ -14,12 +20,6 @@ use from_row::Table;
 use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
-
-use crate::schemas::db_book_involved::DbBookInvolved;
-use crate::select::conditions::value_equal::ValueEqual;
-use crate::select::conditions::value_in::ValueIn;
-use crate::select::expression::Expression;
-use crate::select::Select;
 
 pub struct DefaultBookInvolvedRepository<'a> {
   client: &'a Client,
@@ -43,7 +43,7 @@ impl<'a> DefaultBookInvolvedRepository<'a> {
 
 #[async_trait]
 impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
-  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<BookInvolved>, Box<dyn Error>> {
+  async fn get_by_id(&self, book_id: u32, languages: &[Language]) -> Result<Vec<BookInvolved>, Box<dyn Error>> {
     let book_id = book_id as i32;
 
     let involved = Select::new::<DbBookInvolved>()
@@ -74,6 +74,51 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
       .map(|(person, roles)| BookInvolved { person, roles })
       .collect();
 
+    Ok(items)
+  }
+
+  async fn get_by_ids(
+    &self,
+    book_ids: &[u32],
+    languages: &[Language],
+  ) -> Result<HashMap<u32, Vec<BookInvolved>>, Box<dyn Error>> {
+    let book_ids = to_i32(book_ids);
+
+    let involved = Select::new::<DbBookInvolved>()
+      .columns::<DbBookInvolved>(DbBookInvolved::TABLE_NAME)
+      .where_expression(Expression::new(ValueIn::new(
+        (DbBookInvolved::TABLE_NAME, "fkbook"),
+        &book_ids,
+      )))
+      .query_destruct(self.client)
+      .await?;
+    if involved.is_empty() {
+      return Ok(book_ids.iter().map(|x| (*x as u32, Vec::new())).collect());
+    }
+
+    let mut person_ids: Vec<u32> = involved.iter().map(|x| x.fk_person as u32).collect();
+    person_ids.sort_unstable();
+    person_ids.dedup();
+
+    let mut role_ids: Vec<u32> = involved.iter().map(|x| x.fk_role as u32).collect();
+    role_ids.sort_unstable();
+    role_ids.dedup();
+
+    let people = self.person_repository.get_by_ids(&person_ids, languages).await?;
+    let roles = self.role_repository.get_by_ids(&role_ids, languages).await?;
+
+    let items: HashMap<u32, Vec<BookInvolved>> = involved_to_map(&involved, &people, &roles)
+      .into_iter()
+      .map(|(id, involved)| {
+        (
+          id as u32,
+          involved
+            .into_iter()
+            .map(|(person, roles)| BookInvolved { person, roles })
+            .collect(),
+        )
+      })
+      .collect();
     Ok(items)
   }
 

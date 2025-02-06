@@ -20,7 +20,11 @@ impl<'a> DefaultBookThemeService<'a> {
 
 #[async_trait]
 impl BookThemeService for DefaultBookThemeService<'_> {
-  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<Theme>, ServiceError<BookThemeServiceError>> {
-    Ok(self.book_theme_repository.get(book_id, languages).await?)
+  async fn get_by_id(
+    &self,
+    book_id: u32,
+    languages: &[Language],
+  ) -> Result<Vec<Theme>, ServiceError<BookThemeServiceError>> {
+    Ok(self.book_theme_repository.get_by_id(book_id, languages).await?)
   }
 }

@@ -131,8 +131,20 @@ pub fn get_book_repository<'a>(
   client: &'a Client,
   image_repository: Arc<dyn ImageRepository + 'a>,
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
+  book_genre_repository: Arc<dyn BookGenreRepository + 'a>,
+  book_theme_repository: Arc<dyn BookThemeRepository + 'a>,
+  book_involved_repository: Arc<dyn BookInvolvedRepository + 'a>,
+  book_character_repository: Arc<dyn BookCharacterRepository + 'a>,
 ) -> impl BookRepository + 'a {
-  DefaultBookRepository::new(client, image_repository, franchise_repository)
+  DefaultBookRepository::new(
+    client,
+    image_repository,
+    franchise_repository,
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
+  )
 }
 
 pub fn get_image_repository(client: &Client) -> impl ImageRepository + '_ {

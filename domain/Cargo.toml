@@ -6,11 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0.216", features = ["derive"], optional = true }
+serde = { version = "1.0.217", features = ["derive"], optional = true }
 chrono = { version = "0.4.39", features = ["serde"] }
 utoipa = { git = "https://github.com/juhaku/utoipa.git", rev = "97bc507", optional = true, features = ["chrono"] }
-async-trait = { version = "0.1.83", optional = true }
-serde_json = { version = "1.0.133", optional = true }
+async-trait = { version = "0.1.86", optional = true }
+serde_json = { version = "1.0.138", optional = true }
 multipart = { path = "../multipart", optional = true }
 regex = "1.11.1"
 

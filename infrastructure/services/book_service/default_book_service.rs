@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -53,7 +54,10 @@ impl BookService for DefaultBookService<'_> {
     Ok(self.book_repository.get_by_slug(slug, languages).await?)
   }
 
-  async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, ServiceError<BookServiceError>> {
+  async fn get_statistics(
+    &self,
+    book_ids: &[u32],
+  ) -> Result<HashMap<u32, BookStatistic>, ServiceError<BookServiceError>> {
     let existing = self.book_repository.filter_existing(book_ids).await?;
     if existing.len() != book_ids.len() {
       let non_existent_books = filter_non_existent(book_ids, &existing);

@@ -21,11 +21,11 @@ impl<'a> DefaultBookCharacterService<'a> {
 
 #[async_trait]
 impl BookCharacterService for DefaultBookCharacterService<'_> {
-  async fn get(
+  async fn get_by_id(
     &self,
     book_id: u32,
     languages: &[Language],
   ) -> Result<Vec<BookCharacter>, ServiceError<BookCharacterServiceError>> {
-    Ok(self.book_character_repository.get(book_id, languages).await?)
+    Ok(self.book_character_repository.get_by_id(book_id, languages).await?)
   }
 }

@@ -11,7 +11,11 @@ pub mod mut_book_theme_service;
 
 #[async_trait]
 pub trait BookThemeService: Send + Sync {
-  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<Theme>, ServiceError<BookThemeServiceError>>;
+  async fn get_by_id(
+    &self,
+    book_id: u32,
+    languages: &[Language],
+  ) -> Result<Vec<Theme>, ServiceError<BookThemeServiceError>>;
 }
 
 pub enum BookThemeServiceError {}

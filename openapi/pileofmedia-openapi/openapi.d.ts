@@ -2869,12 +2869,17 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Book: {
+            characters: components["schemas"]["BookCharacter"][];
             franchise?: components["schemas"]["Franchise"] | null;
+            genres: components["schemas"]["Genre"][];
             /** Format: int32 */
             id: number;
+            involved: components["schemas"]["Involved"][];
             /** Format: date */
             published?: `${number}-${number}-${number}` | null;
             slug: components["schemas"]["Slug"];
+            statistic: components["schemas"]["BookStatistic"];
+            themes: components["schemas"]["Theme"][];
             translations: components["schemas"]["BookAvailableTranslations"];
         };
         BookAvailableTranslations: {

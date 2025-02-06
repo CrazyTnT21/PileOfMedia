@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use domain::available_translations::AvailableTranslations;
 use std::collections::HashMap;
 use std::error::Error;
-use std::hash::Hash;
+
 use tokio_postgres::Client;
 
 use domain::entities::franchise::franchise_translation::FranchiseTranslation;
@@ -10,6 +10,7 @@ use domain::entities::franchise::Franchise;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
+use domain::vec_tuple_to_map::vec_tuple_to_map;
 use from_row::{FromRow, Table};
 use repositories::franchise_repository::FranchiseRepository;
 
@@ -262,20 +263,6 @@ impl DefaultFranchiseRepository<'_> {
   }
 }
 
-fn vec_tuple_to_map<K: Hash + Eq, V>(values: Vec<(K, V)>) -> HashMap<K, Vec<V>> {
-  let mut map = HashMap::new();
-  for (key, value) in values {
-    match map.get_mut(&key) {
-      None => {
-        map.insert(key, vec![value]);
-      }
-      Some(v) => {
-        v.push(value);
-      }
-    }
-  }
-  map
-}
 fn franchise_translation_select<'a>(
   franchise_ids: &'a [i32],
   db_languages: &'a [DbLanguage],

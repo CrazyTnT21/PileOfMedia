@@ -1,13 +1,6 @@
+use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
-
-use async_trait::async_trait;
-use domain::entities::book::book_character::BookCharacter;
-use domain::enums::language::Language;
-use from_row::Table;
-use repositories::book_repository::book_character_repository::BookCharacterRepository;
-use repositories::character_repository::CharacterRepository;
-use tokio_postgres::Client;
 
 use crate::convert_to_sql::to_i32;
 use crate::schemas::db_book_character::DbBookCharacter;
@@ -15,6 +8,14 @@ use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use crate::select::Select;
+use async_trait::async_trait;
+use domain::entities::book::book_character::BookCharacter;
+use domain::enums::language::Language;
+use domain::vec_tuple_to_map::vec_tuple_to_map;
+use from_row::Table;
+use repositories::book_repository::book_character_repository::BookCharacterRepository;
+use repositories::character_repository::CharacterRepository;
+use tokio_postgres::Client;
 
 pub struct DefaultBookCharacterRepository<'a> {
   client: &'a Client,
@@ -35,7 +36,7 @@ impl<'a> DefaultBookCharacterRepository<'a> {
 
 #[async_trait]
 impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
-  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<BookCharacter>, Box<dyn Error>> {
+  async fn get_by_id(&self, book_id: u32, languages: &[Language]) -> Result<Vec<BookCharacter>, Box<dyn Error>> {
     let book_id = book_id as i32;
 
     let character_ids: Vec<u32> = Select::new::<DbBookCharacter>()
@@ -57,6 +58,42 @@ impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
       .map(|x| BookCharacter { character: x })
       .collect();
     Ok(items)
+  }
+
+  async fn get_by_ids(
+    &self,
+    book_ids: &[u32],
+    languages: &[Language],
+  ) -> Result<HashMap<u32, Vec<BookCharacter>>, Box<dyn Error>> {
+    let book_ids = to_i32(book_ids);
+
+    let ids = Select::new::<DbBookCharacter>()
+      .column::<i32>(DbBookCharacter::TABLE_NAME, "fkbook")
+      .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
+      .where_expression(Expression::new(ValueIn::new(
+        (DbBookCharacter::TABLE_NAME, "fkbook"),
+        &book_ids,
+      )))
+      .query(self.client)
+      .await?;
+
+    let character_ids: Vec<u32> = ids.iter().map(|x| x.1 as u32).collect();
+    let items = self.character_repository.get_by_ids(&character_ids, languages).await?;
+    let result = vec_tuple_to_map(ids)
+      .into_iter()
+      .map(|(id, characters)| {
+        (
+          id as u32,
+          characters
+            .into_iter()
+            .map(|x| BookCharacter {
+              character: items.iter().find(|y| y.id as i32 == x).unwrap().clone(),
+            })
+            .collect::<Vec<BookCharacter>>(),
+        )
+      })
+      .collect();
+    Ok(result)
   }
 
   async fn filter_existing(&self, book_id: u32, characters: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {

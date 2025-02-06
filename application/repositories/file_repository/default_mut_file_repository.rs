@@ -1,3 +1,4 @@
+use rand::distr::Alphanumeric;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
@@ -5,7 +6,6 @@ use std::io::Write;
 use std::path::Path;
 
 use async_trait::async_trait;
-use rand::distributions::Alphanumeric;
 use rand::Rng;
 
 use domain::file_name::FileName;
@@ -49,7 +49,7 @@ impl MutFileRepository for DefaultMutFileRepository {
 }
 
 fn random_string(length: usize) -> String {
-  rand::thread_rng()
+  rand::rng()
     .sample_iter(&Alphanumeric)
     .take(length)
     .map(char::from)

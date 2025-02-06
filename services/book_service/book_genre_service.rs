@@ -11,7 +11,11 @@ pub mod mut_book_genre_service;
 
 #[async_trait]
 pub trait BookGenreService: Send + Sync {
-  async fn get(&self, book_id: u32, languages: &[Language]) -> Result<Vec<Genre>, ServiceError<BookGenreServiceError>>;
+  async fn get_by_id(
+    &self,
+    book_id: u32,
+    languages: &[Language],
+  ) -> Result<Vec<Genre>, ServiceError<BookGenreServiceError>>;
 }
 
 pub enum BookGenreServiceError {}

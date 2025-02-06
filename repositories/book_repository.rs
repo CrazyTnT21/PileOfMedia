@@ -5,6 +5,7 @@ use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use domain::slug::Slug;
+use std::collections::HashMap;
 use std::error::Error;
 
 pub mod book_character_repository;
@@ -27,6 +28,6 @@ pub trait BookRepository: Send + Sync {
 
   async fn filter_existing(&self, book_ids: &[u32]) -> Result<Vec<u32>, Box<dyn Error>>;
 
-  async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, Box<dyn Error>>;
+  async fn get_statistics(&self, book_ids: &[u32]) -> Result<HashMap<u32, BookStatistic>, Box<dyn Error>>;
   async fn get_by_slug(&self, slug: &Slug, languages: &[Language]) -> Result<Option<Book>, Box<dyn Error>>;
 }

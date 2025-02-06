@@ -133,7 +133,7 @@ async fn get_statistic(Path(id): Path<u32>, State(app_state): State<AppState>) -
   println!("Route for a book statistic with id {}", id);
 
   match service.get_statistics(&[id]).await {
-    Ok(mut items) => Ok((StatusCode::OK, Json(items.swap_remove(0)))),
+    Ok(mut items) => Ok((StatusCode::OK, Json(items.remove(&id).unwrap()))),
     Err(error) => Err(match error {
       ServiceError::ClientError(error) => match error {
         BookServiceError::NonExistentBooks(_) => (StatusCode::NOT_FOUND, error.to_string()),
@@ -219,7 +219,7 @@ async fn get_genres(
 
   println!("Route for genres from a book with the id {} in {:?}", id, languages);
 
-  match service.get(id, &languages).await {
+  match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -245,7 +245,7 @@ async fn get_themes(
 
   println!("Route for themes from a book with the id {} in {:?}", id, languages);
 
-  match service.get(id, &languages).await {
+  match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -253,7 +253,7 @@ async fn get_themes(
 
 #[utoipa::path(get, path = "/{id}/characters",
   responses(
-    (status = 200, description = "Returned characters based on the book id", body = Vec<BookCharacter>), ServerError, BadRequest
+    (status = 200, description = "Returned characters based on the book id", body = Vec < BookCharacter >), ServerError, BadRequest
   ),
   params(IdParam, AcceptLanguageParam),
   tag = "Books"
@@ -271,7 +271,7 @@ async fn get_characters(
 
   println!("Route for characters from a book with the id {} in {:?}", id, languages);
 
-  match service.get(id, &languages).await {
+  match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }
@@ -279,7 +279,7 @@ async fn get_characters(
 
 #[utoipa::path(get, path = "/{id}/involved",
   responses(
-    (status = 200, description = "Returned people involved based on the book id", body = Vec<Involved>), ServerError, BadRequest
+    (status = 200, description = "Returned people involved based on the book id", body = Vec < Involved >), ServerError, BadRequest
   ),
   params(IdParam, AcceptLanguageParam),
   tag = "Books"
@@ -300,7 +300,7 @@ async fn get_involved(
     id, languages
   );
 
-  match service.get(id, &languages).await {
+  match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
     Err(error) => Err(convert_service_error(error)),
   }

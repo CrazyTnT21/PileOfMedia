@@ -10,7 +10,7 @@ pub mod mut_book_character_service;
 
 #[async_trait]
 pub trait BookCharacterService: Send + Sync {
-  async fn get(
+  async fn get_by_id(
     &self,
     book_id: u32,
     languages: &[Language],

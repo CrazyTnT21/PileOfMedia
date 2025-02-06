@@ -22,11 +22,11 @@ impl<'a> DefaultBookInvolvedService<'a> {
 
 #[async_trait]
 impl BookInvolvedService for DefaultBookInvolvedService<'_> {
-  async fn get(
+  async fn get_by_id(
     &self,
     book_id: u32,
     languages: &[Language],
   ) -> Result<Vec<BookInvolved>, ServiceError<BookInvolvedServiceError>> {
-    Ok(self.book_involved_repository.get(book_id, languages).await?)
+    Ok(self.book_involved_repository.get_by_id(book_id, languages).await?)
   }
 }

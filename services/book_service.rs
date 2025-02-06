@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -37,7 +38,10 @@ pub trait BookService: Send + Sync {
     slug: &Slug,
     languages: &[Language],
   ) -> Result<Option<Book>, ServiceError<BookServiceError>>;
-  async fn get_statistics(&self, book_ids: &[u32]) -> Result<Vec<BookStatistic>, ServiceError<BookServiceError>>;
+  async fn get_statistics(
+    &self,
+    book_ids: &[u32],
+  ) -> Result<HashMap<u32, BookStatistic>, ServiceError<BookServiceError>>;
 }
 
 pub enum BookServiceError {

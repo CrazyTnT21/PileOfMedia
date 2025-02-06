@@ -36,10 +36,23 @@ pub fn get_mut_genre_service<'a>(
 ) -> impl MutBookGenreService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
   let franchise_repository = Arc::new(get_franchise_repository(client));
+  let genre_repository = Arc::new(get_genre_repository(client));
+  let theme_repository = Arc::new(get_theme_repository(client));
+  let role_repository = Arc::new(get_role_repository(client));
+  let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
+  let book_genre_repository = Arc::new(get_book_genre_repository(client, genre_repository));
+  let book_theme_repository = Arc::new(get_book_theme_repository(client, theme_repository));
+  let book_involved_repository = Arc::new(get_book_involved_repository(client, person_repository, role_repository));
+  let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
+  let book_character_repository = Arc::new(get_book_character_repository(client, character_repository));
   let book_repository = Arc::new(get_book_repository(
     client,
     image_repository.clone(),
     franchise_repository,
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
   ));
   let genre_repository = Arc::new(get_genre_repository(client));
   let book_genre_repository = get_book_genre_repository(client, genre_repository.clone());
@@ -64,10 +77,23 @@ pub fn get_mut_theme_service<'a>(
 ) -> impl MutBookThemeService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
   let franchise_repository = Arc::new(get_franchise_repository(client));
+  let genre_repository = Arc::new(get_genre_repository(client));
+  let theme_repository = Arc::new(get_theme_repository(client));
+  let role_repository = Arc::new(get_role_repository(client));
+  let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
+  let book_genre_repository = Arc::new(get_book_genre_repository(client, genre_repository));
+  let book_theme_repository = Arc::new(get_book_theme_repository(client, theme_repository));
+  let book_involved_repository = Arc::new(get_book_involved_repository(client, person_repository, role_repository));
+  let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
+  let book_character_repository = Arc::new(get_book_character_repository(client, character_repository));
   let book_repository = Arc::new(get_book_repository(
     client,
     image_repository.clone(),
     franchise_repository,
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
   ));
   let theme_repository = Arc::new(get_theme_repository(client));
   let book_theme_repository = get_book_theme_repository(client, theme_repository.clone());
@@ -94,10 +120,23 @@ pub fn get_mut_character_service<'a>(
 ) -> impl MutBookCharacterService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
   let franchise_repository = Arc::new(get_franchise_repository(client));
+  let genre_repository = Arc::new(get_genre_repository(client));
+  let theme_repository = Arc::new(get_theme_repository(client));
+  let role_repository = Arc::new(get_role_repository(client));
+  let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
+  let book_genre_repository = Arc::new(get_book_genre_repository(client, genre_repository));
+  let book_theme_repository = Arc::new(get_book_theme_repository(client, theme_repository));
+  let book_involved_repository = Arc::new(get_book_involved_repository(client, person_repository, role_repository));
+  let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
+  let book_character_repository = Arc::new(get_book_character_repository(client, character_repository));
   let book_repository = Arc::new(get_book_repository(
     client,
     image_repository.clone(),
     franchise_repository,
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
   ));
   let character_repository = Arc::new(get_character_repository(client, image_repository));
   let book_character_repository = get_book_character_repository(client, character_repository.clone());
@@ -125,7 +164,29 @@ pub fn get_involved_service(connection: &Client) -> impl BookInvolvedService + '
 pub fn get_service(connection: &Client) -> impl BookService + '_ {
   let image_repository = Arc::new(get_image_repository(connection));
   let franchise_repository = Arc::new(get_franchise_repository(connection));
-  let repository = get_book_repository(connection, image_repository, franchise_repository);
+  let genre_repository = Arc::new(get_genre_repository(connection));
+  let theme_repository = Arc::new(get_theme_repository(connection));
+  let role_repository = Arc::new(get_role_repository(connection));
+  let person_repository = Arc::new(get_person_repository(connection, image_repository.clone()));
+  let book_genre_repository = Arc::new(get_book_genre_repository(connection, genre_repository));
+  let book_theme_repository = Arc::new(get_book_theme_repository(connection, theme_repository));
+  let book_involved_repository = Arc::new(get_book_involved_repository(
+    connection,
+    person_repository,
+    role_repository,
+  ));
+  let character_repository = Arc::new(get_character_repository(connection, image_repository.clone()));
+  let book_character_repository = Arc::new(get_book_character_repository(connection, character_repository));
+
+  let repository = get_book_repository(
+    connection,
+    image_repository,
+    franchise_repository,
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
+  );
   get_book_service(Arc::new(repository))
 }
 
@@ -135,10 +196,23 @@ pub fn get_mut_involved_service<'a>(
 ) -> impl MutBookInvolvedService + 'a {
   let image_repository = Arc::new(get_image_repository(client));
   let franchise_repository = Arc::new(get_franchise_repository(client));
+  let genre_repository = Arc::new(get_genre_repository(client));
+  let theme_repository = Arc::new(get_theme_repository(client));
+  let role_repository = Arc::new(get_role_repository(client));
+  let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
+  let book_genre_repository = Arc::new(get_book_genre_repository(client, genre_repository));
+  let book_theme_repository = Arc::new(get_book_theme_repository(client, theme_repository));
+  let book_involved_repository = Arc::new(get_book_involved_repository(client, person_repository, role_repository));
+  let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
+  let book_character_repository = Arc::new(get_book_character_repository(client, character_repository));
   let book_repository = Arc::new(get_book_repository(
     client,
     image_repository.clone(),
     franchise_repository,
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
   ));
   let role_repository = Arc::new(get_role_repository(client));
   let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
@@ -166,6 +240,7 @@ pub fn get_mut_service<'a>(
   let mut_file_repository = Arc::new(get_mut_file_repository());
 
   let genre_repository = Arc::new(get_genre_repository(client));
+  let theme_repository = Arc::new(get_theme_repository(client));
   let mut_book_genre_repository = Arc::new(get_mut_book_genre_repository(transaction));
   let mut_file_service = Arc::new(get_mut_file_service(mut_file_repository.clone()));
   let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
@@ -187,10 +262,22 @@ pub fn get_mut_service<'a>(
   let mut_book_involved_repository = Arc::new(get_mut_book_involved_repository(transaction));
 
   let franchise_repository = Arc::new(get_franchise_repository(client));
+  let book_genre_repository = Arc::new(get_book_genre_repository(client, genre_repository.clone()));
+  let book_theme_repository = Arc::new(get_book_theme_repository(client, theme_repository.clone()));
+  let book_involved_repository = Arc::new(get_book_involved_repository(
+    client,
+    person_repository.clone(),
+    role_repository.clone(),
+  ));
+  let book_character_repository = Arc::new(get_book_character_repository(client, character_repository.clone()));
   let book_repository = Arc::new(get_book_repository(
     client,
     image_repository,
     franchise_repository.clone(),
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
   ));
   let theme_repository = Arc::new(get_theme_repository(client));
   let mut_book_theme_repository = Arc::new(get_mut_book_theme_repository(transaction));

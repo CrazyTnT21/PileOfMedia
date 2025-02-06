@@ -1,8 +1,13 @@
 use chrono::NaiveDate;
 
 use crate::available_translations::AvailableTranslations;
+use crate::entities::book::book_character::BookCharacter;
+use crate::entities::book::book_statistic::BookStatistic;
 use crate::entities::book::book_translation::BookTranslation;
 use crate::entities::franchise::Franchise;
+use crate::entities::genre::Genre;
+use crate::entities::involved::Involved;
+use crate::entities::theme::Theme;
 use crate::slug::Slug;
 
 pub mod book_character;
@@ -20,7 +25,12 @@ pub struct Book {
   pub slug: Slug,
   pub published: Option<NaiveDate>,
   pub franchise: Option<Franchise>,
+  pub genres: Vec<Genre>,
+  pub themes: Vec<Theme>,
+  pub involved: Vec<Involved>,
+  pub characters: Vec<BookCharacter>,
   pub translations: BookAvailableTranslations,
+  pub statistic: BookStatistic,
 }
 
 type BookAvailableTranslations = AvailableTranslations<BookTranslation>;

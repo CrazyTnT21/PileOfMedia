@@ -6,7 +6,7 @@
     "license": {
       "name": ""
     },
-    "version": "0.2.0"
+    "version": "0.2.1"
   },
   "paths": {
     "/accounts/login": {
@@ -3452,9 +3452,20 @@
         "required": [
           "id",
           "slug",
-          "translations"
+          "genres",
+          "themes",
+          "involved",
+          "characters",
+          "translations",
+          "statistic"
         ],
         "properties": {
+          "characters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookCharacter"
+            }
+          },
           "franchise": {
             "allOf": [
               {
@@ -3463,10 +3474,22 @@
             ],
             "nullable": true
           },
+          "genres": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Genre"
+            }
+          },
           "id": {
             "type": "integer",
             "format": "int32",
             "minimum": 0
+          },
+          "involved": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Involved"
+            }
           },
           "published": {
             "type": "string",
@@ -3475,6 +3498,15 @@
           },
           "slug": {
             "$ref": "#/components/schemas/Slug"
+          },
+          "statistic": {
+            "$ref": "#/components/schemas/BookStatistic"
+          },
+          "themes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Theme"
+            }
           },
           "translations": {
             "$ref": "#/components/schemas/BookAvailableTranslations"
