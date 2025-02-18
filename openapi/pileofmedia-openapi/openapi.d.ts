@@ -2864,6 +2864,127 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/{id}/books": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description The language of the items */
+                    "Accept-Language"?: string | null;
+                };
+                path: {
+                    /** @description Id of the item to search for */
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User books based on the user id */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserBook"][];
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{id}/books/{book_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description The language of the items */
+                    "Accept-Language"?: string | null;
+                };
+                path: {
+                    /** @description Id of the item to search for */
+                    id: number;
+                    book_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User book based on the user id and book id */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserBook"] | null;
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3178,6 +3299,8 @@ export interface components {
             items: components["schemas"]["Role"][];
             total: number;
         };
+        /** Format: float */
+        Score: number;
         Slug: string;
         Theme: {
             /** Format: int32 */
@@ -3207,6 +3330,23 @@ export interface components {
             name: string;
             profile_picture?: components["schemas"]["Image"] | null;
         };
+        UserBook: {
+            book: components["schemas"]["Book"];
+            /** Format: int32 */
+            chapters?: number | null;
+            favorite: boolean;
+            /** Format: date */
+            finished?: `${number}-${number}-${number}` | null;
+            /** Format: int32 */
+            pages?: number | null;
+            review?: string | null;
+            score?: components["schemas"]["Score"] | null;
+            /** Format: date */
+            start?: `${number}-${number}-${number}` | null;
+            status: components["schemas"]["UserStatus"];
+        };
+        /** @enum {string} */
+        UserStatus: UserStatus;
         UsersTotal: {
             items: components["schemas"]["User"][];
             total: number;
@@ -3227,5 +3367,11 @@ export enum Language {
     DA = "DA",
     NL = "NL",
     KO = "KO"
+}
+export enum UserStatus {
+    NotStarted = "NotStarted",
+    Ongoing = "Ongoing",
+    Finished = "Finished",
+    Paused = "Paused"
 }
 export type operations = Record<string, never>;

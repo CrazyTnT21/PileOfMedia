@@ -51,6 +51,8 @@ use domain::entities::theme::theme_translation::ThemeTranslation;
 use domain::entities::theme::Theme;
 use domain::entities::user::create_user::CreateUser;
 use domain::entities::user::create_user::CreateUserData;
+use domain::entities::user::user_book::UserBook;
+use domain::entities::user::user_status::UserStatus;
 use domain::entities::user::User;
 use domain::enums::language::Language;
 use domain::items_total::BooksTotal;
@@ -61,6 +63,7 @@ use domain::items_total::PeopleTotal;
 use domain::items_total::RolesTotal;
 use domain::items_total::ThemesTotal;
 use domain::items_total::UsersTotal;
+use domain::score::Score;
 use domain::slug::Slug;
 
 use crate::controllers::account_controller::account_doc::AccountDoc;
@@ -154,6 +157,9 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     FranchiseTranslation,
     FranchiseAvailableTranslations,
     BookTranslation,
-    BookAvailableTranslations
+    BookAvailableTranslations,
+    UserBook,
+    UserStatus,
+    Score,
   )))]
 pub(crate) struct ApiDoc;

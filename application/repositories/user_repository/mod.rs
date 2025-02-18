@@ -1,2 +1,3 @@
 pub mod default_mut_user_repository;
 pub mod default_user_repository;
+pub mod user_book_repository;

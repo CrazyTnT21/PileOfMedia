@@ -32,6 +32,7 @@ use application::repositories::theme_repository::default_mut_theme_repository::D
 use application::repositories::theme_repository::default_theme_repository::DefaultThemeRepository;
 use application::repositories::user_repository::default_mut_user_repository::DefaultMutUserRepository;
 use application::repositories::user_repository::default_user_repository::DefaultUserRepository;
+use application::repositories::user_repository::user_book_repository::default_user_book_repository::DefaultUserBookRepository;
 use infrastructure::services::account_service::default_account_service::DefaultAccountService;
 use infrastructure::services::account_service::default_mut_account_service::DefaultMutAccountService;
 use infrastructure::services::book_service::book_character_service::default_book_character_service::DefaultBookCharacterService;
@@ -46,13 +47,11 @@ use infrastructure::services::book_service::default_book_service::DefaultBookSer
 use infrastructure::services::book_service::default_mut_book_service::DefaultMutBookService;
 use infrastructure::services::character_service::default_character_service::DefaultCharacterService;
 use infrastructure::services::character_service::default_mut_character_service::DefaultMutCharacterService;
-use infrastructure::services::file_service::default_file_service::DefaultFileService;
 use infrastructure::services::file_service::default_mut_file_service::DefaultMutFileService;
 use infrastructure::services::franchise_service::default_franchise_service::DefaultFranchiseService;
 use infrastructure::services::franchise_service::default_mut_franchise_service::DefaultMutFranchiseService;
 use infrastructure::services::genre_service::default_genre_service::DefaultGenreService;
 use infrastructure::services::genre_service::default_mut_genre_service::DefaultMutGenreService;
-use infrastructure::services::image_service::default_image_service::DefaultImageService;
 use infrastructure::services::image_service::default_mut_image_service::DefaultMutImageService;
 use infrastructure::services::person_service::default_mut_person_service::DefaultMutPersonService;
 use infrastructure::services::person_service::default_person_service::DefaultPersonService;
@@ -62,6 +61,7 @@ use infrastructure::services::theme_service::default_mut_theme_service::DefaultM
 use infrastructure::services::theme_service::default_theme_service::DefaultThemeService;
 use infrastructure::services::user_service::default_mut_user_service::DefaultMutUserService;
 use infrastructure::services::user_service::default_user_service::DefaultUserService;
+use infrastructure::services::user_service::user_book_service::default_user_book_service::DefaultUserBookService;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
 use repositories::account_repository::AccountRepository;
 use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
@@ -91,6 +91,7 @@ use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::mut_theme_repository::MutThemeRepository;
 use repositories::theme_repository::ThemeRepository;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
+use repositories::user_repository::user_book_repository::UserBookRepository;
 use repositories::user_repository::UserRepository;
 use services::account_service::mut_account_service::MutAccountService;
 use services::account_service::AccountService;
@@ -107,13 +108,11 @@ use services::book_service::BookService;
 use services::character_service::mut_character_service::MutCharacterService;
 use services::character_service::CharacterService;
 use services::file_service::mut_file_service::MutFileService;
-use services::file_service::FileService;
 use services::franchise_service::mut_franchise_service::MutFranchiseService;
 use services::franchise_service::FranchiseService;
 use services::genre_service::mut_genre_service::MutGenreService;
 use services::genre_service::GenreService;
 use services::image_service::mut_image_service::MutImageService;
-use services::image_service::ImageService;
 use services::person_service::mut_person_service::MutPersonService;
 use services::person_service::PersonService;
 use services::role_service::mut_role_service::MutRoleService;
@@ -121,6 +120,7 @@ use services::role_service::RoleService;
 use services::theme_service::mut_theme_service::MutThemeService;
 use services::theme_service::ThemeService;
 use services::user_service::mut_user_service::MutUserService;
+use services::user_service::user_book_service::UserBookService;
 use services::user_service::UserService;
 
 pub fn get_book_service<'a>(book_repository: Arc<dyn BookRepository + 'a>) -> impl BookService + 'a {
@@ -159,10 +159,6 @@ pub fn get_franchise_service<'a>(
   franchise_repository: Arc<dyn FranchiseRepository + 'a>,
 ) -> impl FranchiseService + 'a {
   DefaultFranchiseService::new(franchise_repository)
-}
-
-pub fn get_image_service<'a>(image_repository: Arc<dyn ImageRepository + 'a>) -> impl ImageService + 'a {
-  DefaultImageService::new(image_repository)
 }
 
 pub fn get_genre_service<'a>(genre_repository: Arc<dyn GenreRepository + 'a>) -> impl GenreService + 'a {
@@ -318,10 +314,6 @@ pub fn get_role_service<'a>(role_repository: Arc<dyn RoleRepository + 'a>) -> im
 
 pub fn get_role_repository(client: &Client) -> impl RoleRepository + '_ {
   DefaultRoleRepository::new(client)
-}
-
-pub fn get_file_service<'a>(file_repository: Arc<dyn FileRepository + 'a>) -> impl FileService + 'a {
-  DefaultFileService::new(file_repository)
 }
 
 pub fn get_file_repository<'a>() -> impl FileRepository + 'a {
@@ -549,4 +541,15 @@ pub fn get_mut_character_repository<'a>(
   character_repository: Arc<dyn CharacterRepository + 'a>,
 ) -> impl MutCharacterRepository + 'a {
   DefaultMutCharacterRepository::new(transaction, character_repository)
+}
+
+pub fn get_user_book_service<'a>(user_book_repository: Arc<dyn UserBookRepository + 'a>) -> impl UserBookService + 'a {
+  DefaultUserBookService::new(user_book_repository)
+}
+
+pub fn get_user_book_repository<'a>(
+  client: &'a Client,
+  book_repository: Arc<dyn BookRepository + 'a>,
+) -> impl UserBookRepository + 'a {
+  DefaultUserBookRepository::new(client, book_repository)
 }

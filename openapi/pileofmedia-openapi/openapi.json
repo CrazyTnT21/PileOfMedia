@@ -3443,6 +3443,153 @@
           }
         }
       }
+    },
+    "/users/{id}/books": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "get_books",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the item to search for",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "Accept-Language",
+            "in": "header",
+            "description": "The language of the items",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User books based on the user id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserBook"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/books/{book_id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "get_book_by_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the item to search for",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "Accept-Language",
+            "in": "header",
+            "description": "The language of the items",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User book based on the user id and book id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UserBook"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4610,6 +4757,10 @@
           }
         }
       },
+      "Score": {
+        "type": "number",
+        "format": "float"
+      },
       "Slug": {
         "type": "string"
       },
@@ -4718,6 +4869,68 @@
             "nullable": true
           }
         }
+      },
+      "UserBook": {
+        "type": "object",
+        "required": [
+          "book",
+          "status",
+          "favorite"
+        ],
+        "properties": {
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          },
+          "chapters": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "minimum": 0
+          },
+          "favorite": {
+            "type": "boolean"
+          },
+          "finished": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "pages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "minimum": 0
+          },
+          "review": {
+            "type": "string",
+            "nullable": true
+          },
+          "score": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Score"
+              }
+            ],
+            "nullable": true
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          }
+        }
+      },
+      "UserStatus": {
+        "type": "string",
+        "enum": [
+          "NotStarted",
+          "Ongoing",
+          "Finished",
+          "Paused"
+        ]
       },
       "UsersTotal": {
         "type": "object",

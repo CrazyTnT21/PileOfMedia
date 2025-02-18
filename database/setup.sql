@@ -7,13 +7,13 @@ CREATE TYPE status AS ENUM ('NotStarted','Ongoing','Finished','Paused');
 CREATE TYPE userstatus AS ENUM ('NotStarted','Ongoing','Finished','Paused');
 create table Franchise
 (
-  Id   int primary key generated always as identity
+  Id int primary key generated always as identity
 );
 create table Rating
 (
-  Id   int primary key generated always as identity,
-  Score       real,
-  Amount      int  not null default 0
+  Id     int primary key generated always as identity,
+  Score  real,
+  Amount int not null default 0
 );
 
 create table FranchiseTranslation
@@ -27,7 +27,7 @@ create table FranchiseTranslation
 
 create table Image
 (
-  Id        int primary key generated always as identity
+  Id int primary key generated always as identity
 );
 create table ImageData
 (
@@ -152,25 +152,26 @@ create table PersonRole
 
 create table Movie
 (
-  Id         int primary key generated always as identity,
-  Airing     date,
-  Length     interval
+  Id     int primary key generated always as identity,
+  Airing date,
+  Length interval
 );
-create table MovieStatistic(
-  FKMovie      int not null references Movie (Id) primary key,
-  FKRating    int not null references Rating (Id),
-  Added       date not null DEFAULT (CURRENT_DATE),
-  Rank        int  not null default 0,
-  Popularity  int  not null default 0,
-  Favorites   int  not null default 0,
-  Members     int  not null default 0
+create table MovieStatistic
+(
+  FKMovie    int  not null references Movie (Id) primary key,
+  FKRating   int  not null references Rating (Id),
+  Added      date not null DEFAULT (CURRENT_DATE),
+  Rank       int  not null default 0,
+  Popularity int  not null default 0,
+  Favorites  int  not null default 0,
+  Members    int  not null default 0
 );
 
 create table MovieTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
-  FKCover    int  not null references Image (Id),
+  FKCover       int          not null references Image (Id),
 
   FKTranslation int          not null references Movie (Id),
   Language      language     not null,
@@ -205,20 +206,21 @@ create table GraphicNovel
   Chapters     smallint,
   Status       status not null
 );
-create table GraphicNovelStatistic(
-  FKGraphicNovel      int not null references GraphicNovel (Id) primary key,
-  FKRating    int not null references Rating (Id),
-  Added       date not null DEFAULT (CURRENT_DATE),
-  Rank        int  not null default 0,
-  Popularity  int  not null default 0,
-  Favorites   int  not null default 0,
-  Members     int  not null default 0
+create table GraphicNovelStatistic
+(
+  FKGraphicNovel int  not null references GraphicNovel (Id) primary key,
+  FKRating       int  not null references Rating (Id),
+  Added          date not null DEFAULT (CURRENT_DATE),
+  Rank           int  not null default 0,
+  Popularity     int  not null default 0,
+  Favorites      int  not null default 0,
+  Members        int  not null default 0
 );
 create table GraphicNovelTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
-  FKCover      int    not null references Image (Id),
+  FKCover       int          not null references Image (Id),
 
   FKTranslation int          not null references GraphicNovel (Id),
   Language      language     not null,
@@ -285,7 +287,7 @@ create table GraphicNovelGenre
 );
 create table GraphicNovelTheme
 (
-  FKGraphicNovel int not null references GraphicNovel (Id),rosen
+  FKGraphicNovel int not null references GraphicNovel (Id),
 
   FKTheme        int not null references Theme (Id),
   primary key (FKGraphicNovel, FkTheme)
@@ -305,41 +307,43 @@ create table Book
 
   FKFranchise int references Franchise (Id)
 );
-create table BookEdition(
-  Id          int primary key generated always as identity,
-  Chapters    smallint,
-  Pages       smallint,
-  Words       int,
-  Published   date,
-  ISBN13      char(13),
-  Language    language,
-  FKCover     int not null references Image (Id),
-  FKBook      int not null references Book (Id)
+create table BookEdition
+(
+  Id        int primary key generated always as identity,
+  Chapters  smallint,
+  Pages     smallint,
+  Words     int,
+  Published date,
+  ISBN13    char(13),
+  Language  language,
+  FKCover   int not null references Image (Id),
+  FKBook    int not null references Book (Id)
 );
 
 create table BookEditionTranslation
 (
   Description   varchar(500),
 
-  FKTranslation int          not null references Book (Id),
-  Language      language     not null,
+  FKTranslation int      not null references Book (Id),
+  Language      language not null,
   primary key (FKTranslation, Language)
 );
 create table BookEditionInvolved
 (
-    FKBookEdition   int not null references BookEdition (Id),
-    FkRole          int not null references Role (Id),
-    FKPerson        int not null references Person (Id),
-    primary key (FKBook, FKRole, FKPerson)
+  FKBookEdition int not null references BookEdition (Id),
+  FkRole        int not null references Role (Id),
+  FKPerson      int not null references Person (Id),
+  primary key (FKBookEdition, FKRole, FKPerson)
 );
-create table BookStatistic(
-  FKBook      int not null references Book (Id) primary key,
-  FKRating    int not null references Rating (Id),
-  Added       date not null DEFAULT (CURRENT_DATE),
-  Rank        int  not null default 0,
-  Popularity  int  not null default 0,
-  Favorites   int  not null default 0,
-  Members     int  not null default 0
+create table BookStatistic
+(
+  FKBook     int  not null references Book (Id) primary key,
+  FKRating   int  not null references Rating (Id),
+  Added      date not null DEFAULT (CURRENT_DATE),
+  Rank       int  not null default 0,
+  Popularity int  not null default 0,
+  Favorites  int  not null default 0,
+  Members    int  not null default 0
 );
 create table BookTranslation
 (
@@ -358,11 +362,11 @@ create table BookCharacter
   primary key (FKBook, FKCharacter)
 );
 create table BookImage
- (
-   FKBook      int not null references Book (Id),
-   FKImage int not null references Image (Id),
-   primary key (FKBook, FKImage)
- );
+(
+  FKBook  int not null references Book (Id),
+  FKImage int not null references Image (Id),
+  primary key (FKBook, FKImage)
+);
 create table BookGenre
 (
   FKBook  int not null references Book (Id),
@@ -393,14 +397,15 @@ create table Show
 
   FKFranchise int references Franchise (Id)
 );
-create table ShowStatistic(
-  FKShow      int not null references Show (Id) primary key,
-  FKRating    int not null references Rating (Id),
-  Added       date not null DEFAULT (CURRENT_DATE),
-  Rank        int  not null default 0,
-  Popularity  int  not null default 0,
-  Favorites   int  not null default 0,
-  Members     int  not null default 0
+create table ShowStatistic
+(
+  FKShow     int  not null references Show (Id) primary key,
+  FKRating   int  not null references Rating (Id),
+  Added      date not null DEFAULT (CURRENT_DATE),
+  Rank       int  not null default 0,
+  Popularity int  not null default 0,
+  Favorites  int  not null default 0,
+  Members    int  not null default 0
 );
 create table ShowTranslation
 (
@@ -485,23 +490,24 @@ create table ShowInvolved
 create table Game
 (
   Id          int primary key generated always as identity,
-  Released   date,
+  Released    date,
   FKFranchise int references Franchise (Id)
 );
-create table GameStatistic(
-  FKGame      int not null references Game (Id) primary key,
-  FKRating    int not null references Rating (Id),
-  Added       date not null DEFAULT (CURRENT_DATE),
-  Rank        int  not null default 0,
-  Popularity  int  not null default 0,
-  Favorites   int  not null default 0,
-  Members     int  not null default 0
+create table GameStatistic
+(
+  FKGame     int  not null references Game (Id) primary key,
+  FKRating   int  not null references Rating (Id),
+  Added      date not null DEFAULT (CURRENT_DATE),
+  Rank       int  not null default 0,
+  Popularity int  not null default 0,
+  Favorites  int  not null default 0,
+  Members    int  not null default 0
 );
 create table GameTranslation
 (
   Title         varchar(150) not null,
   Description   varchar(500),
-  FKCover     int  not null references Image (Id),
+  FKCover       int          not null references Image (Id),
 
   FKTranslation int          not null references Game (Id),
   Language      language     not null,
@@ -572,17 +578,17 @@ create table UserGraphicNovel
 );
 create table UserBook
 (
-  FKUser     int        not null references "User" (Id),
-  FKBook     int        not null references Book (Id),
-  UserStatus userstatus not null,
-  Favorite   boolean    not null,
-  Score      smallint,
-  Review     varchar(255),
-  Start      date,
-  Finished   date,
-  Chapters   smallint,
-  Pages      smallint,
-  Added      date       not null DEFAULT (CURRENT_DATE),
+  FKUser        int        not null references "User" (Id),
+  FKBook        int        not null references Book (Id),
+  UserStatus    userstatus not null,
+  Favorite      boolean    not null,
+  Score         smallint,
+  Review        varchar(255),
+  Start         date,
+  Finished      date,
+  Chapters      smallint,
+  Pages         smallint,
+  Added         date       not null DEFAULT (CURRENT_DATE),
   primary key (FKUser, FKBook)
 );
 create table UserShow

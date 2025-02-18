@@ -22,3 +22,4 @@ pub mod db_role_translation;
 pub mod db_theme;
 pub mod db_theme_translation;
 pub mod db_user;
+pub mod db_user_book;

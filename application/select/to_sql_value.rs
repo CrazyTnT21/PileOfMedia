@@ -1,4 +1,5 @@
 use crate::enums::db_language::DbLanguage;
+use crate::enums::db_user_status::DbUserStatus;
 use crate::select::expression::{next, IntoSql};
 use chrono::{NaiveDate, NaiveTime};
 use tokio_postgres::types::ToSql;
@@ -72,12 +73,15 @@ macro_rules! to_value {
     }
   };
 }
+to_value!(bool);
 to_value!(i8);
 to_value!(i16);
 to_value!(i32);
 to_value!(i64);
 to_value!(DbLanguage);
+to_value!(DbUserStatus);
 to_value!(NaiveDate);
 to_value!(NaiveTime);
 to_value!(String);
 to_value!(&'a str);
+to_value!(f32);

@@ -9,6 +9,7 @@ use domain::pagination::Pagination;
 use crate::traits::service_error::ServiceError;
 
 pub mod mut_user_service;
+pub mod user_book_service;
 
 #[async_trait]
 pub trait UserService: Send + Sync {

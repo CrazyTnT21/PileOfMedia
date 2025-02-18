@@ -7,6 +7,7 @@ use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 
 pub mod mut_user_repository;
+pub mod user_book_repository;
 
 #[async_trait]
 pub trait UserRepository: Send + Sync {

@@ -2,6 +2,7 @@ use crate::select::condition::Condition;
 use crate::select::conditions::column_equal::ColumnEqual;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_ilike::ValueILike;
+use crate::select::conditions::value_in::ValueIn;
 use crate::select::selector::Selector;
 use crate::select::to_sql_value::ToSqlValue;
 use tokio_postgres::types::ToSql;
@@ -34,6 +35,9 @@ impl<'a> Expression<'a> {
   }
   pub fn column_equal(selector: impl Selector + 'a, second_selector: impl Selector + 'a) -> Expression<'a> {
     Expression::new(ColumnEqual::new(selector, second_selector))
+  }
+  pub fn value_in(selector: impl Selector + 'a, values: impl ToSqlValue<'a> + 'a) -> Expression<'a> {
+    Expression::new(ValueIn::new(selector, values))
   }
 
   pub fn values(&self) -> Vec<&IntoSql> {
