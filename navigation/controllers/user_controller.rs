@@ -9,8 +9,9 @@ use crate::extractors::query_pagination::QueryPagination;
 use crate::implementations::{
   get_book_character_repository, get_book_genre_repository, get_book_involved_repository, get_book_repository,
   get_book_theme_repository, get_character_repository, get_franchise_repository, get_genre_repository,
-  get_image_repository, get_person_repository, get_role_repository, get_theme_repository, get_user_book_repository,
-  get_user_book_service, get_user_repository, get_user_service,
+  get_image_repository, get_mut_user_book_repository, get_mut_user_book_service, get_person_repository,
+  get_role_repository, get_theme_repository, get_user_book_repository, get_user_book_service, get_user_repository,
+  get_user_service,
 };
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
@@ -23,11 +24,13 @@ use crate::openapi::responses::server_error::ServerError;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{delete, get, post};
 use axum::{Json, Router};
+use domain::entities::user::create_user_book::CreateUserBook;
+use services::user_service::user_book_service::mut_user_book_service::MutUserBookService;
 use services::user_service::user_book_service::UserBookService;
 use services::user_service::UserService;
-use tokio_postgres::Client;
+use tokio_postgres::{Client, Transaction};
 
 pub mod user_doc;
 
@@ -36,7 +39,9 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/", get(get_items))
     .route("/{id}", get(get_by_id))
     .route("/{id}/books", get(get_books))
+    .route("/{id}/books", post(add_book))
     .route("/{id}/books/{book_id}", get(get_book_by_id))
+    .route("/{id}/books/{book_id}", delete(remove_book))
     .route("/name/{name}", get(get_by_name))
     .with_state(app_state)
 }
@@ -166,6 +171,65 @@ async fn get_book_by_id(
     Err(error) => Err(convert_service_error(error)),
   }
 }
+
+#[utoipa::path(post, path = "/{id}/books",
+  responses(
+    (status = 201, description = "Book association successfully added", body = UserBook), ServerError, BadRequest
+  ),
+  request_body(content = CreateUserBook),
+  params(IdParam,AcceptLanguageParam),
+  tag = "Users"
+)]
+async fn add_book(
+  Path(id): Path<u32>,
+  State(app_state): State<AppState>,
+  AcceptLanguageHeader(languages): AcceptLanguageHeader,
+  Json(create_user_book): Json<CreateUserBook>,
+) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_book_service(&transaction, client);
+
+    let languages = map_accept_languages(&languages);
+    let content_language = map_language_header(&languages);
+
+    println!("Route for adding a book for a user with the id {id}");
+
+    match service.add(id, create_user_book, &languages).await {
+      Ok(item) => Ok((StatusCode::CREATED, content_language, Json(item))),
+      Err(error) => Err(convert_service_error(error)),
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+#[utoipa::path(delete, path = "/{id}/books/{book_id}",
+  responses(
+    (status = 200, description = "Book association successfully removed"), ServerError, BadRequest
+  ),
+  params(IdParam, ("book_id" = u32, Path,)),
+  tag = "Users"
+)]
+async fn remove_book(Path((id, book_id)): Path<(u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let mut connection = app_state.pool.get().await.map_err(convert_error)?;
+  let transaction = connection.transaction().await.map_err(convert_error)?;
+  let result = {
+    let client = transaction.client();
+    let service = get_mut_book_service(&transaction, client);
+
+    println!("Route for removing a book with the id {book_id} for a user with the id {id}");
+
+    match service.remove(id, &[book_id]).await {
+      Ok(()) => Ok(StatusCode::OK),
+      Err(error) => Err(convert_service_error(error)),
+    }
+  };
+  transaction.commit().await.map_err(convert_error)?;
+  result
+}
+
 fn get_service(client: &Client) -> impl UserService + '_ {
   let image_repository = Arc::new(get_image_repository(client));
   let repository = get_user_repository(client, image_repository);
@@ -196,4 +260,31 @@ pub fn get_book_service(client: &Client) -> impl UserBookService + '_ {
   ));
   let repository = Arc::new(get_user_book_repository(client, book_repository));
   get_user_book_service(repository)
+}
+pub fn get_mut_book_service<'a>(transaction: &'a Transaction<'a>, client: &'a Client) -> impl MutUserBookService + 'a {
+  let image_repository = Arc::new(get_image_repository(client));
+  let franchise_repository = Arc::new(get_franchise_repository(client));
+  let genre_repository = Arc::new(get_genre_repository(client));
+  let theme_repository = Arc::new(get_theme_repository(client));
+  let role_repository = Arc::new(get_role_repository(client));
+  let person_repository = Arc::new(get_person_repository(client, image_repository.clone()));
+  let book_genre_repository = Arc::new(get_book_genre_repository(client, genre_repository));
+  let book_theme_repository = Arc::new(get_book_theme_repository(client, theme_repository));
+  let book_involved_repository = Arc::new(get_book_involved_repository(client, person_repository, role_repository));
+  let character_repository = Arc::new(get_character_repository(client, image_repository.clone()));
+  let book_character_repository = Arc::new(get_book_character_repository(client, character_repository));
+
+  let book_repository = Arc::new(get_book_repository(
+    client,
+    image_repository.clone(),
+    franchise_repository,
+    book_genre_repository,
+    book_theme_repository,
+    book_involved_repository,
+    book_character_repository,
+  ));
+  let user_repository = Arc::new(get_user_repository(client, image_repository));
+  let user_book_repository = Arc::new(get_user_book_repository(client, book_repository.clone()));
+  let repository = Arc::new(get_mut_user_book_repository(transaction, user_book_repository.clone()));
+  get_mut_user_book_service(user_repository, user_book_repository, repository, book_repository)
 }

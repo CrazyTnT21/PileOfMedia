@@ -51,6 +51,7 @@ use domain::entities::theme::theme_translation::ThemeTranslation;
 use domain::entities::theme::Theme;
 use domain::entities::user::create_user::CreateUser;
 use domain::entities::user::create_user::CreateUserData;
+use domain::entities::user::create_user_book::CreateUserBook;
 use domain::entities::user::user_book::UserBook;
 use domain::entities::user::user_status::UserStatus;
 use domain::entities::user::User;
@@ -161,5 +162,6 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     UserBook,
     UserStatus,
     Score,
+    CreateUserBook
   )))]
 pub(crate) struct ApiDoc;

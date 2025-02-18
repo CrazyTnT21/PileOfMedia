@@ -32,6 +32,7 @@ use application::repositories::theme_repository::default_mut_theme_repository::D
 use application::repositories::theme_repository::default_theme_repository::DefaultThemeRepository;
 use application::repositories::user_repository::default_mut_user_repository::DefaultMutUserRepository;
 use application::repositories::user_repository::default_user_repository::DefaultUserRepository;
+use application::repositories::user_repository::user_book_repository::default_mut_user_book_repository::DefaultMutUserBookRepository;
 use application::repositories::user_repository::user_book_repository::default_user_book_repository::DefaultUserBookRepository;
 use infrastructure::services::account_service::default_account_service::DefaultAccountService;
 use infrastructure::services::account_service::default_mut_account_service::DefaultMutAccountService;
@@ -61,6 +62,7 @@ use infrastructure::services::theme_service::default_mut_theme_service::DefaultM
 use infrastructure::services::theme_service::default_theme_service::DefaultThemeService;
 use infrastructure::services::user_service::default_mut_user_service::DefaultMutUserService;
 use infrastructure::services::user_service::default_user_service::DefaultUserService;
+use infrastructure::services::user_service::user_book_service::default_mut_user_book_service::DefaultMutUserBookService;
 use infrastructure::services::user_service::user_book_service::default_user_book_service::DefaultUserBookService;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
 use repositories::account_repository::AccountRepository;
@@ -91,6 +93,7 @@ use repositories::role_repository::RoleRepository;
 use repositories::theme_repository::mut_theme_repository::MutThemeRepository;
 use repositories::theme_repository::ThemeRepository;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
+use repositories::user_repository::user_book_repository::mut_user_book_repository::MutUserBookRepository;
 use repositories::user_repository::user_book_repository::UserBookRepository;
 use repositories::user_repository::UserRepository;
 use services::account_service::mut_account_service::MutAccountService;
@@ -120,6 +123,7 @@ use services::role_service::RoleService;
 use services::theme_service::mut_theme_service::MutThemeService;
 use services::theme_service::ThemeService;
 use services::user_service::mut_user_service::MutUserService;
+use services::user_service::user_book_service::mut_user_book_service::MutUserBookService;
 use services::user_service::user_book_service::UserBookService;
 use services::user_service::UserService;
 
@@ -552,4 +556,24 @@ pub fn get_user_book_repository<'a>(
   book_repository: Arc<dyn BookRepository + 'a>,
 ) -> impl UserBookRepository + 'a {
   DefaultUserBookRepository::new(client, book_repository)
+}
+
+pub fn get_mut_user_book_repository<'a>(
+  transaction: &'a Transaction,
+  user_book_repository: Arc<dyn UserBookRepository + 'a>,
+) -> impl MutUserBookRepository + 'a {
+  DefaultMutUserBookRepository::new(transaction, user_book_repository)
+}
+pub fn get_mut_user_book_service<'a>(
+  user_repository: Arc<dyn UserRepository + 'a>,
+  user_book_repository: Arc<dyn UserBookRepository + 'a>,
+  mut_user_book_repository: Arc<dyn MutUserBookRepository + 'a>,
+  book_repository: Arc<dyn BookRepository + 'a>,
+) -> impl MutUserBookService + 'a {
+  DefaultMutUserBookService::new(
+    user_repository,
+    user_book_repository,
+    mut_user_book_repository,
+    book_repository,
+  )
 }

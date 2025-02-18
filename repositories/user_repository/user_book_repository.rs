@@ -5,6 +5,8 @@ use async_trait::async_trait;
 use domain::entities::user::user_book::UserBook;
 use domain::enums::language::Language;
 
+pub mod mut_user_book_repository;
+
 #[async_trait]
 pub trait UserBookRepository: Send + Sync {
   async fn get_by_book_id(

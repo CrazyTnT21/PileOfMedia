@@ -2914,7 +2914,52 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description The language of the items */
+                    "Accept-Language"?: string | null;
+                };
+                path: {
+                    /** @description Id of the item to search for */
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateUserBook"];
+                };
+            };
+            responses: {
+                /** @description Book association successfully added */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserBook"];
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2979,7 +3024,44 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id of the item to search for */
+                    id: number;
+                    book_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Book association successfully removed */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -3172,6 +3254,22 @@ export interface components {
         CreateUser: {
             profile_picture?: components["schemas"]["CreateImage"] | null;
             user: components["schemas"]["CreateUserData"];
+        };
+        CreateUserBook: {
+            /** Format: int32 */
+            book_id: number;
+            /** Format: int32 */
+            chapters?: number | null;
+            favorite: boolean;
+            /** Format: date */
+            finished?: `${number}-${number}-${number}` | null;
+            /** Format: int32 */
+            pages?: number | null;
+            review?: string | null;
+            score?: components["schemas"]["Score"] | null;
+            /** Format: date */
+            start?: `${number}-${number}-${number}` | null;
+            status: components["schemas"]["UserStatus"];
         };
         CreateUserData: {
             description?: string | null;

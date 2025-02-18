@@ -7,6 +7,8 @@ use domain::enums::language::Language;
 
 use crate::traits::service_error::ServiceError;
 
+pub mod mut_user_book_service;
+
 #[async_trait]
 pub trait UserBookService: Send + Sync {
   async fn get_by_book_id(

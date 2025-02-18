@@ -1,5 +1,6 @@
 pub mod create_partial_user;
 pub mod create_user;
+pub mod create_user_book;
 pub mod user_book;
 pub mod user_status;
 
