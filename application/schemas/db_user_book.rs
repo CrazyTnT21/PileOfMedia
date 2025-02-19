@@ -31,7 +31,7 @@ impl DbUserBook {
       book,
       status: self.status.into(),
       favorite: self.favorite,
-      score: self.score.map(|x| x.try_into().unwrap()),
+      score: self.score.map(|x| u8::try_from(x).unwrap().try_into().unwrap()),
       review: self.review,
       start: self.start,
       finished: self.finished,

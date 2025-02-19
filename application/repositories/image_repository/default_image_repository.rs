@@ -30,7 +30,7 @@ impl<'a> DefaultImageRepository<'a> {
 #[async_trait]
 impl ImageRepository for DefaultImageRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Image>, Box<dyn Error>> {
-    let total = Select::new::<DbImage>().query_count(self.client).await? as usize;
+    let total = Select::new::<DbImage>().query_count(self.client).await?;
 
     let images = Select::new::<DbImage>()
       .columns::<DbImage>("image")

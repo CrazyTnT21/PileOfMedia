@@ -3,13 +3,11 @@ use crate::delete::Delete;
 use crate::enums::db_user_status::DbUserStatus;
 use crate::insert::Insert;
 use crate::schemas::db_user_book::DbUserBook;
-use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
 use async_trait::async_trait;
 use domain::entities::user::create_user_book::CreateUserBook;
 use domain::entities::user::user_book::UserBook;
 use domain::enums::language::Language;
-use domain::score::Score;
 use from_row::Table;
 use repositories::user_repository::user_book_repository::mut_user_book_repository::MutUserBookRepository;
 use repositories::user_repository::user_book_repository::UserBookRepository;
@@ -42,7 +40,7 @@ impl MutUserBookRepository for DefaultMutUserBookRepository<'_> {
     let status = DbUserStatus::from(book.status);
     let chapters = book.chapters.map(|x| x as i16);
     let pages = book.pages.map(|x| x as i16);
-    let score: Option<i16> = book.score.map(Score::to_f32).map(|x| x as i16);
+    let score: Option<i16> = book.score.map(|x| x.to_u8().into());
     let insert = Insert::new::<DbUserBook>([
       "fkuser",
       "fkbook",
@@ -80,10 +78,8 @@ impl MutUserBookRepository for DefaultMutUserBookRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     Delete::new::<DbUserBook>(
-      Expression::value_equal(DbUserBook::TABLE_NAME, "fkuser", user_id).and(Expression::value_in(
-        (DbUserBook::TABLE_NAME, "fkbook"),
-        &book_ids,
-      )),
+      Expression::value_equal(DbUserBook::TABLE_NAME, "fkuser", user_id)
+        .and(Expression::value_in((DbUserBook::TABLE_NAME, "fkbook"), &book_ids)),
     )
     .execute_transaction(self.transaction)
     .await?;
@@ -93,12 +89,9 @@ impl MutUserBookRepository for DefaultMutUserBookRepository<'_> {
   async fn remove_all(&self, user_ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let user_ids = to_i32(user_ids);
 
-    Delete::new::<DbUserBook>(Expression::value_in(
-      (DbUserBook::TABLE_NAME, "fkuser"),
-      &user_ids,
-    ))
-    .execute_transaction(self.transaction)
-    .await?;
+    Delete::new::<DbUserBook>(Expression::value_in((DbUserBook::TABLE_NAME, "fkuser"), &user_ids))
+      .execute_transaction(self.transaction)
+      .await?;
     Ok(())
   }
 }

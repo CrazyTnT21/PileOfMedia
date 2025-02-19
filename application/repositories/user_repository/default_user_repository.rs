@@ -37,7 +37,7 @@ impl<'a> DefaultUserRepository<'a> {
 #[async_trait]
 impl UserRepository for DefaultUserRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
-    let total = Select::new::<DbUser>().query_count(self.client).await? as usize;
+    let total = Select::new::<DbUser>().query_count(self.client).await?;
 
     let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)
@@ -84,7 +84,7 @@ impl UserRepository for DefaultUserRepository<'_> {
     let total = Select::new::<DbUser>()
       .where_expression(Expression::new(ValueILike::new((DbUser::TABLE_NAME, "name"), &name)))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let users = Select::new::<DbUser>()
       .columns::<DbUser>(DbUser::TABLE_NAME)

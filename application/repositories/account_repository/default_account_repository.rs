@@ -36,7 +36,7 @@ impl<'a> DefaultAccountRepository<'a> {
 #[async_trait]
 impl AccountRepository for DefaultAccountRepository<'_> {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, Box<dyn Error>> {
-    let total = Select::new::<DbAccount>().query_count(self.client).await? as usize;
+    let total = Select::new::<DbAccount>().query_count(self.client).await?;
 
     let accounts = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)

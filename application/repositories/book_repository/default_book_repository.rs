@@ -76,7 +76,7 @@ impl<'a> DefaultBookRepository<'a> {
 #[async_trait]
 impl BookRepository for DefaultBookRepository<'_> {
   async fn get(&self, languages: &[Language], pagination: Pagination) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
-    let total = Select::new::<DbBook>().query_count(self.client).await? as usize;
+    let total = Select::new::<DbBook>().query_count(self.client).await?;
 
     let book_ids: Box<[u32]> = Select::new::<DbBook>()
       .column::<i32>(DbBook::TABLE_NAME, "id")
@@ -162,7 +162,7 @@ impl BookRepository for DefaultBookRepository<'_> {
     let total = Select::new::<DbBookTranslation>()
       .where_expression(book_translation_with_title(&title))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let book_ids: Box<[u32]> = Select::new::<DbBookTranslation>()
       .column::<i32>(DbBookTranslation::TABLE_NAME, "fktranslation")

@@ -160,8 +160,8 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     BookTranslation,
     BookAvailableTranslations,
     UserBook,
-    UserStatus,
     Score,
+    UserStatus,
     CreateUserBook
   )))]
 pub(crate) struct ApiDoc;

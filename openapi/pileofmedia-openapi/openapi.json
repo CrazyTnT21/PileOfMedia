@@ -4938,8 +4938,9 @@
         }
       },
       "Score": {
-        "type": "number",
-        "format": "float"
+        "type": "integer",
+        "maximum": 10,
+        "minimum": 1
       },
       "Slug": {
         "type": "string"

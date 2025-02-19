@@ -172,6 +172,7 @@ async fn get_book_by_id(
   }
 }
 
+//TODO Authorization
 #[utoipa::path(post, path = "/{id}/books",
   responses(
     (status = 201, description = "Book association successfully added", body = UserBook), ServerError, BadRequest
@@ -205,6 +206,7 @@ async fn add_book(
   transaction.commit().await.map_err(convert_error)?;
   result
 }
+//TODO Authorization
 #[utoipa::path(delete, path = "/{id}/books/{book_id}",
   responses(
     (status = 200, description = "Book association successfully removed"), ServerError, BadRequest

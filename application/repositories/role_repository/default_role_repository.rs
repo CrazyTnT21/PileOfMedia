@@ -42,7 +42,7 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let total = Select::new::<DbRole>()
       .transform(inner_join_translation)
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let roles = Select::new::<DbRole>()
       .distinct_on(DbRole::TABLE_NAME, "id")
@@ -185,7 +185,7 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let total = Select::new::<DbRole>()
       .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let roles = Select::new::<DbRole>()
       .columns_table::<DbRole>()

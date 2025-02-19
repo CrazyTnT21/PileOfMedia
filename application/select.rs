@@ -386,13 +386,13 @@ impl<'a> Select<'a, ()> {
   /// # Panics
   ///
   /// Will panic if the database returns more than one row.
-  pub async fn query_count(self, connection: &'a Client) -> Result<i64, Box<dyn Error>> {
+  pub async fn query_count(self, connection: &'a Client) -> Result<usize, Box<dyn Error>> {
     let result = self
       .count()
       .get_single(connection)
       .await?
       .expect("Count should return one row");
-    Ok(result.0)
+    Ok(usize::try_from(result.0).unwrap())
   }
 }
 impl<'a, T: from_row::FromRow<DbType = T>> Select<'a, (T,)> {

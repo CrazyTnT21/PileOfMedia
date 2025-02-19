@@ -42,7 +42,7 @@ impl ThemeRepository for DefaultThemeRepository<'_> {
     let total = Select::new::<DbTheme>()
       .transform(inner_join_translation)
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let themes = Select::new::<DbTheme>()
       .distinct_on(DbTheme::TABLE_NAME, "id")
@@ -184,7 +184,7 @@ impl ThemeRepository for DefaultThemeRepository<'_> {
     let total = Select::new::<DbTheme>()
       .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let themes = Select::new::<DbTheme>()
       .columns_table::<DbTheme>()

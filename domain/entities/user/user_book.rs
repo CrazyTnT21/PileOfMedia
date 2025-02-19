@@ -9,7 +9,7 @@ pub struct UserBook {
   pub book: Book,
   pub status: UserStatus,
   pub favorite: bool,
-  pub score: Option<Score<1, 10>>,
+  pub score: Option<Score>,
   pub review: Option<String>,
   pub start: Option<chrono::NaiveDate>,
   pub finished: Option<chrono::NaiveDate>,

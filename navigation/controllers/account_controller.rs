@@ -75,7 +75,7 @@ async fn register(
 
   let user_id = account.user.id;
 
-  let in_a_week = (Utc::now().timestamp() + 604_800) as usize;
+  let in_a_week = usize::try_from(Utc::now().timestamp()).unwrap() + 604_800;
   let claim = create_claim("Register".to_string(), user_id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
   let user = account.user;
@@ -95,7 +95,7 @@ fn create_claim(subject: String, user_id: u32, exp: usize) -> Claim {
     sub: subject,
     iss: "PileOfMedia".to_string(),
     exp,
-    iat: Utc::now().timestamp() as usize,
+    iat: usize::try_from(Utc::now().timestamp()).unwrap(),
   }
 }
 
@@ -122,7 +122,7 @@ async fn login(
       .await
       .map_err(convert_service_error)?
   };
-  let in_a_week = (Utc::now().timestamp() + 604_800) as usize;
+  let in_a_week = usize::try_from(Utc::now().timestamp()).unwrap() + 604_800;
   let claim = create_claim("Login".to_string(), account.user.id, in_a_week);
   let token = create_token(claim, app_state.secret.as_bytes())?;
   let user = account.user;
@@ -145,7 +145,7 @@ async fn refresh_token(auth: JWTAuthorization, State(app_state): State<AppState>
   let Ok(claim) = claim else {
     return Err((StatusCode::FORBIDDEN, "Invalid JWT".to_string()));
   };
-  let in_one_hour = (Utc::now().timestamp() as usize) + 3600;
+  let in_one_hour = usize::try_from(Utc::now().timestamp()).unwrap() + 3600;
   let claim = create_claim("Refresh".to_string(), claim.claims.user_id, in_one_hour);
   let token = create_token(claim, app_state.secret.as_bytes())?;
   Ok((StatusCode::OK, token))

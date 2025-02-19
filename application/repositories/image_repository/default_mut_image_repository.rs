@@ -53,7 +53,10 @@ impl MutImageRepository for DefaultMutImageRepository<'_> {
     let format = file_image.format().ok_or("Unknown format")?;
     let file_image = file_image.decode()?;
     let original_path = combined(image.display_path.to_string(), image.file_name);
-    let (x, y) = (file_image.width() as i16, file_image.height() as i16);
+    let (x, y) = (
+      i16::try_from(file_image.width()).unwrap(),
+      i16::try_from(file_image.height()).unwrap(),
+    );
 
     let (medium_path, medium_x, medium_y) = self.resize(2, &file_image, &format, &image).await?;
     let (low_path, low_x, low_y) = self.resize(4, &file_image, &format, &image).await?;
@@ -94,6 +97,6 @@ impl DefaultMutImageRepository<'_> {
     temp_image.write_to(&mut Cursor::new(&mut bytes), *format)?;
     let path = self.mut_file_repository.create(&bytes, image.file_path, None).await?;
     let path = combined(image.display_path.to_string(), &path.name);
-    Ok((path, x as i16, y as i16))
+    Ok((path, x.try_into().unwrap(), y.try_into().unwrap()))
   }
 }

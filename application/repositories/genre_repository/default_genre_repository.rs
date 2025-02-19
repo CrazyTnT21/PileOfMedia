@@ -42,7 +42,7 @@ impl GenreRepository for DefaultGenreRepository<'_> {
     let total = Select::new::<DbGenre>()
       .transform(inner_join_translation)
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let genres = Select::new::<DbGenre>()
       .distinct_on(DbGenre::TABLE_NAME, "id")
@@ -185,7 +185,7 @@ impl GenreRepository for DefaultGenreRepository<'_> {
     let total = Select::new::<DbGenre>()
       .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let genres = Select::new::<DbGenre>()
       .columns_table::<DbGenre>()

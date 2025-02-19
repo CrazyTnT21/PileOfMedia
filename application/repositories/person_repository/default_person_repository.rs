@@ -48,7 +48,7 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let total = Select::new::<DbPerson>()
       .transform(inner_join_translation)
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let people = Select::new::<DbPerson>()
       .distinct_on(DbPerson::TABLE_NAME, "id")
@@ -208,7 +208,7 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let total = Select::new::<DbPerson>()
       .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let people = Select::new::<DbPerson>()
       .columns_table::<DbPerson>()

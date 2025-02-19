@@ -50,7 +50,7 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     let total = Select::new::<DbCharacter>()
       .transform(inner_join_translation)
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let characters = Select::new::<DbCharacter>()
       .distinct_on(DbCharacter::TABLE_NAME, "id")
@@ -196,7 +196,7 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     let total = Select::new::<DbCharacter>()
       .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let characters = Select::new::<DbCharacter>()
       .columns_table::<DbCharacter>()

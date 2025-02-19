@@ -9,18 +9,21 @@ pub mod mut_user_book_repository;
 
 #[async_trait]
 pub trait UserBookRepository: Send + Sync {
+  //TODO Return Option if user doesn't exist
   async fn get_by_book_id(
     &self,
     user_id: u32,
     book_id: u32,
     languages: &[Language],
   ) -> Result<Option<UserBook>, Box<dyn Error>>;
+  //TODO Return Option if user doesn't exist
   async fn get_by_book_ids(
     &self,
     user_id: u32,
     book_ids: &[u32],
     languages: &[Language],
   ) -> Result<Vec<UserBook>, Box<dyn Error>>;
+  //TODO Return Option if user doesn't exist
   async fn get_by_user_id(&self, user_id: u32, languages: &[Language]) -> Result<Vec<UserBook>, Box<dyn Error>>;
   async fn get_by_user_ids(
     &self,

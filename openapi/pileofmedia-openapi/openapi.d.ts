@@ -3397,7 +3397,6 @@ export interface components {
             items: components["schemas"]["Role"][];
             total: number;
         };
-        /** Format: float */
         Score: number;
         Slug: string;
         Theme: {

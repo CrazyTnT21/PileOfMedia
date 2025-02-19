@@ -42,7 +42,7 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
     let total = Select::new::<DbFranchise>()
       .transform(inner_join_translation)
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let franchises = Select::new::<DbFranchise>()
       .distinct_on(DbFranchise::TABLE_NAME, "id")
@@ -188,7 +188,7 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
     let total = Select::new::<DbFranchise>()
       .transform(|x| inner_join_translation_on_name(x, &name))
       .query_count(self.client)
-      .await? as usize;
+      .await?;
 
     let franchises = Select::new::<DbFranchise>()
       .columns_table::<DbFranchise>()
