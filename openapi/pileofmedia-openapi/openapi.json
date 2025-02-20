@@ -6,8 +6,18 @@
     "license": {
       "name": ""
     },
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
+  "servers": [
+    {
+      "url": "https://pileofmedia.com/api/",
+      "description": "Production server"
+    },
+    {
+      "url": "https://Localhost:5000/api/",
+      "description": "Localhost"
+    }
+  ],
   "paths": {
     "/accounts/login": {
       "post": {
@@ -65,17 +75,6 @@
           "Accounts"
         ],
         "operationId": "refresh_token",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "JWT",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Returned JWT. Valid for an hour",
@@ -107,7 +106,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "user_token": []
+          }
+        ]
       }
     },
     "/accounts/register": {
@@ -445,7 +449,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -555,7 +559,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -621,7 +625,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -675,7 +679,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -731,7 +735,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -794,7 +798,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -848,7 +852,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -904,7 +908,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -970,7 +974,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1034,7 +1038,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1100,7 +1104,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1156,7 +1160,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1219,7 +1223,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1273,7 +1277,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1540,7 +1544,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1861,7 +1865,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2182,7 +2186,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2503,7 +2507,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2824,7 +2828,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3145,7 +3149,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3398,7 +3402,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3454,7 +3458,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3518,7 +3522,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3568,6 +3572,16 @@
               }
             }
           },
+          "403": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "500": {
             "description": "",
             "content": {
@@ -3578,7 +3592,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "user_token": []
+          }
+        ]
       }
     },
     "/users/{id}/books/{book_id}": {
@@ -3591,7 +3610,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3670,7 +3689,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of the item to search for",
+            "description": "Id of the item",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3703,6 +3722,16 @@
               }
             }
           },
+          "403": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "500": {
             "description": "",
             "content": {
@@ -3713,7 +3742,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "user_token": []
+          }
+        ]
       }
     }
   },
@@ -5131,6 +5165,13 @@
             "minimum": 0
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "user_token": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   },

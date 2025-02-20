@@ -5,6 +5,7 @@ use crate::controllers::{
   convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
+use crate::extractors::headers::authorization::JWTAuthorization;
 use crate::extractors::query_pagination::QueryPagination;
 use crate::implementations::{
   get_book_character_repository, get_book_genre_repository, get_book_involved_repository, get_book_repository,
@@ -13,12 +14,14 @@ use crate::implementations::{
   get_role_repository, get_theme_repository, get_user_book_repository, get_user_book_service, get_user_repository,
   get_user_service,
 };
+use crate::jwt::parse_token;
 use crate::openapi::params::header::accept_language::AcceptLanguageParam;
 use crate::openapi::params::path::id::IdParam;
 use crate::openapi::params::path::name::NameParam;
 use crate::openapi::params::query::count::CountParam;
 use crate::openapi::params::query::page::PageParam;
 use crate::openapi::responses::bad_request::BadRequest;
+use crate::openapi::responses::forbidden::Forbidden;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
 use axum::extract::{Path, Query, State};
@@ -175,9 +178,10 @@ async fn get_book_by_id(
 //TODO Authorization
 #[utoipa::path(post, path = "/{id}/books",
   responses(
-    (status = 201, description = "Book association successfully added", body = UserBook), ServerError, BadRequest
+    (status = 201, description = "Book association successfully added", body = UserBook), ServerError, BadRequest, Forbidden
   ),
   request_body(content = CreateUserBook),
+  security(("user_token" = [])),
   params(IdParam,AcceptLanguageParam),
   tag = "Users"
 )]
@@ -185,8 +189,13 @@ async fn add_book(
   Path(id): Path<u32>,
   State(app_state): State<AppState>,
   AcceptLanguageHeader(languages): AcceptLanguageHeader,
+  auth: JWTAuthorization,
   Json(create_user_book): Json<CreateUserBook>,
 ) -> impl IntoResponse {
+  let claim = parse_token(auth, &app_state.secret)?;
+  if claim.user_id != id {
+    return Err((StatusCode::FORBIDDEN, "User id does not match token id".to_string()));
+  }
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
   let result = {
@@ -209,12 +218,21 @@ async fn add_book(
 //TODO Authorization
 #[utoipa::path(delete, path = "/{id}/books/{book_id}",
   responses(
-    (status = 200, description = "Book association successfully removed"), ServerError, BadRequest
+    (status = 200, description = "Book association successfully removed"), ServerError, BadRequest, Forbidden
   ),
   params(IdParam, ("book_id" = u32, Path,)),
+  security(("user_token" = [])),
   tag = "Users"
 )]
-async fn remove_book(Path((id, book_id)): Path<(u32, u32)>, State(app_state): State<AppState>) -> impl IntoResponse {
+async fn remove_book(
+  Path((id, book_id)): Path<(u32, u32)>,
+  State(app_state): State<AppState>,
+  auth: JWTAuthorization,
+) -> impl IntoResponse {
+  let claim = parse_token(auth, &app_state.secret)?;
+  if claim.user_id != id {
+    return Err((StatusCode::FORBIDDEN, "User id does not match token id".to_string()));
+  }
   let mut connection = app_state.pool.get().await.map_err(convert_error)?;
   let transaction = connection.transaction().await.map_err(convert_error)?;
   let result = {

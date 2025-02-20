@@ -1,11 +1,9 @@
 use crate::openapi::responses::forbidden::Forbidden;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{debug_handler, Json, Router};
 use chrono::Utc;
-use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use multipart::MultiPartRequest;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -20,7 +18,7 @@ use crate::implementations::{
   get_mut_account_service, get_mut_file_repository, get_mut_file_service, get_mut_image_repository,
   get_mut_image_service, get_mut_user_repository, get_mut_user_service, get_user_repository,
 };
-use crate::openapi::params::header::json_web_token::JsonWebTokenParam;
+use crate::jwt::{encode_token, parse_token};
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_authorized::NotAuthorized;
 use crate::openapi::responses::server_error::ServerError;
@@ -73,30 +71,10 @@ async fn register(
   };
   transaction.commit().await.map_err(convert_error)?;
 
-  let user_id = account.user.id;
-
   let in_a_week = usize::try_from(Utc::now().timestamp()).unwrap() + 604_800;
-  let claim = create_claim("Register".to_string(), user_id, in_a_week);
-  let token = create_token(claim, app_state.secret.as_bytes())?;
+  let token = encode_token(account.user.id, "Register".to_string(), in_a_week, &app_state.secret)?;
   let user = account.user;
   Ok((StatusCode::CREATED, Json(LoginReturnData { token, user })))
-}
-
-fn create_token(claim: Claim, secret: &[u8]) -> Result<String, (StatusCode, String)> {
-  let key = EncodingKey::from_secret(secret);
-  let header = Header::default();
-
-  jsonwebtoken::encode(&header, &claim, &key).map_err(convert_error)
-}
-
-fn create_claim(subject: String, user_id: u32, exp: usize) -> Claim {
-  Claim {
-    user_id,
-    sub: subject,
-    iss: "PileOfMedia".to_string(),
-    exp,
-    iat: usize::try_from(Utc::now().timestamp()).unwrap(),
-  }
 }
 
 #[utoipa::path(post, path = "/login",
@@ -122,9 +100,9 @@ async fn login(
       .await
       .map_err(convert_service_error)?
   };
+
   let in_a_week = usize::try_from(Utc::now().timestamp()).unwrap() + 604_800;
-  let claim = create_claim("Login".to_string(), account.user.id, in_a_week);
-  let token = create_token(claim, app_state.secret.as_bytes())?;
+  let token = encode_token(account.user.id, "Login".to_string(), in_a_week, &app_state.secret)?;
   let user = account.user;
   Ok((StatusCode::OK, Json(LoginReturnData { token, user })))
 }
@@ -133,31 +111,17 @@ async fn login(
   responses(
     (status = 200, description = "Returned JWT. Valid for an hour", body = String), ServerError, Forbidden
   ),
-  params(JsonWebTokenParam),
+  security(("user_token" = [])),
   tag = "Accounts"
 )]
-async fn refresh_token(auth: JWTAuthorization, State(app_state): State<AppState>) -> impl IntoResponse {
-  let claim = jsonwebtoken::decode::<Claim>(
-    &auth.token,
-    &DecodingKey::from_secret(app_state.secret.as_bytes()),
-    &Validation::default(),
-  );
-  let Ok(claim) = claim else {
-    return Err((StatusCode::FORBIDDEN, "Invalid JWT".to_string()));
-  };
+async fn refresh_token(
+  auth: JWTAuthorization,
+  State(app_state): State<AppState>,
+) -> Result<(StatusCode, String), (StatusCode, String)> {
+  let token = parse_token(auth, &app_state.secret)?;
   let in_one_hour = usize::try_from(Utc::now().timestamp()).unwrap() + 3600;
-  let claim = create_claim("Refresh".to_string(), claim.claims.user_id, in_one_hour);
-  let token = create_token(claim, app_state.secret.as_bytes())?;
+  let token = encode_token(token.user_id, "Refresh".to_string(), in_one_hour, &app_state.secret)?;
   Ok((StatusCode::OK, token))
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Claim {
-  user_id: u32,
-  sub: String,
-  exp: usize,
-  iat: usize,
-  iss: String,
 }
 
 fn get_mut_service<'a>(

@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 
 #[derive(Debug)]
@@ -18,7 +19,7 @@ pub struct JWTAuthorization {
 impl FromStr for JWTAuthorization {
   type Err = JWTError;
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    let mut split_value = s.trim().split("bearer: ");
+    let mut split_value = s.trim().split("Bearer ");
     let (_, token) = (split_value.next(), split_value.next());
     let token = token.ok_or(JWTError::MissingJWT)?.to_string();
     Ok(JWTAuthorization { token })
@@ -49,6 +50,8 @@ impl IntoResponse for JWTError {
       JWTError::AuthorizationMissing => "Authorization header missing",
       JWTError::MissingJWT => "Invalid bearer prefix or jwt missing",
     };
-    Response::new(message.into())
+    let mut response = Response::new(message.into());
+    *response.status_mut() = StatusCode::FORBIDDEN;
+    response
   }
 }

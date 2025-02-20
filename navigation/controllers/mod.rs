@@ -1,14 +1,15 @@
 use axum::http::{HeaderMap, StatusCode};
 use axum::Router;
+use domain::enums::language::Language;
+use services::traits::service_error::ServiceError;
 use std::error::Error;
 use std::fmt::Display;
 use std::str::FromStr;
-use utoipa::OpenApi;
-
-use domain::enums::language::Language;
-use services::traits::service_error::ServiceError;
+use utoipa::openapi::Server;
+use utoipa::{Modify, OpenApi};
 
 use crate::app_state::AppState;
+use crate::controllers::doc::JsonWebTokenParam;
 use crate::extractors::headers::accept_language::AcceptLanguage;
 use crate::extractors::query_pagination::QueryPagination;
 
@@ -22,8 +23,24 @@ mod person_controller;
 mod role_controller;
 mod theme_controller;
 mod user_controller;
-pub fn generate_openapi_spec() -> Result<String, impl Error> {
-  doc::ApiDoc::openapi().to_pretty_json()
+pub fn openapi_spec(api_url: &str) -> utoipa::openapi::OpenApi {
+  let mut doc = doc::ApiDoc::openapi();
+  let servers = doc.servers.get_or_insert_default();
+
+  let mut local_server = Server::new("https://Localhost:5000/api/");
+  local_server.description = Some("Localhost".to_string());
+
+  let mut production_server = Server::new(api_url);
+  production_server.description = Some("Production server".to_string());
+
+  servers.push(production_server);
+  servers.push(local_server);
+  let jwt = JsonWebTokenParam;
+  jwt.modify(&mut doc);
+  doc
+}
+pub fn generate_openapi_spec(api_url: &str) -> Result<String, impl Error> {
+  openapi_spec(api_url).to_pretty_json()
 }
 pub fn route_controllers(app_state: AppState) -> Router {
   Router::new()

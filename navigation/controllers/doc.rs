@@ -66,6 +66,8 @@ use domain::items_total::ThemesTotal;
 use domain::items_total::UsersTotal;
 use domain::score::Score;
 use domain::slug::Slug;
+use utoipa::openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme};
+use utoipa::openapi::OpenApi;
 
 use crate::controllers::account_controller::account_doc::AccountDoc;
 use crate::controllers::account_controller::LoginData;
@@ -165,3 +167,21 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     CreateUserBook
   )))]
 pub(crate) struct ApiDoc;
+
+pub struct JsonWebTokenParam;
+
+impl utoipa::Modify for JsonWebTokenParam {
+  fn modify(&self, openapi: &mut OpenApi) {
+    if let Some(components) = openapi.components.as_mut() {
+      components.add_security_scheme(
+        "user_token",
+        SecurityScheme::Http(
+          HttpBuilder::new()
+            .scheme(HttpAuthScheme::Bearer)
+            .bearer_format("JWT")
+            .build(),
+        ),
+      );
+    }
+  }
+}

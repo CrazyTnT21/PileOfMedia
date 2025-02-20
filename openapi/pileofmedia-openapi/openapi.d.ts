@@ -64,10 +64,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header: {
-                    /** @description JWT */
-                    Authorization: string;
-                };
+                header?: never;
                 path?: never;
                 cookie?: never;
             };
@@ -401,7 +398,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -500,7 +497,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -556,7 +553,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     character_id: number;
                 };
@@ -594,7 +591,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     character_id: number;
                 };
@@ -647,7 +644,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -703,7 +700,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     genre_id: number;
                 };
@@ -741,7 +738,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     genre_id: number;
                 };
@@ -794,7 +791,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -850,7 +847,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     person_id: number;
                     role_id: number;
@@ -889,7 +886,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     person_id: number;
                     role_id: number;
@@ -940,7 +937,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -1003,7 +1000,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -1059,7 +1056,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     theme_id: number;
                 };
@@ -1097,7 +1094,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     theme_id: number;
                 };
@@ -1310,7 +1307,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -1569,7 +1566,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -1828,7 +1825,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -2087,7 +2084,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -2346,7 +2343,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -2605,7 +2602,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -2816,7 +2813,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -2879,7 +2876,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -2922,7 +2919,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                 };
                 cookie?: never;
@@ -2943,6 +2940,14 @@ export interface paths {
                     };
                 };
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2981,7 +2986,7 @@ export interface paths {
                     "Accept-Language"?: string | null;
                 };
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     book_id: number;
                 };
@@ -3029,7 +3034,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description Id of the item to search for */
+                    /** @description Id of the item */
                     id: number;
                     book_id: number;
                 };
@@ -3045,6 +3050,14 @@ export interface paths {
                     content?: never;
                 };
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
