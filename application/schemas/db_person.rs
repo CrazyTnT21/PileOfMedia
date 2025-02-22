@@ -1,8 +1,8 @@
 use chrono::NaiveDate;
 use domain::available_translations::AvailableTranslations;
 use domain::entities::image::Image;
-use domain::entities::person::person_translation::PersonTranslation;
 use domain::entities::person::Person;
+use domain::entities::person::person_translation::PersonTranslation;
 use from_row::FromRow;
 use tokio_postgres::Row;
 

@@ -1,6 +1,6 @@
 use domain::available_translations::AvailableTranslations;
-use domain::entities::franchise::franchise_translation::FranchiseTranslation;
 use domain::entities::franchise::Franchise;
+use domain::entities::franchise::franchise_translation::FranchiseTranslation;
 use from_row::FromRow;
 use tokio_postgres::Row;
 

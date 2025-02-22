@@ -1,8 +1,8 @@
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
 use async_trait::async_trait;
-use domain::entities::genre::create_genre::CreateGenre;
 use domain::entities::genre::Genre;
+use domain::entities::genre::create_genre::CreateGenre;
 use std::fmt::{Display, Formatter};
 
 #[async_trait]

@@ -2,8 +2,8 @@ use std::error::Error;
 
 use async_trait::async_trait;
 
-use domain::entities::character::create_partial_character::CreatePartialCharacter;
 use domain::entities::character::Character;
+use domain::entities::character::create_partial_character::CreatePartialCharacter;
 
 #[async_trait]
 pub trait MutCharacterRepository: Send + Sync {

@@ -2,8 +2,8 @@ use std::error::Error;
 
 use async_trait::async_trait;
 
-use domain::entities::person::create_partial_person::CreatePartialPerson;
 use domain::entities::person::Person;
+use domain::entities::person::create_partial_person::CreatePartialPerson;
 
 #[async_trait]
 pub trait MutPersonRepository: Send + Sync {

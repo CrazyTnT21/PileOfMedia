@@ -4,12 +4,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::franchise::create_partial_franchise::CreatePartialFranchise;
 use domain::entities::franchise::Franchise;
+use domain::entities::franchise::create_partial_franchise::CreatePartialFranchise;
 use domain::enums::language::Language;
 use from_row::Table;
-use repositories::franchise_repository::mut_franchise_repository::MutFranchiseRepository;
 use repositories::franchise_repository::FranchiseRepository;
+use repositories::franchise_repository::mut_franchise_repository::MutFranchiseRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;

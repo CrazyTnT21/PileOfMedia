@@ -3,12 +3,12 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
+use domain::entities::person::Person;
 use domain::entities::person::create_partial_person::{CreatePartialPerson, CreatePartialPersonTranslation};
 use domain::entities::person::create_person::{CreatePerson, CreatePersonTranslation};
-use domain::entities::person::Person;
 use domain::enums::language::Language;
-use repositories::person_repository::mut_person_repository::MutPersonRepository;
 use repositories::person_repository::PersonRepository;
+use repositories::person_repository::mut_person_repository::MutPersonRepository;
 use services::image_service::mut_image_service::MutImageService;
 use services::person_service::mut_person_service::MutPersonServiceError::OtherError;
 use services::person_service::mut_person_service::{MutPersonService, MutPersonServiceError};

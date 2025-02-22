@@ -4,12 +4,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::person::create_partial_person::{CreatePartialPerson, CreatePartialPersonTranslation};
 use domain::entities::person::Person;
+use domain::entities::person::create_partial_person::{CreatePartialPerson, CreatePartialPersonTranslation};
 use domain::enums::language::Language;
 use from_row::Table;
-use repositories::person_repository::mut_person_repository::MutPersonRepository;
 use repositories::person_repository::PersonRepository;
+use repositories::person_repository::mut_person_repository::MutPersonRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;

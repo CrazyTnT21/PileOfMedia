@@ -2,7 +2,7 @@ use proc_macro::{TokenStream, TokenTree};
 
 use quote::quote;
 use syn::__private::Span;
-use syn::{parse_macro_input, Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, Meta, Type};
+use syn::{Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, Meta, Type, parse_macro_input};
 
 #[proc_macro_derive(FromRow, attributes(rename))]
 pub fn from_row(item: TokenStream) -> TokenStream {
@@ -110,7 +110,7 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
   let columns_impl = row_columns_impl(&ast.ident, &columns);
   let name = &ast.ident;
   let table_name = renamed_field(&ast.attrs).unwrap_or_else(|| ast.ident.to_string());
-  let gen = quote! {
+  let implementation = quote! {
     #from_row_impl
     #columns_impl
     impl from_row::Table for #name {
@@ -119,8 +119,8 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
   };
 
   #[cfg(feature = "testing")]
-  let gen = quote!(
-    #gen
+  let implementation = quote!(
+    #implementation
     #[cfg(test)]
     #[tokio::test]
     async fn test_from_row(){
@@ -128,7 +128,7 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
     }
   );
 
-  gen.into()
+  implementation.into()
 }
 
 fn row_columns_impl(name: &Ident, columns: &[proc_macro2::TokenStream]) -> proc_macro2::TokenStream {

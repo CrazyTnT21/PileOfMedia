@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::marker::PhantomData;
 
-use tokio_postgres::types::ToSql;
 use tokio_postgres::Client;
+use tokio_postgres::types::ToSql;
 
 use domain::pagination::Pagination;
 use from_row::{FromRow, Table};
@@ -351,7 +351,9 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
     let order_by_sql = self.order_by_sql().unwrap_or_default();
     let from = self.from;
 
-    format!("SELECT {distinct_sql} {columns} FROM {from} {alias_sql} {joins} {where_sql}{group_by_sql} {having_sql} {order_by_sql} {limit_sql} {offset_sql}")
+    format!(
+      "SELECT {distinct_sql} {columns} FROM {from} {alias_sql} {joins} {where_sql}{group_by_sql} {having_sql} {order_by_sql} {limit_sql} {offset_sql}"
+    )
   }
 
   pub async fn query(self, connection: &'a Client) -> Result<Vec<T>, Box<dyn Error>> {

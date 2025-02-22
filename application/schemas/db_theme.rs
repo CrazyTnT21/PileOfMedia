@@ -1,6 +1,6 @@
 use domain::available_translations::AvailableTranslations;
-use domain::entities::theme::theme_translation::ThemeTranslation;
 use domain::entities::theme::Theme;
+use domain::entities::theme::theme_translation::ThemeTranslation;
 use from_row::FromRow;
 use tokio_postgres::Row;
 

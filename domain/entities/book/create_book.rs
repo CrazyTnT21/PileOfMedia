@@ -54,9 +54,9 @@ pub mod create_book_part {
   // use crate::entities::book::create_book_edition::CreateBookEditionData;
   use crate::entities::image::create_image::CreateImage;
   use crate::vec_single::{Single, SingleVecError};
-  use multipart::axum::extract::multipart::MultipartError;
   use multipart::axum::extract::Multipart;
-  use multipart::{serialize_parts, FromMultiPart};
+  use multipart::axum::extract::multipart::MultipartError;
+  use multipart::{FromMultiPart, serialize_parts};
   use serde_json::from_slice;
   use std::error::Error;
   use std::fmt::{Display, Formatter};

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
+use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, PasswordHasher};
 use async_trait::async_trait;
 
@@ -10,9 +10,9 @@ use domain::entities::account::create_partial_account::CreatePartialAccount;
 use domain::entities::account::{Account, Password};
 use domain::entities::user::create_user::CreateUser;
 use repositories::account_repository::mut_account_repository::MutAccountRepository;
+use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountServiceError::OtherError;
 use services::account_service::mut_account_service::{MutAccountService, MutAccountServiceError};
-use services::account_service::AccountService;
 use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::{ClientError, ServerError};
 use services::user_service::mut_user_service::MutUserService;

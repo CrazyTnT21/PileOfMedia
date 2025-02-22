@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 use tokio_postgres::types::private::BytesMut;
-use tokio_postgres::types::{to_sql_checked, FromSql, IsNull, Kind, ToSql, Type};
+use tokio_postgres::types::{FromSql, IsNull, Kind, ToSql, Type, to_sql_checked};
 
 use domain::enums::language::Language;
 use from_row::from_row_impl;

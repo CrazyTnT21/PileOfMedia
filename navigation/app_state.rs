@@ -1,5 +1,5 @@
-use bb8_postgres::bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
+use bb8_postgres::bb8::Pool;
 use tokio_postgres::NoTls;
 
 #[derive(Clone)]

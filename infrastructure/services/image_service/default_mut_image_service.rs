@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
+use domain::entities::image::Image;
 use domain::entities::image::create_image::CreateImage;
 use domain::entities::image::create_partial_image::CreatePartialImage;
-use domain::entities::image::Image;
 use repositories::image_repository::mut_image_repository::MutImageRepository;
 use services::file_service::mut_file_service::MutFileService;
 use services::image_service::mut_image_service::MutImageServiceError::OtherError;

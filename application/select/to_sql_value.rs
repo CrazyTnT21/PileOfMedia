@@ -1,6 +1,6 @@
 use crate::enums::db_language::DbLanguage;
 use crate::enums::db_user_status::DbUserStatus;
-use crate::select::expression::{next, IntoSql};
+use crate::select::expression::{IntoSql, next};
 use chrono::{NaiveDate, NaiveTime};
 use tokio_postgres::types::ToSql;
 

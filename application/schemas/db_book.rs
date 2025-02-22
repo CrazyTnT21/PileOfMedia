@@ -1,10 +1,10 @@
 use chrono::NaiveDate;
 use domain::available_translations::AvailableTranslations;
+use domain::entities::book::Book;
 use domain::entities::book::book_character::BookCharacter;
 use domain::entities::book::book_involved::BookInvolved;
 use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::book_translation::BookTranslation;
-use domain::entities::book::Book;
 use domain::entities::franchise::Franchise;
 use domain::entities::genre::Genre;
 use domain::entities::theme::Theme;

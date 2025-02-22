@@ -4,8 +4,8 @@ use std::sync::Arc;
 
 use crate::convert_to_sql::to_i32;
 use crate::schemas::db_user_book::DbUserBook;
-use crate::select::expression::Expression;
 use crate::select::Select;
+use crate::select::expression::Expression;
 use async_trait::async_trait;
 use domain::entities::book::Book;
 use domain::entities::user::user_book::UserBook;

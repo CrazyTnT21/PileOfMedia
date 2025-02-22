@@ -27,8 +27,8 @@ use crate::openapi::params::query::page::PageParam;
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
-use services::person_service::mut_person_service::MutPersonService;
 use services::person_service::PersonService;
+use services::person_service::mut_person_service::MutPersonService;
 
 pub mod person_doc;
 

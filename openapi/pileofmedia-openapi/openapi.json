@@ -6,7 +6,7 @@
     "license": {
       "name": ""
     },
-    "version": "0.2.2"
+    "version": "0.3.0"
   },
   "servers": [
     {
@@ -3365,6 +3365,62 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UsersTotal"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/username/{username}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "get_by_username",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "Name of the item to search for",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned user based on the username",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  ],
+                  "nullable": true
                 }
               }
             }

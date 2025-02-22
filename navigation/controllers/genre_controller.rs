@@ -8,8 +8,8 @@ use axum::{Json, Router};
 use tokio_postgres::{Client, Transaction};
 
 use domain::entities::genre::create_genre::CreateGenre;
-use services::genre_service::mut_genre_service::MutGenreService;
 use services::genre_service::GenreService;
+use services::genre_service::mut_genre_service::MutGenreService;
 
 use crate::app_state::AppState;
 use crate::controllers::{

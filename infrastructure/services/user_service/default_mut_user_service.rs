@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
+use domain::entities::user::User;
 use domain::entities::user::create_partial_user::CreatePartialUser;
 use domain::entities::user::create_user::CreateUser;
-use domain::entities::user::User;
 use repositories::user_repository::mut_user_repository::MutUserRepository;
 use services::image_service::mut_image_service::MutImageService;
 use services::traits::service_error::ServiceError;

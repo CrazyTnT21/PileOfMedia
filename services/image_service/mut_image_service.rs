@@ -2,8 +2,8 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use domain::entities::image::create_image::CreateImage;
 use domain::entities::image::Image;
+use domain::entities::image::create_image::CreateImage;
 
 use crate::traits::service_error::ServiceError;
 

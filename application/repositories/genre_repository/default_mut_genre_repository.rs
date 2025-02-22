@@ -4,12 +4,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::genre::create_partial_genre::CreatePartialGenre;
 use domain::entities::genre::Genre;
+use domain::entities::genre::create_partial_genre::CreatePartialGenre;
 use domain::enums::language::Language;
 use from_row::Table;
-use repositories::genre_repository::mut_genre_repository::MutGenreRepository;
 use repositories::genre_repository::GenreRepository;
+use repositories::genre_repository::mut_genre_repository::MutGenreRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;

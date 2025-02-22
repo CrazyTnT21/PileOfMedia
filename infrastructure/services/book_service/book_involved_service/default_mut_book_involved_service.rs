@@ -3,9 +3,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use domain::entities::involved::InvolvedId;
-use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
-use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
 use repositories::book_repository::BookRepository;
+use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
+use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
 use repositories::person_repository::PersonRepository;
 use repositories::role_repository::RoleRepository;
 use services::book_service::book_involved_service::mut_book_involved_service::{

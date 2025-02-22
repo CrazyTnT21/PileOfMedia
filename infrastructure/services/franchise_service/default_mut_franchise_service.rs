@@ -3,14 +3,14 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
+use domain::entities::franchise::Franchise;
 use domain::entities::franchise::create_franchise::{CreateFranchise, CreateFranchiseTranslation};
 use domain::entities::franchise::create_partial_franchise::{
   CreatePartialFranchise, CreatePartialFranchiseTranslation,
 };
-use domain::entities::franchise::Franchise;
 use domain::enums::language::Language;
-use repositories::franchise_repository::mut_franchise_repository::MutFranchiseRepository;
 use repositories::franchise_repository::FranchiseRepository;
+use repositories::franchise_repository::mut_franchise_repository::MutFranchiseRepository;
 use services::franchise_service::mut_franchise_service::{MutFranchiseService, MutFranchiseServiceError};
 use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;

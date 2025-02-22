@@ -1,8 +1,8 @@
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
 use async_trait::async_trait;
-use domain::entities::character::create_character::CreateCharacter;
 use domain::entities::character::Character;
+use domain::entities::character::create_character::CreateCharacter;
 use domain::enums::language::Language;
 use std::fmt::{Display, Formatter};
 

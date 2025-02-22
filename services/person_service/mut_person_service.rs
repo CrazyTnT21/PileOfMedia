@@ -4,8 +4,8 @@ use async_trait::async_trait;
 
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
-use domain::entities::person::create_person::CreatePerson;
 use domain::entities::person::Person;
+use domain::entities::person::create_person::CreatePerson;
 
 #[async_trait]
 pub trait MutPersonService: Send + Sync {

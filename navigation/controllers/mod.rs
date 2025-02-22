@@ -1,5 +1,5 @@
-use axum::http::{HeaderMap, StatusCode};
 use axum::Router;
+use axum::http::{HeaderMap, StatusCode};
 use domain::enums::language::Language;
 use services::traits::service_error::ServiceError;
 use std::error::Error;

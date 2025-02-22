@@ -1,5 +1,5 @@
-use domain::entities::image::image_data::ImageData;
 use domain::entities::image::Image;
+use domain::entities::image::image_data::ImageData;
 use from_row::FromRow;
 use tokio_postgres::Row;
 

@@ -6,11 +6,11 @@ use async_trait::async_trait;
 use tokio_postgres::Client;
 
 use domain::available_translations::AvailableTranslations;
+use domain::entities::book::Book;
 use domain::entities::book::book_character::BookCharacter;
 use domain::entities::book::book_involved::BookInvolved;
 use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::book_translation::BookTranslation;
-use domain::entities::book::Book;
 use domain::entities::franchise::Franchise;
 use domain::entities::genre::Genre;
 use domain::entities::theme::Theme;
@@ -20,11 +20,11 @@ use domain::pagination::Pagination;
 use domain::slug::Slug;
 use domain::vec_tuple_to_map::vec_tuple_to_map;
 use from_row::Table;
+use repositories::book_repository::BookRepository;
 use repositories::book_repository::book_character_repository::BookCharacterRepository;
 use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use repositories::book_repository::book_involved_repository::BookInvolvedRepository;
 use repositories::book_repository::book_theme_repository::BookThemeRepository;
-use repositories::book_repository::BookRepository;
 use repositories::franchise_repository::FranchiseRepository;
 use repositories::image_repository::ImageRepository;
 
@@ -34,12 +34,12 @@ use crate::schemas::db_book::DbBook;
 use crate::schemas::db_book_statistic::DbBookStatistic;
 use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::schemas::db_rating::DbRating;
+use crate::select::Select;
 use crate::select::conditions::column_equal::ColumnEqual;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
-use crate::select::Select;
 
 pub struct DefaultBookRepository<'a> {
   client: &'a Client,
@@ -157,7 +157,7 @@ impl BookRepository for DefaultBookRepository<'_> {
     languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Book>, Box<dyn Error>> {
-    let title = format!("%{title}%");
+    let title = format!("%{}%", title.replace("%", "\\%").replace("_", "\\_"));
 
     let total = Select::new::<DbBookTranslation>()
       .where_expression(book_translation_with_title(&title))

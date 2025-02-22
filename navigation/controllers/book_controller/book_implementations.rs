@@ -2,16 +2,16 @@ use std::sync::Arc;
 
 use tokio_postgres::{Client, Transaction};
 
-use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
-use services::book_service::book_character_service::BookCharacterService;
-use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
-use services::book_service::book_genre_service::BookGenreService;
-use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
-use services::book_service::book_involved_service::BookInvolvedService;
-use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
-use services::book_service::book_theme_service::BookThemeService;
-use services::book_service::mut_book_service::MutBookService;
 use services::book_service::BookService;
+use services::book_service::book_character_service::BookCharacterService;
+use services::book_service::book_character_service::mut_book_character_service::MutBookCharacterService;
+use services::book_service::book_genre_service::BookGenreService;
+use services::book_service::book_genre_service::mut_book_genre_service::MutBookGenreService;
+use services::book_service::book_involved_service::BookInvolvedService;
+use services::book_service::book_involved_service::mut_book_involved_service::MutBookInvolvedService;
+use services::book_service::book_theme_service::BookThemeService;
+use services::book_service::book_theme_service::mut_book_theme_service::MutBookThemeService;
+use services::book_service::mut_book_service::MutBookService;
 
 use crate::implementations::{
   get_book_character_repository, get_book_character_service, get_book_genre_repository, get_book_genre_service,

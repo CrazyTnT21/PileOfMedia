@@ -25,7 +25,6 @@ const output = await openapiTS(openApiSchema, {
     if (metadata.path.endsWith('application/octet-stream') || schemaObject.format === "binary")
       return transformSchemaObject(schemaObject, BLOB);
   },
-  enum: true
 });
 
 function transformSchemaObject(schemaObject, type) {

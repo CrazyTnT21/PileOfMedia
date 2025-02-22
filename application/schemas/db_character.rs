@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use domain::available_translations::AvailableTranslations;
-use domain::entities::character::character_translation::CharacterTranslation;
 use domain::entities::character::Character;
+use domain::entities::character::character_translation::CharacterTranslation;
 use domain::entities::image::Image;
 use from_row::FromRow;
 use tokio_postgres::Row;

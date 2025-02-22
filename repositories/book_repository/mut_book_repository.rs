@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use domain::entities::book::create_partial_book::CreatePartialBook;
 use domain::entities::book::Book;
+use domain::entities::book::create_partial_book::CreatePartialBook;
 use std::error::Error;
 
 #[async_trait]

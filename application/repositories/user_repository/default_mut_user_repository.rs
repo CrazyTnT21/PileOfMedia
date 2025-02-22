@@ -4,10 +4,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::user::create_partial_user::CreatePartialUser;
 use domain::entities::user::User;
-use repositories::user_repository::mut_user_repository::MutUserRepository;
+use domain::entities::user::create_partial_user::CreatePartialUser;
 use repositories::user_repository::UserRepository;
+use repositories::user_repository::mut_user_repository::MutUserRepository;
 
 use crate::insert::Insert;
 use crate::schemas::db_user::DbUser;

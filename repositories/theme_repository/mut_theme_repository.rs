@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use domain::entities::theme::create_partial_theme::CreatePartialTheme;
 use domain::entities::theme::Theme;
+use domain::entities::theme::create_partial_theme::CreatePartialTheme;
 use std::error::Error;
 
 #[async_trait]

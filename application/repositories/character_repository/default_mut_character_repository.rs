@@ -4,14 +4,14 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
+use domain::entities::character::Character;
 use domain::entities::character::create_partial_character::{
   CreatePartialCharacter, CreatePartialCharacterTranslation,
 };
-use domain::entities::character::Character;
 use domain::enums::language::Language;
 use from_row::Table;
-use repositories::character_repository::mut_character_repository::MutCharacterRepository;
 use repositories::character_repository::CharacterRepository;
+use repositories::character_repository::mut_character_repository::MutCharacterRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;

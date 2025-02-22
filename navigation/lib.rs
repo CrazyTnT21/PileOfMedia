@@ -4,8 +4,8 @@ use std::error::Error;
 
 use axum::http::Method;
 use axum::routing::get;
-use bb8_postgres::bb8::{ManageConnection, Pool};
 use bb8_postgres::PostgresConnectionManager;
+use bb8_postgres::bb8::{ManageConnection, Pool};
 use dotenvy::dotenv;
 use tokio_postgres::NoTls;
 use tower_http::cors::{Any, CorsLayer};
@@ -34,7 +34,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
 
   let cors = CorsLayer::new()
     .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-    .allow_headers([CONTENT_TYPE,AUTHORIZATION])
+    .allow_headers([CONTENT_TYPE, AUTHORIZATION])
     .allow_origin(Any);
 
   let app_state = AppState {

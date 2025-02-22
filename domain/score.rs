@@ -212,11 +212,11 @@ pub mod serde {
     }
   }
   impl<
-      'de,
-      Number: Deserialize<'de> + TryInto<Score<Number, MIN, MAX>, Error: Display>,
-      const MIN: usize,
-      const MAX: usize,
-    > serde::Deserialize<'de> for Score<Number, MIN, MAX>
+    'de,
+    Number: Deserialize<'de> + TryInto<Score<Number, MIN, MAX>, Error: Display>,
+    const MIN: usize,
+    const MAX: usize,
+  > serde::Deserialize<'de> for Score<Number, MIN, MAX>
   {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

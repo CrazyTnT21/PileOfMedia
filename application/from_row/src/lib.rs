@@ -1,7 +1,7 @@
 use tokio_postgres::Row;
 
-pub use from_row_macros::query_row;
 pub use from_row_macros::FromRow;
+pub use from_row_macros::query_row;
 
 use crate::postgres_type::TypeKind;
 
@@ -109,9 +109,9 @@ mod chrono_from {
   use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
   use tokio_postgres::types::Type;
 
-  use crate::postgres_type::{PostgresType, TypeKind};
   use crate::FromRowOption;
-  use crate::{from_row_impl, FromRow};
+  use crate::postgres_type::{PostgresType, TypeKind};
+  use crate::{FromRow, from_row_impl};
 
   from_row_impl!(NaiveDate);
   from_row_impl!(NaiveTime);
@@ -132,8 +132,8 @@ pub mod testing {
   use std::error::Error;
   use std::sync::Mutex;
 
-  use bb8_postgres::bb8::Pool;
   use bb8_postgres::PostgresConnectionManager;
+  use bb8_postgres::bb8::Pool;
   use testcontainers::core::{IntoContainerPort, WaitFor};
   use testcontainers::runners::AsyncRunner;
   use testcontainers::{ContainerAsync, GenericImage, ImageExt};

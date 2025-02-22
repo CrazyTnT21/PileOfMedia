@@ -3,12 +3,12 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
+use domain::entities::role::Role;
 use domain::entities::role::create_partial_role::{CreatePartialRole, CreatePartialRoleTranslation};
 use domain::entities::role::create_role::{CreateRole, CreateRoleTranslation};
-use domain::entities::role::Role;
 use domain::enums::language::Language;
-use repositories::role_repository::mut_role_repository::MutRoleRepository;
 use repositories::role_repository::RoleRepository;
+use repositories::role_repository::mut_role_repository::MutRoleRepository;
 use services::role_service::mut_role_service::{MutRoleService, MutRoleServiceError};
 use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;

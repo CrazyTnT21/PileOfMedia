@@ -9,14 +9,14 @@ use crate::convert_to_sql::to_i32;
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_character::DbCharacter;
 use crate::schemas::db_character_translation::DbCharacterTranslation;
+use crate::select::Select;
 use crate::select::combined_tuple::CombinedType;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
-use crate::select::Select;
-use domain::entities::character::character_translation::CharacterTranslation;
 use domain::entities::character::Character;
+use domain::entities::character::character_translation::CharacterTranslation;
 use domain::entities::image::Image;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
@@ -190,7 +190,7 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Character>, Box<dyn Error>> {
-    let name = format!("%{name}%");
+    let name = format!("%{}%", name.replace("%", "\\%").replace("_", "\\_"));
 
     let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
     let total = Select::new::<DbCharacter>()

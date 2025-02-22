@@ -7,10 +7,10 @@ use tokio_postgres::Client;
 
 use crate::convert_to_sql::to_i32;
 use crate::schemas::db_book_involved::DbBookInvolved;
+use crate::select::Select;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
-use crate::select::Select;
 use domain::entities::book::book_involved::BookInvolved;
 use domain::entities::involved::InvolvedId;
 use domain::entities::person::Person;

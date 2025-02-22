@@ -6,10 +6,10 @@ use tokio_postgres::Transaction;
 
 use crate::insert::Insert;
 use crate::schemas::db_account::DbAccount;
-use domain::entities::account::create_partial_account::CreatePartialAccount;
 use domain::entities::account::Account;
-use repositories::account_repository::mut_account_repository::MutAccountRepository;
+use domain::entities::account::create_partial_account::CreatePartialAccount;
 use repositories::account_repository::AccountRepository;
+use repositories::account_repository::mut_account_repository::MutAccountRepository;
 
 pub struct DefaultMutAccountRepository<'a> {
   transaction: &'a Transaction<'a>,

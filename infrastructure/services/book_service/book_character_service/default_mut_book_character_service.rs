@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
-use repositories::book_repository::book_character_repository::BookCharacterRepository;
 use repositories::book_repository::BookRepository;
+use repositories::book_repository::book_character_repository::BookCharacterRepository;
+use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
 use repositories::character_repository::CharacterRepository;
 use services::book_service::book_character_service::mut_book_character_service::{
   MutBookCharacterService, MutBookCharacterServiceError,

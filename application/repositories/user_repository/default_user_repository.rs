@@ -8,17 +8,18 @@ use domain::entities::image::Image;
 use domain::entities::user::User;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
+use domain::vec_single::{Single};
 use from_row::Table;
 use repositories::image_repository::ImageRepository;
 use repositories::user_repository::UserRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::schemas::db_user::DbUser;
+use crate::select::Select;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
-use crate::select::Select;
 
 pub struct DefaultUserRepository<'a> {
   client: &'a Client,
@@ -79,7 +80,7 @@ impl UserRepository for DefaultUserRepository<'_> {
   }
 
   async fn get_by_name(&self, name: &str, pagination: Pagination) -> Result<ItemsTotal<User>, Box<dyn Error>> {
-    let name = format!("%{name}%");
+    let name = format!("%{}%", name.replace("%", "\\%").replace("_", "\\_"));
 
     let total = Select::new::<DbUser>()
       .where_expression(Expression::new(ValueILike::new((DbUser::TABLE_NAME, "name"), &name)))
@@ -97,6 +98,18 @@ impl UserRepository for DefaultUserRepository<'_> {
       items: self.to_entities(users).await?,
       total,
     })
+  }
+  async fn get_by_username(&self, name: &str) -> Result<Option<User>, Box<dyn Error>> {
+    let name = name.replace("%", "\\%").replace("_", "\\_");
+
+    let users = Select::new::<DbUser>()
+      .columns::<DbUser>(DbUser::TABLE_NAME)
+      .where_expression(Expression::value_equal(DbUser::TABLE_NAME, "name", &name))
+      .query(self.client)
+      .await?;
+
+    let item = self.to_entities(users).await?.single().ok();
+    Ok(item)
   }
 
   async fn filter_existing(&self, users: &[u32]) -> Result<Vec<u32>, Box<dyn Error>> {

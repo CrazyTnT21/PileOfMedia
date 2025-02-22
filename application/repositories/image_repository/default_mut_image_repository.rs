@@ -7,12 +7,12 @@ use image::imageops::FilterType;
 use image::{DynamicImage, ImageFormat};
 use tokio_postgres::Transaction;
 
-use domain::entities::image::create_partial_image::CreatePartialImage;
 use domain::entities::image::Image;
-use repositories::file_repository::mut_file_repository::MutFileRepository;
+use domain::entities::image::create_partial_image::CreatePartialImage;
 use repositories::file_repository::FileRepository;
-use repositories::image_repository::mut_image_repository::MutImageRepository;
+use repositories::file_repository::mut_file_repository::MutFileRepository;
 use repositories::image_repository::ImageRepository;
+use repositories::image_repository::mut_image_repository::MutImageRepository;
 
 use crate::insert::Insert;
 use crate::schemas::db_image::DbImage;

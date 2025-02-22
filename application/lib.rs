@@ -1,5 +1,5 @@
-use bb8_postgres::bb8::PooledConnection;
 use bb8_postgres::PostgresConnectionManager;
+use bb8_postgres::bb8::PooledConnection;
 use tokio_postgres::NoTls;
 
 mod convert_to_sql;

@@ -3,12 +3,12 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
+use domain::entities::genre::Genre;
 use domain::entities::genre::create_genre::{CreateGenre, CreateGenreTranslation};
 use domain::entities::genre::create_partial_genre::{CreatePartialGenre, CreatePartialGenreTranslation};
-use domain::entities::genre::Genre;
 use domain::enums::language::Language;
-use repositories::genre_repository::mut_genre_repository::MutGenreRepository;
 use repositories::genre_repository::GenreRepository;
+use repositories::genre_repository::mut_genre_repository::MutGenreRepository;
 use services::genre_service::mut_genre_service::{MutGenreService, MutGenreServiceError};
 use services::traits::service_error::ServiceError;
 use services::traits::service_error::ServiceError::ClientError;

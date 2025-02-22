@@ -2801,6 +2801,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/username/{username}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Name of the item to search for */
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Returned user based on the username */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["User"] | null;
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/{id}": {
         parameters: {
             query?: never;
@@ -3348,7 +3402,7 @@ export interface components {
             role_id: number;
         };
         /** @enum {string} */
-        Language: Language;
+        Language: "EN" | "DE" | "JA" | "ES" | "DA" | "NL" | "KO";
         LoginData: {
             email: string;
             password: string;
@@ -3456,7 +3510,7 @@ export interface components {
             status: components["schemas"]["UserStatus"];
         };
         /** @enum {string} */
-        UserStatus: UserStatus;
+        UserStatus: "NotStarted" | "Ongoing" | "Finished" | "Paused";
         UsersTotal: {
             items: components["schemas"]["User"][];
             total: number;
@@ -3469,19 +3523,4 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export enum Language {
-    EN = "EN",
-    DE = "DE",
-    JA = "JA",
-    ES = "ES",
-    DA = "DA",
-    NL = "NL",
-    KO = "KO"
-}
-export enum UserStatus {
-    NotStarted = "NotStarted",
-    Ongoing = "Ongoing",
-    Finished = "Finished",
-    Paused = "Paused"
-}
 export type operations = Record<string, never>;

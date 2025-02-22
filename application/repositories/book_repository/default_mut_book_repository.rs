@@ -4,16 +4,16 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Transaction;
 
-use domain::entities::book::create_partial_book::CreatePartialBook;
 use domain::entities::book::Book;
+use domain::entities::book::create_partial_book::CreatePartialBook;
 use domain::enums::language::Language;
 use from_row::Table;
+use repositories::book_repository::BookRepository;
 use repositories::book_repository::book_character_repository::mut_book_character_repository::MutBookCharacterRepository;
 use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
 use repositories::book_repository::book_involved_repository::mut_book_involved_repository::MutBookInvolvedRepository;
 use repositories::book_repository::book_theme_repository::mut_book_theme_repository::MutBookThemeRepository;
 use repositories::book_repository::mut_book_repository::MutBookRepository;
-use repositories::book_repository::BookRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::delete::Delete;
@@ -23,9 +23,9 @@ use crate::schemas::db_book::DbBook;
 use crate::schemas::db_book_statistic::DbBookStatistic;
 use crate::schemas::db_book_translation::DbBookTranslation;
 use crate::schemas::db_rating::DbRating;
+use crate::select::Select;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
-use crate::select::Select;
 
 pub struct DefaultMutBookRepository<'a> {
   transaction: &'a Transaction<'a>,

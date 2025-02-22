@@ -28,8 +28,8 @@ use crate::openapi::params::query::page::PageParam;
 use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_found::NotFound;
 use crate::openapi::responses::server_error::ServerError;
-use services::character_service::mut_character_service::MutCharacterService;
 use services::character_service::CharacterService;
+use services::character_service::mut_character_service::MutCharacterService;
 
 pub mod character_doc;
 

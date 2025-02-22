@@ -14,10 +14,10 @@ use repositories::theme_repository::ThemeRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::schemas::db_book_theme::DbBookTheme;
+use crate::select::Select;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
-use crate::select::Select;
 
 pub struct DefaultBookThemeRepository<'a> {
   client: &'a Client,

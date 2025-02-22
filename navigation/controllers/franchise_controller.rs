@@ -8,8 +8,8 @@ use axum::{Json, Router};
 use tokio_postgres::{Client, Transaction};
 
 use domain::entities::franchise::create_franchise::CreateFranchise;
-use services::franchise_service::mut_franchise_service::MutFranchiseService;
 use services::franchise_service::FranchiseService;
+use services::franchise_service::mut_franchise_service::MutFranchiseService;
 
 use crate::app_state::AppState;
 use crate::controllers::{

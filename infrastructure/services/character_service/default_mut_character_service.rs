@@ -3,14 +3,14 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
+use domain::entities::character::Character;
 use domain::entities::character::create_character::{CreateCharacter, CreateCharacterTranslation};
 use domain::entities::character::create_partial_character::{
   CreatePartialCharacter, CreatePartialCharacterTranslation,
 };
-use domain::entities::character::Character;
 use domain::enums::language::Language;
-use repositories::character_repository::mut_character_repository::MutCharacterRepository;
 use repositories::character_repository::CharacterRepository;
+use repositories::character_repository::mut_character_repository::MutCharacterRepository;
 use services::character_service::mut_character_service::MutCharacterServiceError::OtherError;
 use services::character_service::mut_character_service::{MutCharacterService, MutCharacterServiceError};
 use services::image_service::mut_image_service::MutImageService;

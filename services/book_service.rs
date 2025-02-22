@@ -5,8 +5,8 @@ use async_trait::async_trait;
 
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
-use domain::entities::book::book_statistic::BookStatistic;
 use domain::entities::book::Book;
+use domain::entities::book::book_statistic::BookStatistic;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;

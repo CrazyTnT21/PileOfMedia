@@ -36,4 +36,8 @@ impl UserService for DefaultUserService<'_> {
   ) -> Result<ItemsTotal<User>, ServiceError<UserServiceError>> {
     Ok(self.user_repository.get_by_name(name, pagination).await?)
   }
+
+  async fn get_by_username(&self, name: &str) -> Result<Option<User>, ServiceError<UserServiceError>> {
+    Ok(self.user_repository.get_by_username(name).await?)
+  }
 }

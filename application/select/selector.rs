@@ -10,7 +10,7 @@ impl Selector for (&str, &str) {
 
 impl Selector for ((&str, &str),) {
   fn sql(&self) -> String {
-    format!("({}.{})", self.0 .0, self.0 .1)
+    format!("({}.{})", self.0.0, self.0.1)
   }
 }
 

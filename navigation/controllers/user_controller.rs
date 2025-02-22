@@ -30,9 +30,9 @@ use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use domain::entities::user::create_user_book::CreateUserBook;
-use services::user_service::user_book_service::mut_user_book_service::MutUserBookService;
-use services::user_service::user_book_service::UserBookService;
 use services::user_service::UserService;
+use services::user_service::user_book_service::UserBookService;
+use services::user_service::user_book_service::mut_user_book_service::MutUserBookService;
 use tokio_postgres::{Client, Transaction};
 
 pub mod user_doc;
@@ -46,6 +46,7 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/{id}/books/{book_id}", get(get_book_by_id))
     .route("/{id}/books/{book_id}", delete(remove_book))
     .route("/name/{name}", get(get_by_name))
+    .route("/username/{name}", get(get_by_username))
     .with_state(app_state)
 }
 
@@ -83,7 +84,7 @@ async fn get_by_id(Path(id): Path<u32>, State(app_state): State<AppState>) -> im
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  println!("Route for a user with id {}", id,);
+  println!("Route for a user with id {}", id);
 
   match service.get_by_id(id).await {
     Ok(item) => match item {
@@ -115,6 +116,27 @@ async fn get_by_name(
 
   match service.get_by_name(&name, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, Json(items))),
+    Err(error) => Err(convert_service_error(error)),
+  }
+}
+#[utoipa::path(get, path = "/username/{username}",
+  responses(
+    (status = 200, description = "Returned user based on the username", body = Option<User>), ServerError, BadRequest
+  ),
+  params(NameParam),
+  tag = "Users"
+)]
+async fn get_by_username(Path(name): Path<String>, State(app_state): State<AppState>) -> impl IntoResponse {
+  let connection = app_state.pool.get().await.map_err(convert_error)?;
+  let service = get_service(&connection);
+
+  println!("Route for user with the username {}", name);
+
+  match service.get_by_username(&name).await {
+    Ok(item) => match item {
+      None => Err((StatusCode::NOT_FOUND, "".to_string())),
+      Some(item) => Ok((StatusCode::OK, Json(item))),
+    },
     Err(error) => Err(convert_service_error(error)),
   }
 }
@@ -175,7 +197,6 @@ async fn get_book_by_id(
   }
 }
 
-//TODO Authorization
 #[utoipa::path(post, path = "/{id}/books",
   responses(
     (status = 201, description = "Book association successfully added", body = UserBook), ServerError, BadRequest, Forbidden
@@ -215,7 +236,7 @@ async fn add_book(
   transaction.commit().await.map_err(convert_error)?;
   result
 }
-//TODO Authorization
+
 #[utoipa::path(delete, path = "/{id}/books/{book_id}",
   responses(
     (status = 200, description = "Book association successfully removed"), ServerError, BadRequest, Forbidden

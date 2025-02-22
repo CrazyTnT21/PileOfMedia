@@ -2,7 +2,7 @@ use crate::openapi::responses::forbidden::Forbidden;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::{get, post};
-use axum::{debug_handler, Json, Router};
+use axum::{Json, Router, debug_handler};
 use chrono::Utc;
 use multipart::MultiPartRequest;
 use serde::{Deserialize, Serialize};
@@ -25,8 +25,8 @@ use crate::openapi::responses::server_error::ServerError;
 use domain::entities::account::create_account::CreateAccount;
 use domain::entities::account::{Email, Password};
 use domain::entities::user::User;
-use services::account_service::mut_account_service::MutAccountService;
 use services::account_service::AccountService;
+use services::account_service::mut_account_service::MutAccountService;
 
 pub mod account_doc;
 

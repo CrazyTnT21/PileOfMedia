@@ -2,8 +2,8 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use domain::entities::user::create_user::CreateUser;
 use domain::entities::user::User;
+use domain::entities::user::create_user::CreateUser;
 
 use crate::traits::service_error::ServiceError;
 

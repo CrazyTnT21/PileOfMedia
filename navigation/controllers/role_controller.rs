@@ -8,8 +8,8 @@ use axum::{Json, Router};
 use tokio_postgres::{Client, Transaction};
 
 use domain::entities::role::create_role::CreateRole;
-use services::role_service::mut_role_service::MutRoleService;
 use services::role_service::RoleService;
+use services::role_service::mut_role_service::MutRoleService;
 
 use crate::app_state::AppState;
 use crate::controllers::{

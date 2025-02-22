@@ -5,8 +5,8 @@ use std::error::Error;
 
 use tokio_postgres::Client;
 
-use domain::entities::theme::theme_translation::ThemeTranslation;
 use domain::entities::theme::Theme;
+use domain::entities::theme::theme_translation::ThemeTranslation;
 use domain::enums::language::Language;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
@@ -18,12 +18,12 @@ use crate::convert_to_sql::to_i32;
 use crate::enums::db_language::DbLanguage;
 use crate::schemas::db_theme::DbTheme;
 use crate::schemas::db_theme_translation::DbThemeTranslation;
+use crate::select::Select;
 use crate::select::combined_tuple::CombinedType;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_ilike::ValueILike;
 use crate::select::conditions::value_in::ValueIn;
 use crate::select::expression::Expression;
-use crate::select::Select;
 
 pub struct DefaultThemeRepository<'a> {
   client: &'a Client,
@@ -178,7 +178,7 @@ impl ThemeRepository for DefaultThemeRepository<'_> {
     languages: &[Language],
     pagination: Pagination,
   ) -> Result<ItemsTotal<Theme>, Box<dyn Error>> {
-    let name = format!("%{name}%");
+    let name = format!("%{}%", name.replace("%", "\\%").replace("_", "\\_"));
 
     let db_languages: Vec<DbLanguage> = languages.iter().map(|x| (*x).into()).collect();
     let total = Select::new::<DbTheme>()

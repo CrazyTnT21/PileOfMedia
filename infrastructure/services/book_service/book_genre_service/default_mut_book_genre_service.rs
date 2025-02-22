@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
-use repositories::book_repository::book_genre_repository::BookGenreRepository;
 use repositories::book_repository::BookRepository;
+use repositories::book_repository::book_genre_repository::BookGenreRepository;
+use repositories::book_repository::book_genre_repository::mut_book_genre_repository::MutBookGenreRepository;
 use repositories::genre_repository::GenreRepository;
 use services::book_service::book_genre_service::mut_book_genre_service::{
   MutBookGenreService, MutBookGenreServiceError,

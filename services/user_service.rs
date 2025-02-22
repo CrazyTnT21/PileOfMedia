@@ -20,6 +20,7 @@ pub trait UserService: Send + Sync {
     name: &str,
     pagination: Pagination,
   ) -> Result<ItemsTotal<User>, ServiceError<UserServiceError>>;
+  async fn get_by_username(&self, name: &str) -> Result<Option<User>, ServiceError<UserServiceError>>;
 }
 
 pub enum UserServiceError {}

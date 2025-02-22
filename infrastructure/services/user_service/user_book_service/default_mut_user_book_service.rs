@@ -6,9 +6,9 @@ use domain::entities::user::create_user_book::CreateUserBook;
 use domain::entities::user::user_book::UserBook;
 use domain::enums::language::Language;
 use repositories::book_repository::BookRepository;
-use repositories::user_repository::user_book_repository::mut_user_book_repository::MutUserBookRepository;
-use repositories::user_repository::user_book_repository::UserBookRepository;
 use repositories::user_repository::UserRepository;
+use repositories::user_repository::user_book_repository::UserBookRepository;
+use repositories::user_repository::user_book_repository::mut_user_book_repository::MutUserBookRepository;
 use services::traits::service_error::ServiceError;
 use services::user_service::user_book_service::mut_user_book_service::{MutUserBookService, MutUserBookServiceError};
 

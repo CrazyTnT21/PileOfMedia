@@ -1,6 +1,6 @@
 use domain::available_translations::AvailableTranslations;
-use domain::entities::role::role_translation::RoleTranslation;
 use domain::entities::role::Role;
+use domain::entities::role::role_translation::RoleTranslation;
 use from_row::FromRow;
 use tokio_postgres::Row;
 
