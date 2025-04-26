@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use domain::entities::role::Role;
 use domain::entities::role::create_role::CreateRole;
 use domain::enums::language::Language;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[async_trait]
@@ -12,13 +13,14 @@ pub trait MutRoleService: Send + Sync {
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutRoleServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutRoleServiceError {
   NoIdsProvided,
   NonExistent(Vec<u32>),
   NoTranslationsProvided,
   NoTranslationInLanguageProvided(Language),
   InvalidName(String),
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutRoleServiceError {
@@ -39,5 +41,14 @@ impl Display for MutRoleServiceError {
         MutRoleServiceError::NoIdsProvided => "No ids provided".to_string(),
       }
     )
+  }
+}
+
+impl Error for MutRoleServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutRoleServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

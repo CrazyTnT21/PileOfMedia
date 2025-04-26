@@ -112,10 +112,8 @@ async fn get_by_id(
   println!("Route for a book with id {} in {:?}", id, languages);
 
   match service.get_by_id(id, &languages).await {
-    Ok(item) => match item {
-      None => Err((StatusCode::NOT_FOUND, "".to_string())),
-      Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
-    },
+    Ok(Some(item)) => Ok((StatusCode::OK, content_language, Json(item))),
+    Ok(None) => Err((StatusCode::NOT_FOUND, "".to_string())),
     Err(error) => Err(convert_service_error(error)),
   }
 }
@@ -137,6 +135,7 @@ async fn get_statistic(Path(id): Path<u32>, State(app_state): State<AppState>) -
     Err(error) => Err(match error {
       ServiceError::ClientError(error) => match error {
         BookServiceError::NonExistentBooks(_) => (StatusCode::NOT_FOUND, error.to_string()),
+        BookServiceError::OtherError(_) => (StatusCode::BAD_REQUEST, error.to_string()),
       },
       ServiceError::ServerError(_) => convert_service_error(error),
     }),
@@ -191,10 +190,8 @@ async fn get_by_slug(
   println!("Route for a book with slug {} in {:?}", slug, languages);
 
   match service.get_by_slug(&slug, &languages).await {
-    Ok(item) => match item {
-      None => Err((StatusCode::NOT_FOUND, "".to_string())),
-      Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
-    },
+    Ok(Some(item)) => Ok((StatusCode::OK, content_language, Json(item))),
+    Ok(None) => Err((StatusCode::NOT_FOUND, "".to_string())),
     Err(error) => Err(convert_service_error(error)),
   }
 }

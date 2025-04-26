@@ -69,7 +69,14 @@ pub mod create_character_part {
       )
     }
   }
-  impl Error for CreateCharacterPartError {}
+  impl Error for CreateCharacterPartError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+      match self {
+        CreateCharacterPartError::OtherError(e) => Some(&**e),
+        _ => None,
+      }
+    }
+  }
   impl From<serde_json::Error> for CreateCharacterPartError {
     fn from(value: serde_json::Error) -> Self {
       CreateCharacterPartError::OtherError(Box::new(value))

@@ -59,7 +59,14 @@ pub mod create_account_part {
     }
   }
 
-  impl Error for CreateAccountPartError {}
+  impl Error for CreateAccountPartError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+      match self {
+        CreateAccountPartError::OtherError(e) => Some(&**e),
+        _ => None,
+      }
+    }
+  }
 
   impl From<serde_json::Error> for CreateAccountPartError {
     fn from(value: serde_json::Error) -> Self {

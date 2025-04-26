@@ -40,10 +40,14 @@ impl AccountService for DefaultAccountService<'_> {
     let account = self.get_by_email(email).await?.ok_or_else(unknown_email)?;
 
     let hash = password_hash(&account.password.0)?;
-    if Argon2::default().verify_password(password.0.as_bytes(), &hash).is_ok() {
-      return Ok(account);
+
+    let verified_password = Argon2::default().verify_password(password.0.as_bytes(), &hash);
+
+    match verified_password {
+      Ok(()) => Ok(account),
+      Err(argon2::password_hash::Error::Password) => Err(wrong_password()),
+      Err(e) => Err(ServiceError::ServerError(Box::new(e))),
     }
-    Err(wrong_password())
   }
 }
 

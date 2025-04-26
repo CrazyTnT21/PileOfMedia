@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use domain::entities::account::{Account, Email, Password};
@@ -17,11 +18,12 @@ pub trait AccountService: Send + Sync {
   async fn login(&self, email: &Email, password: &Password) -> Result<Account, ServiceError<AccountServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum AccountServiceError {
   UnknownEmail,
   InvalidEmail,
   WrongPassword,
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for AccountServiceError {
@@ -36,5 +38,14 @@ impl Display for AccountServiceError {
         AccountServiceError::OtherError(x) => x.to_string(),
       }
     )
+  }
+}
+
+impl Error for AccountServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      AccountServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

@@ -87,10 +87,8 @@ async fn get_by_id(Path(id): Path<u32>, State(app_state): State<AppState>) -> im
   println!("Route for a user with id {}", id);
 
   match service.get_by_id(id).await {
-    Ok(item) => match item {
-      None => Err((StatusCode::NOT_FOUND, "".to_string())),
-      Some(item) => Ok((StatusCode::OK, Json(item))),
-    },
+    Ok(Some(item)) => Ok((StatusCode::OK, Json(item))),
+    Ok(None) => Err((StatusCode::NOT_FOUND, "".to_string())),
     Err(error) => Err(convert_service_error(error)),
   }
 }
@@ -133,10 +131,8 @@ async fn get_by_username(Path(name): Path<String>, State(app_state): State<AppSt
   println!("Route for user with the username {}", name);
 
   match service.get_by_username(&name).await {
-    Ok(item) => match item {
-      None => Err((StatusCode::NOT_FOUND, "".to_string())),
-      Some(item) => Ok((StatusCode::OK, Json(item))),
-    },
+    Ok(Some(item)) => Ok((StatusCode::OK, Json(item))),
+    Ok(None) => Err((StatusCode::NOT_FOUND, "".to_string())),
     Err(error) => Err(convert_service_error(error)),
   }
 }
@@ -189,10 +185,8 @@ async fn get_book_by_id(
   );
 
   match service.get_by_book_id(user_id, book_id, &languages).await {
-    Ok(item) => match item {
-      None => Ok((StatusCode::NOT_FOUND, content_language, Json(None))),
-      Some(item) => Ok((StatusCode::OK, content_language, Json(Some(item)))),
-    },
+    Ok(Some(item)) => Ok((StatusCode::OK, content_language, Json(item))),
+    Ok(None) => Err((StatusCode::NOT_FOUND, "".to_string())),
     Err(error) => Err(convert_service_error(error)),
   }
 }

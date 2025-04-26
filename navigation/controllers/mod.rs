@@ -3,9 +3,8 @@ use axum::http::{HeaderMap, StatusCode};
 use domain::enums::language::Language;
 use services::traits::service_error::ServiceError;
 use std::error::Error;
-use std::fmt::Display;
 use std::str::FromStr;
-use utoipa::openapi::Server;
+use utoipa::openapi::{Server, ServerVariableBuilder};
 use utoipa::{Modify, OpenApi};
 
 use crate::app_state::AppState;
@@ -27,14 +26,22 @@ pub fn openapi_spec(api_url: &str) -> utoipa::openapi::OpenApi {
   let mut doc = doc::ApiDoc::openapi();
   let servers = doc.servers.get_or_insert_default();
 
-  let mut local_server = Server::new("https://Localhost:5000/api/");
-  local_server.description = Some("Localhost".to_string());
+  let mut custom_server = Server::new("{customUrl}");
+  let variable = ServerVariableBuilder::new()
+    .default_value("http://Localhost:5000/api/")
+    .build();
+
+  custom_server
+    .variables
+    .get_or_insert_default()
+    .insert("customUrl".to_string(), variable);
+  custom_server.description = Some("Custom server".to_string());
 
   let mut production_server = Server::new(api_url);
   production_server.description = Some("Production server".to_string());
 
+  servers.push(custom_server);
   servers.push(production_server);
-  servers.push(local_server);
   let jwt = JsonWebTokenParam;
   jwt.modify(&mut doc);
   doc
@@ -82,22 +89,22 @@ fn append_content_language_header(headers: &mut HeaderMap, language: Language) -
   headers
 }
 
-pub fn convert_service_error<T: Display>(service_error: ServiceError<T>) -> (StatusCode, String) {
+pub fn convert_service_error<T: Error>(service_error: ServiceError<T>) -> (StatusCode, String) {
   match service_error {
     ServiceError::ClientError(error) => (StatusCode::BAD_REQUEST, error.to_string()),
     ServiceError::ServerError(e) => {
-      eprintln!("Error: {e}");
+      eprintln!("Error: {e:#?}");
       (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())
     }
   }
 }
 
 pub fn convert_error(error: impl Error) -> (StatusCode, String) {
-  eprintln!("Error: {error}");
+  eprintln!("Error: {error:#?}");
   (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())
 }
 
-fn set_pagination_limit(pagination: &mut QueryPagination) {
+const fn set_pagination_limit(pagination: &mut QueryPagination) {
   if pagination.count > 50 {
     pagination.count = 50;
   }

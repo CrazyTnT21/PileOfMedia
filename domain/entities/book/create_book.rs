@@ -92,7 +92,14 @@ pub mod create_book_part {
     }
   }
 
-  impl Error for CreateBookPartError {}
+  impl Error for CreateBookPartError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+      match self {
+        CreateBookPartError::OtherError(e) => Some(&**e),
+        _ => None,
+      }
+    }
+  }
 
   impl FromMultiPart for CreateBook {
     type Error = CreateBookPartError;

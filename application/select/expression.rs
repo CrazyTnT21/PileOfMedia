@@ -7,7 +7,7 @@ use crate::select::selector::Selector;
 use crate::select::to_sql_value::ToSqlValue;
 use tokio_postgres::types::ToSql;
 
-pub fn next(value: &mut usize) -> usize {
+pub const fn next(value: &mut usize) -> usize {
   let last_value = *value;
   *value += 1;
   last_value

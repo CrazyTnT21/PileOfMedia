@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -43,9 +44,10 @@ pub trait BookService: Send + Sync {
     book_ids: &[u32],
   ) -> Result<HashMap<u32, BookStatistic>, ServiceError<BookServiceError>>;
 }
-
+#[derive(Debug)]
 pub enum BookServiceError {
   NonExistentBooks(Vec<u32>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for BookServiceError {
@@ -56,7 +58,17 @@ impl Display for BookServiceError {
       match self {
         BookServiceError::NonExistentBooks(x) =>
           format!("Books with the following ids do not exist: [{}]", x.join_comma()),
+        BookServiceError::OtherError(value) => value.to_string(),
       }
     )
+  }
+}
+
+impl Error for BookServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      BookServiceError::OtherError(error) => Some(&**error),
+      BookServiceError::NonExistentBooks(_) => None,
+    }
   }
 }

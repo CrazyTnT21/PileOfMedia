@@ -1,9 +1,9 @@
+use std::error::Error;
 use std::fmt::{Display, Formatter};
-
-use async_trait::async_trait;
 
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait MutBookThemeService: Send + Sync {
@@ -11,13 +11,14 @@ pub trait MutBookThemeService: Send + Sync {
   async fn remove(&self, book_id: u32, themes: &[u32]) -> Result<(), ServiceError<MutBookThemeServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutBookThemeServiceError {
   NonExistentBook(u32),
   AlreadyAssociated(Vec<u32>),
   NotAssociated(Vec<u32>),
   NonExistent(Vec<u32>),
   NoThemesProvided,
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutBookThemeServiceError {
@@ -36,5 +37,14 @@ impl Display for MutBookThemeServiceError {
         MutBookThemeServiceError::OtherError(x) => x.to_string(),
       }
     )
+  }
+}
+
+impl Error for MutBookThemeServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutBookThemeServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

@@ -1,22 +1,21 @@
-use std::fmt::{Display, Formatter};
-
 use async_trait::async_trait;
-
-use domain::entities::account::Account;
-use domain::entities::account::create_account::CreateAccount;
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
 
 use crate::traits::service_error::ServiceError;
+use domain::entities::account::Account;
+use domain::entities::account::create_account::CreateAccount;
 
 #[async_trait]
 pub trait MutAccountService: Send + Sync {
   async fn create(&self, account: CreateAccount) -> Result<Account, ServiceError<MutAccountServiceError>>;
 }
-
+#[derive(Debug)]
 pub enum MutAccountServiceError {
   EmailAlreadyExists,
   InvalidEmail,
   InvalidPassword,
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutAccountServiceError {
@@ -31,5 +30,14 @@ impl Display for MutAccountServiceError {
         MutAccountServiceError::OtherError(x) => x.to_string(),
       }
     )
+  }
+}
+
+impl Error for MutAccountServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutAccountServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

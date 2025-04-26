@@ -1,5 +1,6 @@
 pub mod mut_genre_service;
 
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -27,10 +28,27 @@ pub trait GenreService: Send + Sync {
   ) -> Result<ItemsTotal<Genre>, ServiceError<GenreServiceError>>;
 }
 
-pub enum GenreServiceError {}
+#[derive(Debug)]
+pub enum GenreServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for GenreServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        GenreServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for GenreServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      GenreServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

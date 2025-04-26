@@ -34,3 +34,11 @@ impl<T> ServiceError<T> {
 pub trait ServiceErrorMap<T, E> {
   fn map_service_error(self) -> Result<T, ServiceError<E>>;
 }
+impl<T: Error + 'static> Error for ServiceError<T> {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      ServiceError::ClientError(x) => Some(x),
+      ServiceError::ServerError(x) => Some(&**x),
+    }
+  }
+}
