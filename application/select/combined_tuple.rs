@@ -2,19 +2,18 @@ pub trait CombinedType {
   type Combined<T>: CombinedType;
 }
 macro_rules! combined_type_tuple {
-    ($($generics: tt),*) => {
-      impl<$($generics),*> CombinedType for ($($generics),*,) {
-        type Combined<C> = ($($generics),*,C );
+    ($first_generic: tt,$($generics: tt),*) => {
+      impl<$first_generic,$($generics),*> CombinedType for ($first_generic,$($generics),*,) {
+        type Combined<C> = ($first_generic,$($generics),*,C);
       }
-    }
+     combined_type_tuple!($($generics),*);
+    };
+  ($first_generic: tt) => {
+   impl<$first_generic> CombinedType for ($first_generic,) {
+        type Combined<C> = ($first_generic,C);
+      }
+  }
 }
-combined_type_tuple!(T1);
-combined_type_tuple!(T1, T2);
-combined_type_tuple!(T1, T2, T3);
-combined_type_tuple!(T1, T2, T3, T4);
-combined_type_tuple!(T1, T2, T3, T4, T5);
-combined_type_tuple!(T1, T2, T3, T4, T5, T6);
-combined_type_tuple!(T1, T2, T3, T4, T5, T6, T7);
 combined_type_tuple!(T1, T2, T3, T4, T5, T6, T7, T8);
 
 impl CombinedType for () {

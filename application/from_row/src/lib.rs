@@ -40,7 +40,7 @@ macro_rules! from_row_tuple {
       const COLUMN_COUNT: usize = $first_generic::COLUMN_COUNT$(+$generics::COLUMN_COUNT)*;
 
       fn from_row(row: &Row, from: usize) -> Self::DbType {
-          let mut current_start = from;
+        let mut current_start = from;
         let mut start = |x| {
           let current = current_start;
           current_start += x;
@@ -52,8 +52,26 @@ macro_rules! from_row_tuple {
         )
       }
       }
+     from_row_tuple!($($generics),*);
+    };
+   ($first_generic: tt) => {
+  impl<$first_generic: FromRow<DbType=$first_generic>> FromRow for ($first_generic,) {
+  type DbType = ($first_generic,);
+  const COLUMN_COUNT: usize = $first_generic::COLUMN_COUNT;
 
-    }
+  fn from_row(row: &Row, from: usize) -> Self::DbType {
+  let mut current_start = from;
+  let mut start = |x| {
+  let current = current_start;
+  current_start += x;
+  current
+  };
+  (
+  $first_generic::from_row(row,start($first_generic::COLUMN_COUNT)),
+  )
+  }
+  }
+  }
 }
 impl FromRow for () {
   type DbType = ();
@@ -65,14 +83,6 @@ impl FromRow for () {
 impl<T: FromRow<DbType = T> + RowColumns + FromRowOption> RowColumns for Option<T> {
   const COLUMNS: &'static [(&'static str, &'static [TypeKind])] = T::COLUMNS;
 }
-from_row_tuple!(T,);
-from_row_tuple!(T, T1);
-from_row_tuple!(T, T1, T2);
-from_row_tuple!(T, T1, T2, T3);
-from_row_tuple!(T, T1, T2, T3, T4);
-from_row_tuple!(T, T1, T2, T3, T4, T5);
-from_row_tuple!(T, T1, T2, T3, T4, T5, T6);
-from_row_tuple!(T, T1, T2, T3, T4, T5, T6, T7);
 from_row_tuple!(T, T1, T2, T3, T4, T5, T6, T7, T8);
 
 #[macro_export]

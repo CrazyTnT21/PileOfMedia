@@ -21,19 +21,24 @@ macro_rules! tuple_for {
 }
 #[macro_export]
 macro_rules! selector {
-  ($($generics: tt),*) => {
-    impl Selector for ($(tuple_for!($generics)),+) {
+  ($first_generic: tt,$second_generic: tt, $($generics: tt),*) => {
+    impl Selector for (tuple_for!($first_generic),tuple_for!($second_generic),$(tuple_for!($generics)),+) {
       fn sql(&self) -> String {
-        let ($($generics),+) = self;
+        let ($first_generic,$second_generic,$($generics),+) = self;
         format!("({})",
-        [$([$generics.0,$generics.1].join(".")),+].join(","))
+        [[$first_generic.0,$first_generic.1].join("."),[$second_generic.0,$second_generic.1].join("."),$([$generics.0,$generics.1].join(".")),+].join(","))
+      }
+    }
+     selector!($second_generic,$($generics),*);
+  };
+ ($first_generic: tt,$second_generic: tt) => {
+    impl Selector for (tuple_for!($first_generic),tuple_for!($second_generic),) {
+      fn sql(&self) -> String {
+        let ($first_generic,$second_generic,) = self;
+        format!("({})",
+        [[$first_generic.0,$first_generic.1].join("."),[$second_generic.0,$second_generic.1].join(".")].join(","))
       }
     }
   };
 }
-selector!(a, b);
-selector!(a, b, c);
-selector!(a, b, c, d);
-selector!(a, b, c, d, e);
-selector!(a, b, c, d, e, f);
 selector!(a, b, c, d, e, f, g);
