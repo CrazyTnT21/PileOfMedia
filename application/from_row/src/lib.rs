@@ -1,7 +1,6 @@
 use tokio_postgres::Row;
 
 pub use from_row_macros::FromRow;
-pub use from_row_macros::query_row;
 
 use crate::postgres_type::TypeKind;
 
@@ -146,7 +145,7 @@ pub mod testing {
   static CONTAINER: tokio::sync::Mutex<Option<ContainerAsync<GenericImage>>> = tokio::sync::Mutex::const_new(None);
   static COUNT: Mutex<usize> = Mutex::new(0);
 
-  pub async fn from_row_test<T: RowColumns + Table>() {
+  pub async fn from_row_test<T: RowColumns + Table>() -> Result<(), Box<dyn Error>> {
     let result = wrapper::<T>().await;
     {
       let count = {
@@ -159,20 +158,15 @@ pub mod testing {
         *lock = None;
       }
     }
-    match result {
-      Ok(statement) => {
-        for (i, column) in statement.columns().iter().enumerate() {
-          for column_type in T::COLUMNS[i].1 {
-            if validate_column(column, column_type) {
-              break;
-            }
-          }
+    for (i, column) in result?.columns().iter().enumerate() {
+      for column_type in T::COLUMNS[i].1 {
+        if validate_column(column, column_type) {
+          break;
         }
       }
-      Err(e) => {
-        panic!("{}", e);
-      }
-    };
+    }
+
+    Ok(())
   }
   fn validate_column(column: &Column, column_type: &TypeKind) -> bool {
     match column_type {

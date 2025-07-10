@@ -7,7 +7,7 @@ use crate::select::selector::Selector;
 use crate::select::to_sql_value::ToSqlValue;
 use tokio_postgres::types::ToSql;
 
-pub fn next(value: &mut usize) -> usize {
+pub const fn next(value: &mut usize) -> usize {
   let last_value = *value;
   *value += 1;
   last_value
@@ -61,7 +61,7 @@ impl<'a> Expression<'a> {
       .map(|x| format!("OR ({})", x.sql(value_index)))
       .collect::<Vec<String>>()
       .join(" ");
-    format!("{} {} {}", condition, ands, ors)
+    format!("{condition} {ands} {ors}")
   }
   pub fn and(mut self, expression: Expression<'a>) -> Expression<'a> {
     self.ands.push(expression);

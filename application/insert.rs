@@ -115,7 +115,7 @@ impl<'a, const U: usize> Insert<'a, U> {
           .iter()
           .map(|_| {
             total += 1;
-            format!("${}", total)
+            format!("${total}")
           })
           .collect::<Vec<String>>()
           .join(",");

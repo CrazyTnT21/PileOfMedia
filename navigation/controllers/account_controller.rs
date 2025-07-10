@@ -152,14 +152,12 @@ fn get_mut_service<'a>(
   ));
   let mut_user_service = Arc::new(get_mut_user_service(mut_user_repository, mut_image_service));
   let account_service = Arc::new(get_account_service(account_repository));
-  let mut_account_service = get_mut_account_service(mut_account_repository, account_service, mut_user_service);
-  mut_account_service
+  get_mut_account_service(mut_account_repository, account_service, mut_user_service)
 }
 
 fn get_service(client: &Client) -> impl AccountService + '_ {
   let image_repository = Arc::new(get_image_repository(client));
   let user_repository = Arc::new(get_user_repository(client, image_repository));
   let account_repository = Arc::new(get_account_repository(client, user_repository));
-  let account_service = get_account_service(account_repository);
-  account_service
+  get_account_service(account_repository)
 }

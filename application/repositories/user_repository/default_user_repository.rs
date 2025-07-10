@@ -8,7 +8,7 @@ use domain::entities::image::Image;
 use domain::entities::user::User;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
-use domain::vec_single::{Single};
+use domain::vec_single::Single;
 use from_row::Table;
 use repositories::image_repository::ImageRepository;
 use repositories::user_repository::UserRepository;

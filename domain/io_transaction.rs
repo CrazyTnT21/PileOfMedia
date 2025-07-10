@@ -15,7 +15,7 @@ impl<'a, T, F> IOTransaction<'a, T, F> {
   pub fn commit(self) -> T {
     self.value
   }
-  pub fn value(&mut self) -> &mut T {
+  pub const fn value(&mut self) -> &mut T {
     &mut self.value
   }
 }

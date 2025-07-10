@@ -1,7 +1,6 @@
-use proc_macro::{TokenStream, TokenTree};
+use proc_macro::TokenStream;
 
 use quote::quote;
-use syn::__private::Span;
 use syn::{Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, Meta, Type, parse_macro_input};
 
 #[proc_macro_derive(FromRow, attributes(rename))]
@@ -21,7 +20,7 @@ fn is_optional(ty: &Type) -> bool {
   let Type::Path(path) = ty else {
     return false;
   };
-  path.path.segments[0].ident == "Option"
+  path.path.segments.get(0).unwrap().ident == "Option"
 }
 
 fn renamed_field(attributes: &[Attribute]) -> Option<String> {
@@ -124,7 +123,7 @@ fn from_row_macro_impl(ast: &DeriveInput) -> TokenStream {
     #[cfg(test)]
     #[tokio::test]
     async fn test_from_row(){
-      from_row::testing::from_row_test::<#name>().await;
+      from_row::testing::from_row_test::<#name>().await.unwrap();
     }
   );
 
@@ -137,51 +136,4 @@ fn row_columns_impl(name: &Ident, columns: &[proc_macro2::TokenStream]) -> proc_
       const COLUMNS: &'static [(&'static str, &'static [from_row::postgres_type::TypeKind])] = &[#(#columns),*];
     }
   )
-}
-
-#[proc_macro]
-pub fn query_row(item: TokenStream) -> TokenStream {
-  let mapped = item
-    .into_iter()
-    .filter_map(|x| match x {
-      TokenTree::Ident(ident) => Some(ident),
-      _ => None,
-    })
-    .collect::<Vec<proc_macro::Ident>>();
-
-  let mut items: Vec<(&proc_macro::Ident, bool)> = vec![];
-
-  let mut iterator = mapped.iter();
-
-  while let Some(value) = iterator.next() {
-    if value.to_string() != "Option" {
-      items.push((value, false));
-      continue;
-    }
-    let Some(next_value) = iterator.next() else {
-      break;
-    };
-
-    items.push((next_value, true));
-  }
-  let row_ident = Ident::new(&items[0].0.to_string(), Span::call_site());
-  let types = items[1..].iter().map(|(x, optional)| {
-    //convert from proc_macro::Ident to proc_macro2::Ident
-    let x = Ident::new(&x.to_string(), Span::call_site());
-    match *optional {
-      true => quote!(<#x as from_row::FromRowOption>::from_row_optional(&#row_ident, start(<#x as from_row::FromRow>::COLUMN_COUNT))),
-      false => quote!(<#x as from_row::FromRow>::from_row(&#row_ident, start(<#x as from_row::FromRow>::COLUMN_COUNT))),
-    }
-  });
-
-  quote!({
-    let mut current_start = 0;
-    let mut start = |x| {
-      let current = current_start;
-      current_start += x;
-      current
-    };
-    (#(#types),*,)
-  })
-  .into()
 }

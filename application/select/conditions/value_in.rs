@@ -24,7 +24,7 @@ impl Condition for ValueIn<'_> {
     }
     let selector = self.selector.sql();
     let values = self.values.sql(value_index);
-    format!("{} IN ({})", selector, values)
+    format!("{selector} IN ({values})")
   }
 
   fn values(&self) -> Vec<&IntoSql> {

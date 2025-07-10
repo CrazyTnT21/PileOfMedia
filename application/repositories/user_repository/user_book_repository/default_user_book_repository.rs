@@ -162,8 +162,7 @@ fn to_user_book(items: Vec<DbUserBook>, mut books: Vec<Book>) -> Vec<UserBook> {
     .into_iter()
     .map(|x| {
       let book_id = x.fk_book as u32;
-      let result = x.to_entity(books.remove(books.iter().position(|y| y.id == book_id).unwrap()));
-      result
+      x.to_entity(books.remove(books.iter().position(|y| y.id == book_id).unwrap()))
     })
     .collect()
 }

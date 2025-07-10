@@ -276,7 +276,7 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
       .map(std::string::ToString::to_string)
       .collect::<Vec<String>>()
       .join(",");
-    Some(format!("ORDER BY {}", order_bys))
+    Some(format!("ORDER BY {order_bys}"))
   }
 
   fn limit_sql(&self) -> Option<String> {
@@ -298,7 +298,7 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
       .map(|expression| expression.sql(count))
       .collect::<Vec<String>>()
       .join(" AND ");
-    Some(format!("WHERE {}", wheres))
+    Some(format!("WHERE {wheres}"))
   }
 
   fn group_by_sql(&self) -> Option<String> {
@@ -330,7 +330,7 @@ impl<'a, T: from_row::FromRow<DbType = T> + CombinedType> Select<'a, T> {
       .iter()
       .map(|expression| expression.sql(count))
       .collect::<String>();
-    Some(format!("HAVING {}", having))
+    Some(format!("HAVING {having}"))
   }
 
   fn join_sql(&self, count: &'a mut usize) -> String {

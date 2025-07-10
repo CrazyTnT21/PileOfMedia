@@ -97,7 +97,7 @@ pub fn convert_error(error: impl Error) -> (StatusCode, String) {
   (StatusCode::INTERNAL_SERVER_ERROR, "".to_string())
 }
 
-fn set_pagination_limit(pagination: &mut QueryPagination) {
+const fn set_pagination_limit(pagination: &mut QueryPagination) {
   if pagination.count > 50 {
     pagination.count = 50;
   }

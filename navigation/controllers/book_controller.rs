@@ -83,7 +83,7 @@ async fn get_items(
   let content_language = map_language_header(&languages);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for books in {:?}", languages);
+  println!("Route for books in {languages:?}");
 
   match service.get(&languages, pagination.into()).await {
     Ok(books) => Ok((StatusCode::OK, content_language, Json(books))),
@@ -109,7 +109,7 @@ async fn get_by_id(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!("Route for a book with id {} in {:?}", id, languages);
+  println!("Route for a book with id {id} in {languages:?}");
 
   match service.get_by_id(id, &languages).await {
     Ok(item) => match item {
@@ -130,7 +130,7 @@ async fn get_statistic(Path(id): Path<u32>, State(app_state): State<AppState>) -
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  println!("Route for a book statistic with id {}", id);
+  println!("Route for a book statistic with id {id}");
 
   match service.get_statistics(&[id]).await {
     Ok(mut items) => Ok((StatusCode::OK, Json(items.remove(&id).unwrap()))),
@@ -163,7 +163,7 @@ async fn get_by_title(
   let content_language = map_language_header(&languages);
   set_pagination_limit(&mut pagination);
 
-  println!("Route for books with the title {} in {:?}", title, languages);
+  println!("Route for books with the title {title} in {languages:?}");
 
   match service.get_by_title(&title, &languages, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
@@ -188,7 +188,7 @@ async fn get_by_slug(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!("Route for a book with slug {} in {:?}", slug, languages);
+  println!("Route for a book with slug {slug} in {languages:?}");
 
   match service.get_by_slug(&slug, &languages).await {
     Ok(item) => match item {
@@ -217,7 +217,7 @@ async fn get_genres(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!("Route for genres from a book with the id {} in {:?}", id, languages);
+  println!("Route for genres from a book with the id {id} in {languages:?}");
 
   match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
@@ -243,7 +243,7 @@ async fn get_themes(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!("Route for themes from a book with the id {} in {:?}", id, languages);
+  println!("Route for themes from a book with the id {id} in {languages:?}");
 
   match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
@@ -269,7 +269,7 @@ async fn get_characters(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!("Route for characters from a book with the id {} in {:?}", id, languages);
+  println!("Route for characters from a book with the id {id} in {languages:?}");
 
   match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
@@ -295,10 +295,7 @@ async fn get_involved(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!(
-    "Route for people involved from a book with the id {} in {:?}",
-    id, languages
-  );
+  println!("Route for people involved from a book with the id {id} in {languages:?}");
 
   match service.get_by_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),

@@ -84,7 +84,7 @@ async fn get_by_id(Path(id): Path<u32>, State(app_state): State<AppState>) -> im
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  println!("Route for a user with id {}", id);
+  println!("Route for a user with id {id}");
 
   match service.get_by_id(id).await {
     Ok(item) => match item {
@@ -112,7 +112,7 @@ async fn get_by_name(
 
   set_pagination_limit(&mut pagination);
 
-  println!("Route for users with the name {}", name);
+  println!("Route for users with the name {name}");
 
   match service.get_by_name(&name, pagination.into()).await {
     Ok(items) => Ok((StatusCode::OK, Json(items))),
@@ -130,7 +130,7 @@ async fn get_by_username(Path(name): Path<String>, State(app_state): State<AppSt
   let connection = app_state.pool.get().await.map_err(convert_error)?;
   let service = get_service(&connection);
 
-  println!("Route for user with the username {}", name);
+  println!("Route for user with the username {name}");
 
   match service.get_by_username(&name).await {
     Ok(item) => match item {
@@ -158,7 +158,7 @@ async fn get_books(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!("Route for books from a user with the id {} in {:?}", id, languages);
+  println!("Route for books from a user with the id {id} in {languages:?}");
 
   match service.get_by_user_id(id, &languages).await {
     Ok(items) => Ok((StatusCode::OK, content_language, Json(items))),
@@ -183,10 +183,7 @@ async fn get_book_by_id(
   let languages = map_accept_languages(&languages);
   let content_language = map_language_header(&languages);
 
-  println!(
-    "Route for user book with the id {} from a user with the id {} in {:?}",
-    book_id, user_id, languages
-  );
+  println!("Route for user book with the id {book_id} from a user with the id {user_id} in {languages:?}");
 
   match service.get_by_book_id(user_id, book_id, &languages).await {
     Ok(item) => match item {
