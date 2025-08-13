@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -13,13 +14,14 @@ pub trait MutPersonService: Send + Sync {
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutPersonServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutPersonServiceError {
   InvalidName(String),
   InvalidDescription(String),
-  OtherError(Box<dyn Display>),
   NoIdsProvided,
   NonExistentPeople(Vec<u32>),
   NoTranslationsProvided,
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutPersonServiceError {
@@ -37,5 +39,14 @@ impl Display for MutPersonServiceError {
         MutPersonServiceError::NoTranslationsProvided => "No translations provided".to_string(),
       }
     )
+  }
+}
+
+impl Error for MutPersonServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutPersonServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

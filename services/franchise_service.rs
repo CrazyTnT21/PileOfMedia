@@ -1,5 +1,6 @@
 pub mod mut_franchise_service;
 
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -31,10 +32,27 @@ pub trait FranchiseService: Send + Sync {
   ) -> Result<ItemsTotal<Franchise>, ServiceError<FranchiseServiceError>>;
 }
 
-pub enum FranchiseServiceError {}
+#[derive(Debug)]
+pub enum FranchiseServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for FranchiseServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        FranchiseServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for FranchiseServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      FranchiseServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

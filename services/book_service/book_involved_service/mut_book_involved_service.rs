@@ -1,11 +1,11 @@
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use domain::entities::involved::InvolvedId;
-
 use crate::join_comma::JoinComma;
 use crate::traits::service_error::ServiceError;
+use domain::entities::involved::InvolvedId;
 
 #[async_trait]
 pub trait MutBookInvolvedService: Send + Sync {
@@ -17,6 +17,7 @@ pub trait MutBookInvolvedService: Send + Sync {
   ) -> Result<(), ServiceError<MutBookInvolvedServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutBookInvolvedServiceError {
   NonExistentBook(u32),
   AlreadyAssociated(Vec<InvolvedId>),
@@ -24,7 +25,7 @@ pub enum MutBookInvolvedServiceError {
   NonExistentPeople(Vec<u32>),
   NonExistentRoles(Vec<u32>),
   NoInvolvedProvided,
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutBookInvolvedServiceError {
@@ -50,5 +51,14 @@ impl Display for MutBookInvolvedServiceError {
         MutBookInvolvedServiceError::OtherError(x) => x.to_string(),
       }
     )
+  }
+}
+
+impl Error for MutBookInvolvedServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutBookInvolvedServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

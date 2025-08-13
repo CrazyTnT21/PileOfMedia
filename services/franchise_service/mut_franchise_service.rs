@@ -3,6 +3,7 @@ use crate::traits::service_error::ServiceError;
 use async_trait::async_trait;
 use domain::entities::franchise::Franchise;
 use domain::entities::franchise::create_franchise::CreateFranchise;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[async_trait]
@@ -11,12 +12,13 @@ pub trait MutFranchiseService: Send + Sync {
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutFranchiseServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutFranchiseServiceError {
   NoIdsProvided,
   NonExistent(Vec<u32>),
   NoTranslationsProvided,
   InvalidName(String),
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutFranchiseServiceError {
@@ -33,5 +35,14 @@ impl Display for MutFranchiseServiceError {
         MutFranchiseServiceError::NoIdsProvided => "No ids provided".to_string(),
       }
     )
+  }
+}
+
+impl Error for MutFranchiseServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutFranchiseServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

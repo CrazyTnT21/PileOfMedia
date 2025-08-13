@@ -3,6 +3,7 @@ use crate::traits::service_error::ServiceError;
 use async_trait::async_trait;
 use domain::entities::genre::Genre;
 use domain::entities::genre::create_genre::CreateGenre;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[async_trait]
@@ -11,12 +12,13 @@ pub trait MutGenreService: Send + Sync {
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutGenreServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutGenreServiceError {
   NoIdsProvided,
   NonExistent(Vec<u32>),
   NoTranslationsProvided,
   InvalidName(String),
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutGenreServiceError {
@@ -32,5 +34,14 @@ impl Display for MutGenreServiceError {
         MutGenreServiceError::NoIdsProvided => "No ids provided".to_string(),
       }
     )
+  }
+}
+
+impl Error for MutGenreServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutGenreServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

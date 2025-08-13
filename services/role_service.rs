@@ -1,5 +1,6 @@
 pub mod mut_role_service;
 
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -27,10 +28,27 @@ pub trait RoleService: Send + Sync {
   ) -> Result<ItemsTotal<Role>, ServiceError<RoleServiceError>>;
 }
 
-pub enum RoleServiceError {}
+#[derive(Debug)]
+pub enum RoleServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for RoleServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        RoleServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for RoleServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      RoleServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

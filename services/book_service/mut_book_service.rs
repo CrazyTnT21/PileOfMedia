@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use domain::entities::book::Book;
 use domain::entities::book::create_book::CreateBook;
 use domain::enums::language::Language;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[async_trait]
@@ -12,6 +13,7 @@ pub trait MutBookService: Send + Sync {
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutBookServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutBookServiceError {
   NonExistentFranchise(u32),
   NoIdsProvided,
@@ -26,7 +28,7 @@ pub enum MutBookServiceError {
   InvalidDescription(String),
   AlreadyExistingSlug(String),
   NonExistentTranslationCover(Language),
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutBookServiceError {
@@ -57,5 +59,14 @@ impl Display for MutBookServiceError {
           format!("A book with the following slug already exists: {slug}"),
       }
     )
+  }
+}
+
+impl Error for MutBookServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutBookServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

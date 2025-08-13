@@ -71,7 +71,14 @@ pub mod create_person_part {
       )
     }
   }
-  impl Error for CreatePersonPartError {}
+  impl Error for CreatePersonPartError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+      match self {
+        CreatePersonPartError::OtherError(e) => Some(&**e),
+        _ => None,
+      }
+    }
+  }
   impl From<serde_json::Error> for CreatePersonPartError {
     fn from(value: serde_json::Error) -> Self {
       CreatePersonPartError::OtherError(Box::new(value))

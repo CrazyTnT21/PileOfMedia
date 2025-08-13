@@ -85,10 +85,8 @@ async fn get_by_id(
   println!("Route for a role with id {} in {:?}", id, &languages);
 
   match service.get_by_id(id, &languages).await {
-    Ok(item) => match item {
-      None => Err((StatusCode::NOT_FOUND, "".to_string())),
-      Some(item) => Ok((StatusCode::OK, content_language, Json(item))),
-    },
+    Ok(Some(item)) => Ok((StatusCode::OK, content_language, Json(item))),
+    Ok(None) => Err((StatusCode::NOT_FOUND, "".to_string())),
     Err(error) => Err(convert_service_error(error)),
   }
 }

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -35,10 +36,27 @@ pub trait UserBookService: Send + Sync {
   ) -> Result<HashMap<u32, Vec<UserBook>>, ServiceError<UserBookServiceError>>;
 }
 
-pub enum UserBookServiceError {}
+#[derive(Debug)]
+pub enum UserBookServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for UserBookServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        UserBookServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for UserBookServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      UserBookServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

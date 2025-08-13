@@ -151,4 +151,11 @@ impl Display for InsertError {
   }
 }
 
-impl Error for InsertError {}
+impl Error for InsertError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      InsertError::PostgresError(e) => Some(e),
+      InsertError::ReturningMoreThanOne => None,
+    }
+  }
+}

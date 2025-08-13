@@ -1,11 +1,11 @@
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
+use crate::traits::service_error::ServiceError;
 use domain::entities::genre::Genre;
 use domain::enums::language::Language;
-
-use crate::traits::service_error::ServiceError;
 
 pub mod mut_book_genre_service;
 
@@ -17,11 +17,27 @@ pub trait BookGenreService: Send + Sync {
     languages: &[Language],
   ) -> Result<Vec<Genre>, ServiceError<BookGenreServiceError>>;
 }
-
-pub enum BookGenreServiceError {}
+#[derive(Debug)]
+pub enum BookGenreServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for BookGenreServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        BookGenreServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for BookGenreServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      BookGenreServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

@@ -1,5 +1,6 @@
 pub mod mut_theme_service;
 
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -27,10 +28,27 @@ pub trait ThemeService: Send + Sync {
   ) -> Result<ItemsTotal<Theme>, ServiceError<ThemeServiceError>>;
 }
 
-pub enum ThemeServiceError {}
+#[derive(Debug)]
+pub enum ThemeServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for ThemeServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        ThemeServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for ThemeServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      ThemeServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use domain::entities::character::Character;
 use domain::entities::character::create_character::CreateCharacter;
 use domain::enums::language::Language;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[async_trait]
@@ -12,14 +13,15 @@ pub trait MutCharacterService: Send + Sync {
   async fn delete(&self, ids: &[u32]) -> Result<(), ServiceError<MutCharacterServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutCharacterServiceError {
   NoIdsProvided,
   NoTranslationsProvided,
   InvalidName(String),
   InvalidDescription(String),
   NonExistentTranslationImage(Language),
-  OtherError(Box<dyn Display>),
   NonExistentCharacters(Vec<u32>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutCharacterServiceError {
@@ -42,5 +44,14 @@ impl Display for MutCharacterServiceError {
         MutCharacterServiceError::NoIdsProvided => "No ids provided".to_string(),
       }
     )
+  }
+}
+
+impl Error for MutCharacterServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutCharacterServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

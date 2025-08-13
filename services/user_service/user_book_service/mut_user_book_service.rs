@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use crate::join_comma::JoinComma;
@@ -19,12 +20,13 @@ pub trait MutUserBookService: Send + Sync {
   async fn remove(&self, user_id: u32, book_id: &[u32]) -> Result<(), ServiceError<MutUserBookServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutUserBookServiceError {
   NonExistentUser(u32),
   AlreadyAssociated(HashMap<u32, Vec<u32>>),
   NotAssociated(Vec<u32>),
   NonExistent(Vec<u32>),
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutUserBookServiceError {
@@ -44,5 +46,14 @@ impl Display for MutUserBookServiceError {
         MutUserBookServiceError::OtherError(x) => x.to_string(),
       }
     )
+  }
+}
+
+impl Error for MutUserBookServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutUserBookServiceError::OtherError(error) => Some(&**error),
+      _ => None,
+    }
   }
 }

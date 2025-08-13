@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -12,8 +13,9 @@ pub trait MutUserService: Send + Sync {
   async fn create(&self, user: CreateUser) -> Result<User, ServiceError<MutUserServiceError>>;
 }
 
+#[derive(Debug)]
 pub enum MutUserServiceError {
-  OtherError(Box<dyn Display>),
+  OtherError(Box<dyn Error>),
 }
 
 impl Display for MutUserServiceError {
@@ -25,5 +27,13 @@ impl Display for MutUserServiceError {
         MutUserServiceError::OtherError(x) => x.to_string(),
       }
     )
+  }
+}
+
+impl Error for MutUserServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      MutUserServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

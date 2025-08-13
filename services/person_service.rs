@@ -1,5 +1,6 @@
 pub mod mut_person_service;
 
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -31,10 +32,27 @@ pub trait PersonService: Send + Sync {
   ) -> Result<ItemsTotal<Person>, ServiceError<PersonServiceError>>;
 }
 
-pub enum PersonServiceError {}
+#[derive(Debug)]
+pub enum PersonServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for PersonServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        PersonServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for PersonServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      PersonServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
@@ -23,10 +24,27 @@ pub trait UserService: Send + Sync {
   async fn get_by_username(&self, name: &str) -> Result<Option<User>, ServiceError<UserServiceError>>;
 }
 
-pub enum UserServiceError {}
+#[derive(Debug)]
+pub enum UserServiceError {
+  OtherError(Box<dyn Error>),
+}
 
 impl Display for UserServiceError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "")
+    write!(
+      f,
+      "{}",
+      match self {
+        UserServiceError::OtherError(value) => value.to_string(),
+      }
+    )
+  }
+}
+
+impl Error for UserServiceError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      UserServiceError::OtherError(error) => Some(&**error),
+    }
   }
 }

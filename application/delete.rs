@@ -51,4 +51,10 @@ impl Display for DeleteError {
   }
 }
 
-impl Error for DeleteError {}
+impl Error for DeleteError {
+  fn source(&self) -> Option<&(dyn Error + 'static)> {
+    match self {
+      PostgresError(e) => Some(e),
+    }
+  }
+}
