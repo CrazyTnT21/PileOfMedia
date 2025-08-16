@@ -6,9 +6,9 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-quote = "1.0.39"
-syn = "2.0.99"
-proc-macro2 = "1.0.94"
+quote = "1.0.40"
+syn = "2.0.106"
+proc-macro2 = "1.0.97"
 
 [lib]
 proc-macro = true

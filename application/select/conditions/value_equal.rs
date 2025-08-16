@@ -13,7 +13,7 @@ impl Condition for ValueEqual<'_> {
     let selector = self.selector.sql();
     format!("{} = {}", selector, self.value.sql(value_index))
   }
-  fn values(&self) -> Vec<&IntoSql> {
+  fn values(&self) -> Vec<&IntoSql<'_>> {
     self.value.values()
   }
 }

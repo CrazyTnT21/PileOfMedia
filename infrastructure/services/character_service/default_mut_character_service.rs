@@ -91,12 +91,12 @@ impl DefaultMutCharacterService<'_> {
       if item.name.is_empty() {
         return Err(ClientError(MutCharacterServiceError::InvalidName(item.name.clone())));
       }
-      if let Some(description) = &item.description {
-        if description.is_empty() {
-          return Err(ClientError(MutCharacterServiceError::InvalidDescription(
-            description.clone(),
-          )));
-        }
+      if let Some(description) = &item.description
+        && description.is_empty()
+      {
+        return Err(ClientError(MutCharacterServiceError::InvalidDescription(
+          description.clone(),
+        )));
       }
     }
     Ok(())

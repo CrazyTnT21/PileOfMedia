@@ -88,9 +88,9 @@ impl DefaultMutThemeRepository<'_> {
     Ok(())
   }
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbThemeTranslation::TABLE_NAME, "fktranslation"), ids))
 }
-fn theme_id_in_ids(ids: &[i32]) -> Expression {
+fn theme_id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbTheme::TABLE_NAME, "id"), ids))
 }

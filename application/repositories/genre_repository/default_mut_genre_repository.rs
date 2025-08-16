@@ -89,9 +89,9 @@ impl DefaultMutGenreRepository<'_> {
   }
 }
 
-fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbGenreTranslation::TABLE_NAME, "fktranslation"), ids))
 }
-fn genre_id_in_ids(ids: &[i32]) -> Expression {
+fn genre_id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), ids))
 }

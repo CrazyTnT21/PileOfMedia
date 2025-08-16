@@ -2,7 +2,7 @@ use crate::openapi::responses::forbidden::Forbidden;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::{get, post};
-use axum::{Json, Router, debug_handler};
+use axum::{Json, Router};
 use chrono::Utc;
 use multipart::MultiPartRequest;
 use serde::{Deserialize, Serialize};
@@ -57,7 +57,6 @@ pub fn routes(app_state: AppState) -> Router {
   request_body(content_type = ["multipart/form-data"], content = CreateAccount),
   tag = "Accounts"
 )]
-#[debug_handler]
 async fn register(
   State(app_state): State<AppState>,
   MultiPartRequest(account): MultiPartRequest<CreateAccount>,

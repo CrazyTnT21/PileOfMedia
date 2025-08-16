@@ -286,7 +286,7 @@ fn genre_id_equal_fk_translation<'a>() -> Expression<'a> {
     (DbGenreTranslation::TABLE_NAME, "fktranslation"),
   )
 }
-fn genre_translation_with_name(name: &String) -> Expression {
+fn genre_translation_with_name(name: &String) -> Expression<'_> {
   Expression::new(ValueILike::new((DbGenreTranslation::TABLE_NAME, "name"), name))
 }
 fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
@@ -317,13 +317,13 @@ fn to_entities(
 fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<T>) -> Select<T> {
   select.inner_join::<DbGenreTranslation>(None, genre_id_equal_fk_translation())
 }
-fn in_languages(languages: &[DbLanguage]) -> Expression {
+fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbGenreTranslation::TABLE_NAME, "language"), languages))
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbGenreTranslation::TABLE_NAME, "fktranslation"), ids))
 }
-fn id_in_ids(ids: &[i32]) -> Expression {
+fn id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbGenre::TABLE_NAME, "id"), ids))
 }
 fn no_translation_ids(genre_ids: &[DbGenre], translations: &[DbGenreTranslation]) -> Vec<i32> {

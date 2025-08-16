@@ -116,12 +116,12 @@ impl DefaultMutBookService<'_> {
       if item.title.is_empty() {
         return Err(ClientError(MutBookServiceError::InvalidTitle(item.title.clone())));
       }
-      if let Some(description) = &item.description {
-        if description.is_empty() {
-          return Err(ClientError(MutBookServiceError::InvalidDescription(
-            description.clone(),
-          )));
-        }
+      if let Some(description) = &item.description
+        && description.is_empty()
+      {
+        return Err(ClientError(MutBookServiceError::InvalidDescription(
+          description.clone(),
+        )));
       }
       match item.cover {
         CreateCover::ImageIndex(index) => {
@@ -196,33 +196,33 @@ impl DefaultMutBookService<'_> {
         return Err(ClientError(MutBookServiceError::NonExistentFranchise(franchise_id)));
       }
     }
-    if let Some(themes) = &data.themes {
-      if !themes.is_empty() {
-        let existing_themes = self.theme_repository.filter_existing(themes).await?;
-        if themes.len() != existing_themes.len() {
-          let non_existent_themes = filter_non_existent(themes, &existing_themes);
-          return Err(ClientError(MutBookServiceError::NonExistentThemes(non_existent_themes)));
-        }
+    if let Some(themes) = &data.themes
+      && !themes.is_empty()
+    {
+      let existing_themes = self.theme_repository.filter_existing(themes).await?;
+      if themes.len() != existing_themes.len() {
+        let non_existent_themes = filter_non_existent(themes, &existing_themes);
+        return Err(ClientError(MutBookServiceError::NonExistentThemes(non_existent_themes)));
       }
     }
-    if let Some(genres) = &data.genres {
-      if !genres.is_empty() {
-        let existing_genres = self.genre_repository.filter_existing(genres).await?;
-        if genres.len() != existing_genres.len() {
-          let non_existent_genres = filter_non_existent(genres, &existing_genres);
-          return Err(ClientError(MutBookServiceError::NonExistentGenres(non_existent_genres)));
-        }
+    if let Some(genres) = &data.genres
+      && !genres.is_empty()
+    {
+      let existing_genres = self.genre_repository.filter_existing(genres).await?;
+      if genres.len() != existing_genres.len() {
+        let non_existent_genres = filter_non_existent(genres, &existing_genres);
+        return Err(ClientError(MutBookServiceError::NonExistentGenres(non_existent_genres)));
       }
     }
-    if let Some(characters) = &data.characters {
-      if !characters.is_empty() {
-        let existing_characters = self.character_repository.filter_existing(characters).await?;
-        if characters.len() != existing_characters.len() {
-          let non_existent_characters = filter_non_existent(characters, &existing_characters);
-          return Err(ClientError(MutBookServiceError::NonExistentCharacters(
-            non_existent_characters,
-          )));
-        }
+    if let Some(characters) = &data.characters
+      && !characters.is_empty()
+    {
+      let existing_characters = self.character_repository.filter_existing(characters).await?;
+      if characters.len() != existing_characters.len() {
+        let non_existent_characters = filter_non_existent(characters, &existing_characters);
+        return Err(ClientError(MutBookServiceError::NonExistentCharacters(
+          non_existent_characters,
+        )));
       }
     }
     if let Some(involved) = &data.involved {

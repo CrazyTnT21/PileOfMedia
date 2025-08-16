@@ -21,7 +21,11 @@ pub trait BookInvolvedRepository: Send + Sync {
     book_ids: &[PossiblyExistingBookId],
     languages: &[Language],
   ) -> Result<HashMap<ExistingBookId, Vec<BookInvolved>>, Box<dyn Error>>;
-  async fn filter_existing(&self, book_id: PossiblyExistingBookId, involved: &[InvolvedId]) -> Result<Vec<InvolvedId>, Box<dyn Error>>;
+  async fn filter_existing(
+    &self,
+    book_id: PossiblyExistingBookId,
+    involved: &[InvolvedId],
+  ) -> Result<Vec<InvolvedId>, Box<dyn Error>>;
 }
 type ExistingBookId = u32;
 type PossiblyExistingBookId = u32;

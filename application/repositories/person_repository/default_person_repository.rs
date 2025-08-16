@@ -316,7 +316,7 @@ fn person_id_equal_fk_translation<'a>() -> Expression<'a> {
     (DbPersonTranslation::TABLE_NAME, "fktranslation"),
   )
 }
-fn person_translation_with_name(name: &String) -> Expression {
+fn person_translation_with_name(name: &String) -> Expression<'_> {
   Expression::new(ValueILike::new((DbPersonTranslation::TABLE_NAME, "name"), name))
 }
 fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
@@ -353,16 +353,16 @@ fn to_entities(
 fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<T>) -> Select<T> {
   select.inner_join::<DbPersonTranslation>(None, person_id_equal_fk_translation())
 }
-fn in_languages(languages: &[DbLanguage]) -> Expression {
+fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbPersonTranslation::TABLE_NAME, "language"), languages))
 }
 fn to_u32(values: Vec<i32>) -> Vec<u32> {
   values.into_iter().map(|x| x as u32).collect()
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbPersonTranslation::TABLE_NAME, "fktranslation"), ids))
 }
-fn id_in_ids(ids: &[i32]) -> Expression {
+fn id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbPerson::TABLE_NAME, "id"), ids))
 }
 fn no_translation_ids(person_ids: &[DbPerson], translations: &[DbPersonTranslation]) -> Vec<i32> {

@@ -40,7 +40,7 @@ impl<'a> Expression<'a> {
     Expression::new(ValueIn::new(selector, values))
   }
 
-  pub fn values(&self) -> Vec<&IntoSql> {
+  pub fn values(&self) -> Vec<&IntoSql<'_>> {
     let mut result = self.condition.values();
     self.ands.iter().for_each(|x| result.append(&mut x.values()));
     self.ors.iter().for_each(|x| result.append(&mut x.values()));

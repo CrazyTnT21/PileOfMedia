@@ -81,12 +81,13 @@ impl DefaultMutAccountService<'_> {
     if exists_email.is_some() {
       return Err(ClientError(MutAccountServiceError::EmailAlreadyExists));
     };
+    //TODO: username validation
     Ok(())
   }
 }
 
 fn hash_password(password: &str) -> Result<Password, ServiceError<MutAccountServiceError>> {
-  let salt = SaltString::generate(&mut OsRng);
+  let salt = SaltString::try_from_rng(&mut OsRng).map_err(|y| map_server_error(Box::new(y)))?;
   let argon2 = Argon2::default();
   let password_hash = argon2
     .hash_password(password.as_bytes(), &salt)

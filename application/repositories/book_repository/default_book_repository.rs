@@ -328,7 +328,7 @@ impl DefaultBookRepository<'_> {
   }
 }
 
-fn book_slug_equal_slug(slug: &str) -> Expression {
+fn book_slug_equal_slug(slug: &str) -> Expression<'_> {
   Expression::value_equal(DbBook::TABLE_NAME, "slug", slug)
 }
 
@@ -338,11 +338,11 @@ fn book_id_equal_fk_translation<'a>() -> Expression<'a> {
     (DbBookTranslation::TABLE_NAME, "fktranslation"),
   )
 }
-fn book_translation_with_title(title: &String) -> Expression {
+fn book_translation_with_title(title: &String) -> Expression<'_> {
   Expression::new(ValueILike::new((DbBookTranslation::TABLE_NAME, "title"), title))
 }
 
-fn in_languages(languages: &[DbLanguage]) -> Expression {
+fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbBookTranslation::TABLE_NAME, "language"), languages))
 }
 fn fk_translation_equal_id<'a>(id: i32) -> Expression<'a> {
@@ -413,7 +413,7 @@ fn franchise_ids(items: &[DbBook]) -> Vec<u32> {
   result.dedup();
   result
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbBookTranslation::TABLE_NAME, "fktranslation"), ids))
 }
 fn no_translation_ids(book_ids: &[DbBook], translations: &[DbBookTranslation]) -> Vec<i32> {

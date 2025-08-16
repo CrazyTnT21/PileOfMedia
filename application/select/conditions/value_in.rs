@@ -27,7 +27,7 @@ impl Condition for ValueIn<'_> {
     format!("{selector} IN ({values})")
   }
 
-  fn values(&self) -> Vec<&IntoSql> {
+  fn values(&self) -> Vec<&IntoSql<'_>> {
     self.values.values()
   }
 }

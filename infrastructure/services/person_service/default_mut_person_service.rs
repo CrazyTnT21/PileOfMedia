@@ -89,12 +89,12 @@ impl DefaultMutPersonService<'_> {
       return Err(ClientError(MutPersonServiceError::NoTranslationsProvided));
     }
     for item in translations.values() {
-      if let Some(description) = &item.description {
-        if description.is_empty() {
-          return Err(ClientError(MutPersonServiceError::InvalidDescription(
-            description.clone(),
-          )));
-        }
+      if let Some(description) = &item.description
+        && description.is_empty()
+      {
+        return Err(ClientError(MutPersonServiceError::InvalidDescription(
+          description.clone(),
+        )));
       }
     }
     Ok(())

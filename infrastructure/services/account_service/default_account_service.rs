@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use async_trait::async_trait;
-
 use domain::entities::account::{Account, Email, Password};
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
@@ -36,29 +35,32 @@ impl AccountService for DefaultAccountService<'_> {
     Ok(self.account_repository.get_by_email(email).await?)
   }
 
-  async fn login(&self, email: &Email, password: &Password) -> Result<Account, ServiceError<AccountServiceError>> {
-    let account = self.get_by_email(email).await?.ok_or_else(unknown_email)?;
+  async fn login(
+    &self,
+    email: &Email,
+    given_password: &Password,
+  ) -> Result<Account, ServiceError<AccountServiceError>> {
+    let account = self
+      .get_by_email(email)
+      .await?
+      .ok_or_else(unknown_email_or_invalid_password)?;
 
     let hash = password_hash(&account.password.0)?;
 
-    let verified_password = Argon2::default().verify_password(password.0.as_bytes(), &hash);
+    let verified_password = Argon2::default().verify_password(given_password.0.as_bytes(), &hash);
 
     match verified_password {
       Ok(()) => Ok(account),
-      Err(argon2::password_hash::Error::Password) => Err(wrong_password()),
+      Err(argon2::password_hash::Error::Password) => Err(unknown_email_or_invalid_password()),
       Err(e) => Err(ServiceError::ServerError(Box::new(e))),
     }
   }
 }
 
-fn password_hash(argon_password: &str) -> Result<PasswordHash, ServiceError<AccountServiceError>> {
-  PasswordHash::new(argon_password).map_err(|y| map_server_error(Box::new(y)))
+fn password_hash(argon_password_hash: &str) -> Result<PasswordHash<'_>, ServiceError<AccountServiceError>> {
+  PasswordHash::new(argon_password_hash).map_err(|y| map_server_error(Box::new(y)))
 }
 
-const fn unknown_email() -> ServiceError<AccountServiceError> {
-  ServiceError::ClientError(AccountServiceError::UnknownEmail)
-}
-
-const fn wrong_password() -> ServiceError<AccountServiceError> {
-  ServiceError::ClientError(AccountServiceError::WrongPassword)
+const fn unknown_email_or_invalid_password() -> ServiceError<AccountServiceError> {
+  ServiceError::ClientError(AccountServiceError::UnknownEmailOrInvalidPassword)
 }

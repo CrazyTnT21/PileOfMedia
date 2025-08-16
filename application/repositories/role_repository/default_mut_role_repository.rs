@@ -88,9 +88,9 @@ impl DefaultMutRoleRepository<'_> {
     Ok(())
   }
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "fktranslation"), ids))
 }
-fn role_id_in_ids(ids: &[i32]) -> Expression {
+fn role_id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbRole::TABLE_NAME, "id"), ids))
 }

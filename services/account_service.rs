@@ -20,9 +20,7 @@ pub trait AccountService: Send + Sync {
 
 #[derive(Debug)]
 pub enum AccountServiceError {
-  UnknownEmail,
-  InvalidEmail,
-  WrongPassword,
+  UnknownEmailOrInvalidPassword,
   OtherError(Box<dyn Error>),
 }
 
@@ -32,9 +30,7 @@ impl Display for AccountServiceError {
       f,
       "{}",
       match self {
-        AccountServiceError::UnknownEmail => "Unknown email".to_string(),
-        AccountServiceError::InvalidEmail => "Invalid email".to_string(),
-        AccountServiceError::WrongPassword => "Wrong password".to_string(),
+        AccountServiceError::UnknownEmailOrInvalidPassword => "Unknown email or invalid password".to_string(),
         AccountServiceError::OtherError(x) => x.to_string(),
       }
     )
@@ -44,8 +40,8 @@ impl Display for AccountServiceError {
 impl Error for AccountServiceError {
   fn source(&self) -> Option<&(dyn Error + 'static)> {
     match self {
+      AccountServiceError::UnknownEmailOrInvalidPassword => None,
       AccountServiceError::OtherError(error) => Some(&**error),
-      _ => None,
     }
   }
 }

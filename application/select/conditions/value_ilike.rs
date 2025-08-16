@@ -22,7 +22,7 @@ impl Condition for ValueILike<'_> {
     format!("{} ILIKE ${}", selector, crate::select::expression::next(value_index))
   }
 
-  fn values(&self) -> Vec<&IntoSql> {
+  fn values(&self) -> Vec<&IntoSql<'_>> {
     vec![self.value]
   }
 }

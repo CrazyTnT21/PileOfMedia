@@ -13,6 +13,7 @@ pub trait MutAccountService: Send + Sync {
 #[derive(Debug)]
 pub enum MutAccountServiceError {
   EmailAlreadyExists,
+  UsernameAlreadyExists,
   InvalidEmail,
   InvalidPassword,
   OtherError(Box<dyn Error>),
@@ -25,6 +26,7 @@ impl Display for MutAccountServiceError {
       "{}",
       match self {
         MutAccountServiceError::EmailAlreadyExists => "Account with the given email already exists".to_string(),
+        MutAccountServiceError::UsernameAlreadyExists => "Account with the given username already exists".to_string(),
         MutAccountServiceError::InvalidEmail => "Invalid email".to_string(),
         MutAccountServiceError::InvalidPassword => "Invalid password".to_string(),
         MutAccountServiceError::OtherError(x) => x.to_string(),

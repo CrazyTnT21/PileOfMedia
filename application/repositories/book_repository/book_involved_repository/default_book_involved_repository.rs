@@ -203,7 +203,7 @@ fn involved_ids_to_map(result: &mut HashMap<i32, HashMap<i32, Vec<i32>>>, book_i
 fn fk_book_equal_id<'a>(book_id: i32) -> Expression<'a> {
   Expression::new(ValueEqual::new((DbBookInvolved::TABLE_NAME, "fkbook"), book_id))
 }
-fn involved_fks_in_ids(involved_ids: &[(i32, i32)]) -> Expression {
+fn involved_fks_in_ids(involved_ids: &[(i32, i32)]) -> Expression<'_> {
   Expression::new(ValueIn::new(
     (
       (DbBookInvolved::TABLE_NAME, "fkperson"),

@@ -88,9 +88,9 @@ impl DefaultMutFranchiseRepository<'_> {
     Ok(())
   }
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression {
+fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbFranchiseTranslation::TABLE_NAME, "fktranslation"), ids))
 }
-fn franchise_id_in_ids(ids: &[i32]) -> Expression {
+fn franchise_id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbFranchise::TABLE_NAME, "id"), ids))
 }

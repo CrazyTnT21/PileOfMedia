@@ -2,7 +2,7 @@ use crate::select::expression::IntoSql;
 
 pub trait Condition: Send + Sync {
   fn sql(&self, value_index: &mut usize) -> String;
-  fn values(&self) -> Vec<&IntoSql> {
+  fn values(&self) -> Vec<&IntoSql<'_>> {
     Vec::new()
   }
 }
