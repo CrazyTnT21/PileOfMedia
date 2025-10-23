@@ -6,12 +6,14 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
-use axum::{Json, Router};
+use axum::{Json, Router, middleware};
+use chrono::Duration;
 use tokio_postgres::{Client, Transaction};
 
 use crate::app_state::AppState;
 use crate::controllers::{
-  convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
+  cache_control_public, convert_error, convert_service_error, map_accept_languages, map_language_header,
+  set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
@@ -36,10 +38,14 @@ pub mod character_doc;
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
-    .route("/", post(create_item))
     .route("/{id}", get(get_by_id))
-    .route("/{id}", delete(delete_item))
     .route("/name/{name}", get(get_by_name))
+    .layer(middleware::from_fn_with_state(
+      Duration::minutes(1),
+      cache_control_public,
+    ))
+    .route("/", post(create_item))
+    .route("/{id}", delete(delete_item))
     .with_state(app_state)
 }
 

@@ -1,12 +1,10 @@
-use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
-use std::env;
-use std::error::Error;
-
 use axum::http::Method;
+use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
 use axum::routing::get;
 use bb8_postgres::PostgresConnectionManager;
 use bb8_postgres::bb8::{ManageConnection, Pool};
-use dotenvy::dotenv;
+use std::env;
+use std::error::Error;
 use tokio_postgres::NoTls;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -21,8 +19,7 @@ mod jwt;
 mod openapi;
 
 pub async fn main() -> Result<(), Box<dyn Error>> {
-  dotenv().ok();
-  dotenvy::from_path_override(".local/.env").ok();
+  load_local_env()?;
   let database_url = env::var("DATABASE_URL").map_err(|_| "DATABASE_URL must be set")?;
   //let server_url = env::var("SERVER_URL").expect("SERVER_URL must be set");
   let content_path = env::var("CONTENT_PATH").map_err(|_| "CONTENT_PATH must be set")?;
@@ -58,4 +55,17 @@ async fn connection_pool(
 ) -> Result<Pool<PostgresConnectionManager<NoTls>>, <PostgresConnectionManager<NoTls> as ManageConnection>::Error> {
   let manager = PostgresConnectionManager::new_from_stringlike(database_url, NoTls)?;
   Pool::builder().build(manager).await
+}
+
+fn load_local_env() -> dotenvy::Result<()> {
+  dotenvy::from_path_override(".local/.env").or_else(|e| e.not_found().ok_or_stable(e))
+}
+trait OkOr {
+  fn ok_or_stable<E>(self, err: E) -> Result<(), E>;
+}
+impl OkOr for bool {
+  #[inline]
+  fn ok_or_stable<E>(self, err: E) -> Result<(), E> {
+    if self { Ok(()) } else { Err(err) }
+  }
 }

@@ -10,6 +10,4 @@
 /.gitmodules
 /.gitignore
 /.idea
-/docker-compose.yml
-.env
 README.md

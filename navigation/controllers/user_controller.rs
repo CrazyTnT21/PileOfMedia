@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use crate::app_state::AppState;
 use crate::controllers::{
-  convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
+  cache_control_public, convert_error, convert_service_error, map_accept_languages, map_language_header,
+  set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::headers::authorization::JWTAuthorization;
@@ -28,7 +29,8 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
-use axum::{Json, Router};
+use axum::{Json, Router, middleware};
+use chrono::Duration;
 use domain::entities::user::create_user_book::CreateUserBook;
 use services::user_service::UserService;
 use services::user_service::user_book_service::UserBookService;
@@ -42,11 +44,15 @@ pub fn routes(app_state: AppState) -> Router {
     .route("/", get(get_items))
     .route("/{id}", get(get_by_id))
     .route("/{id}/books", get(get_books))
-    .route("/{id}/books", post(add_book))
     .route("/{id}/books/{book_id}", get(get_book_by_id))
-    .route("/{id}/books/{book_id}", delete(remove_book))
     .route("/name/{name}", get(get_by_name))
     .route("/username/{name}", get(get_by_username))
+    .layer(middleware::from_fn_with_state(
+      Duration::minutes(1),
+      cache_control_public,
+    ))
+    .route("/{id}/books", post(add_book))
+    .route("/{id}/books/{book_id}", delete(remove_book))
     .with_state(app_state)
 }
 

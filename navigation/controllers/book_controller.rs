@@ -4,7 +4,8 @@ use crate::controllers::book_controller::book_implementations::{
   get_mut_involved_service, get_mut_service, get_mut_theme_service, get_service, get_theme_service,
 };
 use crate::controllers::{
-  convert_error, convert_service_error, map_accept_languages, map_language_header, set_pagination_limit,
+  cache_control_public, convert_error, convert_service_error, map_accept_languages, map_language_header,
+  set_pagination_limit,
 };
 use crate::extractors::headers::accept_language::AcceptLanguageHeader;
 use crate::extractors::query_pagination::QueryPagination;
@@ -21,7 +22,8 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post};
-use axum::{Json, Router};
+use axum::{Json, Router, middleware};
+use chrono::Duration;
 use domain::entities::book::create_book::CreateBook;
 use domain::entities::involved::InvolvedId;
 use domain::slug::Slug;
@@ -44,23 +46,27 @@ mod book_implementations;
 pub fn routes(app_state: AppState) -> Router {
   Router::new()
     .route("/", get(get_items))
-    .route("/", post(create_book))
     .route("/{id}", get(get_by_id))
-    .route("/{id}", delete(delete_book))
     .route("/{id}/statistic", get(get_statistic))
     .route("/title/{title}", get(get_by_title))
     .route("/slug/{slug}", get(get_by_slug))
     .route("/{id}/genres", get(get_genres))
-    .route("/{id}/genres/{genre_id}", post(add_genre))
-    .route("/{id}/genres/{genre_id}", delete(remove_genre))
     .route("/{id}/themes", get(get_themes))
-    .route("/{id}/themes/{theme_id}", post(add_theme))
-    .route("/{id}/themes/{theme_id}", delete(remove_theme))
     .route("/{id}/characters", get(get_characters))
-    .route("/{id}/characters/{character_id}", post(add_character))
-    .route("/{id}/characters/{character_id}", delete(remove_character))
     .route("/{id}/involved", get(get_involved))
+    .layer(middleware::from_fn_with_state(
+      Duration::minutes(1),
+      cache_control_public,
+    ))
+    .route("/", post(create_book))
+    .route("/{id}/genres/{genre_id}", post(add_genre))
+    .route("/{id}/themes/{theme_id}", post(add_theme))
+    .route("/{id}/characters/{character_id}", post(add_character))
     .route("/{id}/involved/{person_id}/{role_id}", post(add_involved))
+    .route("/{id}", delete(delete_book))
+    .route("/{id}/genres/{genre_id}", delete(remove_genre))
+    .route("/{id}/themes/{theme_id}", delete(remove_theme))
+    .route("/{id}/characters/{character_id}", delete(remove_character))
     .route("/{id}/involved/{person_id}/{role_id}", delete(remove_involved))
     .with_state(app_state)
 }

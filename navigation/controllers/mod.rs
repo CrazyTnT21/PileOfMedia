@@ -1,5 +1,9 @@
-use axum::Router;
+use axum::extract::{Request, State};
 use axum::http::{HeaderMap, StatusCode};
+use axum::middleware::Next;
+use axum::response::Response;
+use axum::{Router, http};
+use chrono::Duration;
 use domain::enums::language::Language;
 use services::traits::service_error::ServiceError;
 use std::error::Error;
@@ -108,4 +112,18 @@ const fn set_pagination_limit(pagination: &mut QueryPagination) {
   if pagination.count > 50 {
     pagination.count = 50;
   }
+}
+
+/// # Panics
+///
+/// Will panic if the given duration cannot be parsed into a header value. This should never panic.
+pub async fn cache_control_public(state: State<Duration>, request: Request, next: Next) -> Response {
+  let mut response = next.run(request).await;
+  let mut max_age = "max-age=".to_string();
+  max_age.push_str(&state.0.num_seconds().to_string());
+  max_age.push_str(", public");
+  response
+    .headers_mut()
+    .insert(http::header::CACHE_CONTROL, max_age.parse().unwrap());
+  response
 }
