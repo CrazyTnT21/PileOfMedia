@@ -88,7 +88,7 @@ fn get_versions(id: u32, image_data: &mut Vec<DbImageData>) -> Vec<ImageData> {
   let mut filtered = Vec::new();
   let mut indices: Vec<usize> = vec![];
   for (i, x) in image_data.iter().enumerate() {
-    if x.fk_image as u32 == id {
+    if x.image_id as u32 == id {
       indices.push(i);
     }
   }
@@ -114,8 +114,8 @@ impl DefaultImageRepository<'_> {
 
     Ok(
       Select::new::<DbImageData>()
-        .columns::<DbImageData>("imagedata")
-        .where_expression(Expression::new(ValueIn::new(("imagedata", "fkimage"), &image_ids)))
+        .columns::<DbImageData>("image_data")
+        .where_expression(Expression::new(ValueIn::new(("image_data", "image_id"), &image_ids)))
         .query(self.client)
         .await?
         .into_iter()

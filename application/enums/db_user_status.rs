@@ -21,7 +21,7 @@ pub enum DbUserStatus {
 }
 from_row_impl!(DbUserStatus);
 convert!(DbUserStatus, UserStatus, NotStarted, Ongoing, Finished, Paused);
-enum_from_sql!(DbUserStatus, "userstatus");
+enum_from_sql!(DbUserStatus, "user_status");
 
 impl FromStr for DbUserStatus {
   type Err = <UserStatus as FromStr>::Err;
@@ -49,10 +49,10 @@ impl ToSql for DbUserStatus {
 }
 fn bytes(value: DbUserStatus) -> Vec<u8> {
   match value {
-    DbUserStatus::NotStarted => "NotStarted",
-    DbUserStatus::Ongoing => "Ongoing",
-    DbUserStatus::Finished => "Finished",
-    DbUserStatus::Paused => "Paused",
+    DbUserStatus::NotStarted => "not_started",
+    DbUserStatus::Ongoing => "ongoing",
+    DbUserStatus::Finished => "finished",
+    DbUserStatus::Paused => "paused",
   }
   .bytes()
   .collect()

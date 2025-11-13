@@ -39,9 +39,9 @@ impl BookThemeRepository for DefaultBookThemeRepository<'_> {
     let book_id = book_id as i32;
 
     let theme_ids: Vec<u32> = Select::new::<DbBookTheme>()
-      .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
+      .column::<i32>(DbBookTheme::TABLE_NAME, "theme_id")
       .where_expression(Expression::new(ValueEqual::new(
-        (DbBookTheme::TABLE_NAME, "fkbook"),
+        (DbBookTheme::TABLE_NAME, "book_id"),
         book_id,
       )))
       .query(self.client)
@@ -61,10 +61,10 @@ impl BookThemeRepository for DefaultBookThemeRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     let ids = Select::new::<DbBookTheme>()
-      .column::<i32>(DbBookTheme::TABLE_NAME, "fkbook")
-      .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
+      .column::<i32>(DbBookTheme::TABLE_NAME, "book_id")
+      .column::<i32>(DbBookTheme::TABLE_NAME, "theme_id")
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookTheme::TABLE_NAME, "fkbook"),
+        (DbBookTheme::TABLE_NAME, "book_id"),
         &book_ids,
       )))
       .query(self.client)
@@ -92,12 +92,12 @@ impl BookThemeRepository for DefaultBookThemeRepository<'_> {
     let themes = to_i32(themes);
 
     let filtered = Select::new::<DbBookTheme>()
-      .column::<i32>(DbBookTheme::TABLE_NAME, "fktheme")
+      .column::<i32>(DbBookTheme::TABLE_NAME, "theme_id")
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookTheme::TABLE_NAME, "fktheme"),
+        (DbBookTheme::TABLE_NAME, "theme_id"),
         &themes,
       )))
-      .where_expression(Expression::value_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id))
+      .where_expression(Expression::value_equal(DbBookTheme::TABLE_NAME, "book_id", book_id))
       .query(self.client)
       .await?
       .into_iter()

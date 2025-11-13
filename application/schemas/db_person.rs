@@ -11,14 +11,11 @@ use tokio_postgres::Row;
 pub struct DbPerson {
   pub id: i32,
   pub name: String,
-  #[rename = "firstname"]
   pub first_name: Option<String>,
-  #[rename = "lastname"]
   pub last_name: Option<String>,
   pub birthday: Option<NaiveDate>,
   pub height: Option<i16>,
-  #[rename = "fkimage"]
-  pub fk_image: Option<i32>,
+  pub image_id: Option<i32>,
 }
 
 impl DbPerson {

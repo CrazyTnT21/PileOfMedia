@@ -2,10 +2,8 @@ use from_row::FromRow;
 use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
-#[rename = "bookgenre"]
+#[rename = "book_genre"]
 pub struct DbBookGenre {
-  #[rename = "fkbook"]
-  pub fk_book: i32,
-  #[rename = "fkgenre"]
-  pub fk_genre: i32,
+  pub book_id: i32,
+  pub genre_id: i32,
 }

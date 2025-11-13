@@ -5,13 +5,11 @@ use from_row::FromRow;
 use tokio_postgres::Row;
 
 #[derive(FromRow, Clone, Debug)]
-#[rename = "userbook"]
+#[rename = "user_book"]
 pub struct DbUserBook {
-  #[rename = "fkuser"]
-  pub fk_user: i32,
-  #[rename = "fkbook"]
-  pub fk_book: i32,
-  #[rename = "userstatus"]
+  pub user_id: i32,
+  pub book_id: i32,
+  #[rename = "user_status"]
   pub status: DbUserStatus,
   pub favorite: bool,
   pub score: Option<i16>,

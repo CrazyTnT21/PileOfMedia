@@ -39,9 +39,9 @@ impl BookGenreRepository for DefaultBookGenreRepository<'_> {
     let book_id = book_id as i32;
 
     let genre_ids: Vec<u32> = Select::new::<DbBookGenre>()
-      .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
+      .column::<i32>(DbBookGenre::TABLE_NAME, "genre_id")
       .where_expression(Expression::new(ValueEqual::new(
-        (DbBookGenre::TABLE_NAME, "fkbook"),
+        (DbBookGenre::TABLE_NAME, "book_id"),
         book_id,
       )))
       .query(self.client)
@@ -61,10 +61,10 @@ impl BookGenreRepository for DefaultBookGenreRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     let ids = Select::new::<DbBookGenre>()
-      .column::<i32>(DbBookGenre::TABLE_NAME, "fkbook")
-      .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
+      .column::<i32>(DbBookGenre::TABLE_NAME, "book_id")
+      .column::<i32>(DbBookGenre::TABLE_NAME, "genre_id")
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookGenre::TABLE_NAME, "fkbook"),
+        (DbBookGenre::TABLE_NAME, "book_id"),
         &book_ids,
       )))
       .query(self.client)
@@ -92,12 +92,12 @@ impl BookGenreRepository for DefaultBookGenreRepository<'_> {
     let genres = to_i32(genres);
 
     let filtered = Select::new::<DbBookGenre>()
-      .column::<i32>(DbBookGenre::TABLE_NAME, "fkgenre")
+      .column::<i32>(DbBookGenre::TABLE_NAME, "genre_id")
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookGenre::TABLE_NAME, "fkgenre"),
+        (DbBookGenre::TABLE_NAME, "genre_id"),
         &genres,
       )))
-      .where_expression(Expression::value_equal(DbBookGenre::TABLE_NAME, "fkbook", book_id))
+      .where_expression(Expression::value_equal(DbBookGenre::TABLE_NAME, "book_id", book_id))
       .query(self.client)
       .await?
       .into_iter()

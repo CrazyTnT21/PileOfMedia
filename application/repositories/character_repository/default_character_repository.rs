@@ -68,9 +68,9 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&characters, &translations);
 
     let mut extra_translations = Select::new::<DbCharacterTranslation>()
-      .distinct_on(DbCharacterTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbCharacterTranslation::TABLE_NAME, "translation_id")
       .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -78,12 +78,12 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
 
     let translations: Vec<(Language, i32, CharacterTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let translations = map_translation(&characters, translations);
 
-    let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.fk_image).collect();
+    let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.image_id).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
     let images = self.image_repository.get_by_ids(&image_ids).await?;
 
@@ -104,7 +104,7 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
       .distinct_on(DbCharacter::TABLE_NAME, "id")
       .inner_join::<DbCharacterTranslation>(
         None,
-        Expression::new(ValueEqual::new((DbCharacter::TABLE_NAME, "id"), id)).and(character_id_equal_fk_translation()),
+        Expression::new(ValueEqual::new((DbCharacter::TABLE_NAME, "id"), id)).and(character_id_equal_translation_id()),
       )
       .get_single(self.client)
       .await?;
@@ -114,7 +114,7 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     let translations: Vec<(Language, CharacterTranslation)> = Select::new::<DbCharacterTranslation>()
       .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
       .where_expression(
-        Expression::value_equal(DbCharacterTranslation::TABLE_NAME, "fktranslation", item.0.id)
+        Expression::value_equal(DbCharacterTranslation::TABLE_NAME, "translation_id", item.0.id)
           .and(in_languages(&db_languages)),
       )
       .query(self.client)
@@ -123,9 +123,9 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
       .map(|x| (x.0.language.into(), x.0.to_entity()))
       .collect();
     let mut available = self.available_languages(&[id]).await?;
-    let image = match item.0.fk_image {
+    let image = match item.0.image_id {
       None => None,
-      Some(fk_image) => self.image_repository.get_by_id(fk_image as u32).await?,
+      Some(image_id) => self.image_repository.get_by_id(image_id as u32).await?,
     };
     let item = item.0.to_entity(
       AvailableTranslations {
@@ -161,9 +161,9 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&characters, &translations);
 
     let mut extra_translations = Select::new::<DbCharacterTranslation>()
-      .distinct_on(DbCharacterTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbCharacterTranslation::TABLE_NAME, "translation_id")
       .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -171,10 +171,10 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
 
     let translations: Vec<(Language, i32, CharacterTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
-    let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.fk_image).collect();
+    let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.image_id).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
     let images = self.image_repository.get_by_ids(&image_ids).await?;
 
@@ -215,9 +215,9 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&characters, &translations);
 
     let mut extra_translations = Select::new::<DbCharacterTranslation>()
-      .distinct_on(DbCharacterTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbCharacterTranslation::TABLE_NAME, "translation_id")
       .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -225,10 +225,10 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
 
     let translations: Vec<(Language, i32, CharacterTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
-    let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.fk_image).collect();
+    let image_ids: Vec<i32> = characters.iter().filter_map(|x| x.image_id).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
     let images = self.image_repository.get_by_ids(&image_ids).await?;
 
@@ -258,10 +258,10 @@ impl CharacterRepository for DefaultCharacterRepository<'_> {
 impl DefaultCharacterRepository<'_> {
   async fn available_languages(&self, ids: &[i32]) -> Result<HashMap<i32, Vec<Language>>, Box<dyn Error>> {
     let available_translations = Select::new::<DbCharacterTranslation>()
-      .column::<i32>(DbCharacterTranslation::TABLE_NAME, "fktranslation")
+      .column::<i32>(DbCharacterTranslation::TABLE_NAME, "translation_id")
       .column::<DbLanguage>(DbCharacterTranslation::TABLE_NAME, "language")
       .where_expression(Expression::new(ValueIn::new(
-        (DbCharacterTranslation::TABLE_NAME, "fktranslation"),
+        (DbCharacterTranslation::TABLE_NAME, "translation_id"),
         ids,
       )))
       .query(self.client)
@@ -282,7 +282,7 @@ fn character_translation_select<'a>(
   Select::new::<DbCharacterTranslation>()
     .columns::<DbCharacterTranslation>(DbCharacterTranslation::TABLE_NAME)
     .where_expression(Expression::new(ValueIn::new(
-      (DbCharacterTranslation::TABLE_NAME, "fktranslation"),
+      (DbCharacterTranslation::TABLE_NAME, "translation_id"),
       character_ids,
     )))
     .where_expression(in_languages(db_languages))
@@ -301,10 +301,10 @@ fn map_translation(
   }
   new_translations
 }
-fn character_id_equal_fk_translation<'a>() -> Expression<'a> {
+fn character_id_equal_translation_id<'a>() -> Expression<'a> {
   Expression::column_equal(
     (DbCharacter::TABLE_NAME, "id"),
-    (DbCharacterTranslation::TABLE_NAME, "fktranslation"),
+    (DbCharacterTranslation::TABLE_NAME, "translation_id"),
   )
 }
 fn character_translation_with_name(name: &String) -> Expression<'_> {
@@ -317,7 +317,7 @@ fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
   select.inner_join::<DbCharacterTranslation>(
     None,
     Expression::value_i_like((DbCharacterTranslation::TABLE_NAME, "name"), name)
-      .and(character_id_equal_fk_translation()),
+      .and(character_id_equal_translation_id()),
   )
 }
 fn to_entities(
@@ -330,7 +330,7 @@ fn to_entities(
     .into_iter()
     .map(|character| {
       let id = character.id;
-      let image_id = character.fk_image;
+      let image_id = character.image_id;
       let image = image_id.and_then(|x| images.iter().position(|y| y.id == x as u32).map(|x| images.remove(x)));
       character.to_entity(
         AvailableTranslations {
@@ -343,7 +343,7 @@ fn to_entities(
     .collect()
 }
 fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<T>) -> Select<T> {
-  select.inner_join::<DbCharacterTranslation>(None, character_id_equal_fk_translation())
+  select.inner_join::<DbCharacterTranslation>(None, character_id_equal_translation_id())
 }
 fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new(
@@ -354,8 +354,8 @@ fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
 fn to_u32(values: Vec<i32>) -> Vec<u32> {
   values.into_iter().map(|x| x as u32).collect()
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
-  Expression::new(ValueIn::new((DbCharacterTranslation::TABLE_NAME, "fktranslation"), ids))
+fn translation_id_in_ids(ids: &[i32]) -> Expression<'_> {
+  Expression::new(ValueIn::new((DbCharacterTranslation::TABLE_NAME, "translation_id"), ids))
 }
 fn id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbCharacter::TABLE_NAME, "id"), ids))
@@ -366,7 +366,7 @@ fn no_translation_ids(character_ids: &[DbCharacter], translations: &[DbCharacter
     .filter_map(|x| {
       translations
         .iter()
-        .find(|y| y.fk_translation == x.id)
+        .find(|y| y.translation_id == x.id)
         .map_or(Some(x.id), |_| None)
     })
     .collect()

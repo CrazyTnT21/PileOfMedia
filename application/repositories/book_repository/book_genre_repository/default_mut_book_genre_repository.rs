@@ -28,7 +28,7 @@ impl MutBookGenreRepository for DefaultMutBookGenreRepository<'_> {
   async fn add(&self, book_id: u32, genres: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let genres = to_i32(genres);
-    let mut insert = Insert::new::<DbBookGenre>(["fkbook", "fkgenre"]);
+    let mut insert = Insert::new::<DbBookGenre>(["book_id", "genre_id"]);
     genres.iter().for_each(|x| {
       insert.values_ref([&book_id, x]);
     });
@@ -40,8 +40,8 @@ impl MutBookGenreRepository for DefaultMutBookGenreRepository<'_> {
     let book_id = book_id as i32;
     let genres = to_i32(genres);
 
-    Delete::new::<DbBookGenre>(Expression::value_equal(DbBookGenre::TABLE_NAME, "fkbook", book_id).and(
-      Expression::new(ValueIn::new((DbBookGenre::TABLE_NAME, "fkgenre"), &genres)),
+    Delete::new::<DbBookGenre>(Expression::value_equal(DbBookGenre::TABLE_NAME, "book_id", book_id).and(
+      Expression::new(ValueIn::new((DbBookGenre::TABLE_NAME, "genre_id"), &genres)),
     ))
     .execute_transaction(self.transaction)
     .await?;
@@ -51,7 +51,7 @@ impl MutBookGenreRepository for DefaultMutBookGenreRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     Delete::new::<DbBookGenre>(Expression::new(ValueIn::new(
-      (DbBookGenre::TABLE_NAME, "fkbook"),
+      (DbBookGenre::TABLE_NAME, "book_id"),
       &book_ids,
     )))
     .execute_transaction(self.transaction)

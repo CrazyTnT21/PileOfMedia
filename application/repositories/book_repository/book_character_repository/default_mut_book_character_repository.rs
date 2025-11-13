@@ -28,7 +28,7 @@ impl MutBookCharacterRepository for DefaultMutBookCharacterRepository<'_> {
   async fn add(&self, book_id: u32, characters: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let characters = to_i32(characters);
-    let mut insert = Insert::new::<DbBookCharacter>(["fkbook", "fkcharacter"]);
+    let mut insert = Insert::new::<DbBookCharacter>(["book_id", "character_id"]);
     characters.iter().for_each(|x| {
       insert.values_ref([&book_id, x]);
     });
@@ -41,8 +41,8 @@ impl MutBookCharacterRepository for DefaultMutBookCharacterRepository<'_> {
     let characters = to_i32(characters);
 
     Delete::new::<DbBookCharacter>(
-      Expression::value_equal(DbBookCharacter::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
-        (DbBookCharacter::TABLE_NAME, "fkcharacter"),
+      Expression::value_equal(DbBookCharacter::TABLE_NAME, "book_id", book_id).and(Expression::new(ValueIn::new(
+        (DbBookCharacter::TABLE_NAME, "character_id"),
         &characters,
       ))),
     )
@@ -55,7 +55,7 @@ impl MutBookCharacterRepository for DefaultMutBookCharacterRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     Delete::new::<DbBookCharacter>(Expression::new(ValueIn::new(
-      (DbBookCharacter::TABLE_NAME, "fkbook"),
+      (DbBookCharacter::TABLE_NAME, "book_id"),
       &book_ids,
     )))
     .execute_transaction(self.transaction)

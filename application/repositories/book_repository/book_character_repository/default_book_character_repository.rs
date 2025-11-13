@@ -40,9 +40,9 @@ impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
     let book_id = book_id as i32;
 
     let character_ids: Vec<u32> = Select::new::<DbBookCharacter>()
-      .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
+      .column::<i32>(DbBookCharacter::TABLE_NAME, "character_id")
       .where_expression(Expression::new(ValueEqual::new(
-        (DbBookCharacter::TABLE_NAME, "fkbook"),
+        (DbBookCharacter::TABLE_NAME, "book_id"),
         book_id,
       )))
       .query(self.client)
@@ -68,10 +68,10 @@ impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     let ids = Select::new::<DbBookCharacter>()
-      .column::<i32>(DbBookCharacter::TABLE_NAME, "fkbook")
-      .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
+      .column::<i32>(DbBookCharacter::TABLE_NAME, "book_id")
+      .column::<i32>(DbBookCharacter::TABLE_NAME, "character_id")
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookCharacter::TABLE_NAME, "fkbook"),
+        (DbBookCharacter::TABLE_NAME, "book_id"),
         &book_ids,
       )))
       .query(self.client)
@@ -101,12 +101,12 @@ impl BookCharacterRepository for DefaultBookCharacterRepository<'_> {
     let characters = to_i32(characters);
 
     let filtered = Select::new::<DbBookCharacter>()
-      .column::<i32>(DbBookCharacter::TABLE_NAME, "fkcharacter")
+      .column::<i32>(DbBookCharacter::TABLE_NAME, "character_id")
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookCharacter::TABLE_NAME, "fkcharacter"),
+        (DbBookCharacter::TABLE_NAME, "character_id"),
         &characters,
       )))
-      .where_expression(Expression::value_equal(DbBookCharacter::TABLE_NAME, "fkbook", book_id))
+      .where_expression(Expression::value_equal(DbBookCharacter::TABLE_NAME, "book_id", book_id))
       .query(self.client)
       .await?
       .into_iter()

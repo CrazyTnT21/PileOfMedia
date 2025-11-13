@@ -2,12 +2,9 @@ use from_row::FromRow;
 use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
-#[rename = "bookinvolved"]
+#[rename = "book_involved"]
 pub struct DbBookInvolved {
-  #[rename = "fkbook"]
-  pub fk_book: i32,
-  #[rename = "fkrole"]
-  pub fk_role: i32,
-  #[rename = "fkperson"]
-  pub fk_person: i32,
+  pub book_id: i32,
+  pub role_id: i32,
+  pub person_id: i32,
 }

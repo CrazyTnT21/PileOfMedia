@@ -218,7 +218,7 @@ pub mod testing {
     }
 
     let manager = PostgresConnectionManager::new_from_stringlike(
-      "postgresql://postgres:Placeholder@localhost:9876/collectiondb",
+      "postgresql://postgres:Placeholder@localhost:9876/pileofmedia_db",
       NoTls,
     )?;
     let pool = Pool::builder().build(manager).await?;

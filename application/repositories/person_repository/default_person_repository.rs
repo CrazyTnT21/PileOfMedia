@@ -66,9 +66,9 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&people, &translations);
 
     let mut extra_translations = Select::new::<DbPersonTranslation>()
-      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "translation_id")
       .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -76,12 +76,12 @@ impl PersonRepository for DefaultPersonRepository<'_> {
 
     let translations: Vec<(Language, i32, PersonTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let translations = map_translation(&people, translations);
 
-    let image_ids: Vec<i32> = people.iter().filter_map(|x| x.fk_image).collect();
+    let image_ids: Vec<i32> = people.iter().filter_map(|x| x.image_id).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
     let images = self.image_repository.get_by_ids(&image_ids).await?;
 
@@ -99,7 +99,7 @@ impl PersonRepository for DefaultPersonRepository<'_> {
       .distinct_on(DbPerson::TABLE_NAME, "id")
       .inner_join::<DbPersonTranslation>(
         None,
-        Expression::new(ValueEqual::new((DbPerson::TABLE_NAME, "id"), id)).and(person_id_equal_fk_translation()),
+        Expression::new(ValueEqual::new((DbPerson::TABLE_NAME, "id"), id)).and(person_id_equal_translation_id()),
       )
       .get_single_destruct(self.client)
       .await?;
@@ -109,7 +109,7 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let mut translations = Select::new::<DbPersonTranslation>()
       .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
       .where_expression(
-        Expression::value_equal(DbPersonTranslation::TABLE_NAME, "fktranslation", item.id)
+        Expression::value_equal(DbPersonTranslation::TABLE_NAME, "translation_id", item.id)
           .and(in_languages(&db_languages)),
       )
       .query_destruct(self.client)
@@ -120,9 +120,9 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let [item] = people;
 
     let mut extra_translations = Select::new::<DbPersonTranslation>()
-      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "translation_id")
       .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -134,9 +134,9 @@ impl PersonRepository for DefaultPersonRepository<'_> {
       .collect();
 
     let mut available = self.available_languages(&[id]).await?;
-    let image = match item.fk_image {
+    let image = match item.image_id {
       None => None,
-      Some(fk_image) => self.image_repository.get_by_id(fk_image as u32).await?,
+      Some(image_id) => self.image_repository.get_by_id(image_id as u32).await?,
     };
     let item = item.to_entity(
       AvailableTranslations {
@@ -173,9 +173,9 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&people, &translations);
 
     let mut extra_translations = Select::new::<DbPersonTranslation>()
-      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "translation_id")
       .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -183,10 +183,10 @@ impl PersonRepository for DefaultPersonRepository<'_> {
 
     let translations: Vec<(Language, i32, PersonTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
-    let image_ids: Vec<i32> = people.iter().filter_map(|x| x.fk_image).collect();
+    let image_ids: Vec<i32> = people.iter().filter_map(|x| x.image_id).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
     let images = self.image_repository.get_by_ids(&image_ids).await?;
 
@@ -227,9 +227,9 @@ impl PersonRepository for DefaultPersonRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&people, &translations);
 
     let mut extra_translations = Select::new::<DbPersonTranslation>()
-      .distinct_on(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbPersonTranslation::TABLE_NAME, "translation_id")
       .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -237,10 +237,10 @@ impl PersonRepository for DefaultPersonRepository<'_> {
 
     let translations: Vec<(Language, i32, PersonTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
-    let image_ids: Vec<i32> = people.iter().filter_map(|x| x.fk_image).collect();
+    let image_ids: Vec<i32> = people.iter().filter_map(|x| x.image_id).collect();
     let image_ids: Vec<u32> = to_u32(image_ids);
     let images = self.image_repository.get_by_ids(&image_ids).await?;
 
@@ -267,10 +267,10 @@ impl PersonRepository for DefaultPersonRepository<'_> {
 impl DefaultPersonRepository<'_> {
   async fn available_languages(&self, ids: &[i32]) -> Result<HashMap<i32, Vec<Language>>, Box<dyn Error>> {
     let available_translations = Select::new::<DbPersonTranslation>()
-      .column::<i32>(DbPersonTranslation::TABLE_NAME, "fktranslation")
+      .column::<i32>(DbPersonTranslation::TABLE_NAME, "translation_id")
       .column::<DbLanguage>(DbPersonTranslation::TABLE_NAME, "language")
       .where_expression(Expression::new(ValueIn::new(
-        (DbPersonTranslation::TABLE_NAME, "fktranslation"),
+        (DbPersonTranslation::TABLE_NAME, "translation_id"),
         ids,
       )))
       .query(self.client)
@@ -291,7 +291,7 @@ fn person_translation_select<'a>(
   Select::new::<DbPersonTranslation>()
     .columns::<DbPersonTranslation>(DbPersonTranslation::TABLE_NAME)
     .where_expression(Expression::new(ValueIn::new(
-      (DbPersonTranslation::TABLE_NAME, "fktranslation"),
+      (DbPersonTranslation::TABLE_NAME, "translation_id"),
       person_ids,
     )))
     .where_expression(in_languages(db_languages))
@@ -310,10 +310,10 @@ fn map_translation(
   }
   new_translations
 }
-fn person_id_equal_fk_translation<'a>() -> Expression<'a> {
+fn person_id_equal_translation_id<'a>() -> Expression<'a> {
   Expression::column_equal(
     (DbPerson::TABLE_NAME, "id"),
-    (DbPersonTranslation::TABLE_NAME, "fktranslation"),
+    (DbPersonTranslation::TABLE_NAME, "translation_id"),
   )
 }
 fn person_translation_with_name(name: &String) -> Expression<'_> {
@@ -325,7 +325,7 @@ fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
 ) -> Select<'a, T> {
   select.inner_join::<DbPersonTranslation>(
     None,
-    Expression::value_i_like((DbPersonTranslation::TABLE_NAME, "name"), name).and(person_id_equal_fk_translation()),
+    Expression::value_i_like((DbPersonTranslation::TABLE_NAME, "name"), name).and(person_id_equal_translation_id()),
   )
 }
 fn to_entities(
@@ -338,7 +338,7 @@ fn to_entities(
     .into_iter()
     .map(|person| {
       let id = person.id;
-      let image_id = person.fk_image;
+      let image_id = person.image_id;
       let image = image_id.and_then(|x| images.iter().position(|y| y.id == x as u32).map(|x| images.remove(x)));
       person.to_entity(
         AvailableTranslations {
@@ -351,7 +351,7 @@ fn to_entities(
     .collect()
 }
 fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<T>) -> Select<T> {
-  select.inner_join::<DbPersonTranslation>(None, person_id_equal_fk_translation())
+  select.inner_join::<DbPersonTranslation>(None, person_id_equal_translation_id())
 }
 fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbPersonTranslation::TABLE_NAME, "language"), languages))
@@ -359,8 +359,8 @@ fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
 fn to_u32(values: Vec<i32>) -> Vec<u32> {
   values.into_iter().map(|x| x as u32).collect()
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
-  Expression::new(ValueIn::new((DbPersonTranslation::TABLE_NAME, "fktranslation"), ids))
+fn translation_id_in_ids(ids: &[i32]) -> Expression<'_> {
+  Expression::new(ValueIn::new((DbPersonTranslation::TABLE_NAME, "translation_id"), ids))
 }
 fn id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbPerson::TABLE_NAME, "id"), ids))
@@ -371,7 +371,7 @@ fn no_translation_ids(person_ids: &[DbPerson], translations: &[DbPersonTranslati
     .filter_map(|x| {
       translations
         .iter()
-        .find(|y| y.fk_translation == x.id)
+        .find(|y| y.translation_id == x.id)
         .map_or(Some(x.id), |_| None)
     })
     .collect()

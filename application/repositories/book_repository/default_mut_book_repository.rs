@@ -83,7 +83,7 @@ impl MutBookRepository for DefaultMutBookRepository<'_> {
     let ids = to_i32(ids);
 
     Delete::new::<DbBookTranslation>(Expression::new(ValueIn::new(
-      (DbBookTranslation::TABLE_NAME, "fktranslation"),
+      (DbBookTranslation::TABLE_NAME, "translation_id"),
       &ids,
     )))
     .execute_transaction(self.transaction)
@@ -125,7 +125,7 @@ impl DefaultMutBookRepository<'_> {
   async fn insert_book(&self, item: &CreatePartialBook) -> Result<i32, Box<dyn Error>> {
     let franchise = &item.franchise.map(|x| x as i32);
     let slug = item.slug.to_string();
-    let book_id: i32 = Insert::new::<DbBook>(["published", "fkfranchise", "slug"])
+    let book_id: i32 = Insert::new::<DbBook>(["published", "franchise_id", "slug"])
       .values([&item.published, franchise, &slug])
       .returning_transaction("id", self.transaction)
       .await?;
@@ -140,7 +140,7 @@ impl DefaultMutBookRepository<'_> {
       .await?
       .try_into()?;
 
-    Insert::new::<DbBookStatistic>(["fkbook", "fkrating", "popularity", "rank"])
+    Insert::new::<DbBookStatistic>(["book_id", "rating_id", "popularity", "rank"])
       .values([&book_id, &rating_id, &book_count, &book_count])
       .execute_transaction(self.transaction)
       .await?;
@@ -161,7 +161,7 @@ impl DefaultMutBookRepository<'_> {
         )
       })
       .collect();
-    let mut insert = Insert::new::<DbBookTranslation>(["title", "description", "fkcover", "fktranslation", "language"]);
+    let mut insert = Insert::new::<DbBookTranslation>(["title", "description", "cover_id", "translation_id", "language"]);
     for (title, description, cover_id, language) in &mapped {
       insert.values_ref([*title, *description, cover_id, &id, language]);
     }

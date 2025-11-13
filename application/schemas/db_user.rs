@@ -6,15 +6,14 @@ use domain::entities::user::User;
 use from_row::FromRow;
 
 #[derive(FromRow, Debug)]
-#[rename = "\"User\""]
+#[rename = "\"user\""]
 pub struct DbUser {
   pub id: i32,
   pub name: String,
   pub joined: NaiveDate,
   pub description: Option<String>,
   pub deleted: bool,
-  #[rename = "fkprofilepicture"]
-  pub fk_profile_picture: Option<i32>,
+  pub profile_picture_id: Option<i32>,
 }
 
 impl DbUser {

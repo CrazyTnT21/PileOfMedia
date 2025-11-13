@@ -54,17 +54,17 @@ impl AccountRepository for DefaultAccountRepository<'_> {
     let id = id as i32;
     let account = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
-      .where_expression(Expression::new(ValueEqual::new((DbAccount::TABLE_NAME, "fkuser"), id)))
+      .where_expression(Expression::new(ValueEqual::new((DbAccount::TABLE_NAME, "user_id"), id)))
       .get_single(self.client)
       .await?;
 
     match account {
       None => Ok(None),
       Some(value) => {
-        let fk_user = value.0.fk_user;
+        let user_id = value.0.user_id;
         let user = self
           .user_repository
-          .get_by_id(fk_user as u32)
+          .get_by_id(user_id as u32)
           .await?
           .expect("Associated user has to exist");
         Ok(Some(to_entity(value, user)))
@@ -77,7 +77,7 @@ impl AccountRepository for DefaultAccountRepository<'_> {
 
     let accounts = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
-      .where_expression(Expression::new(ValueIn::new((DbAccount::TABLE_NAME, "fkuser"), &ids)))
+      .where_expression(Expression::new(ValueIn::new((DbAccount::TABLE_NAME, "user_id"), &ids)))
       .query(self.client)
       .await?;
 
@@ -98,10 +98,10 @@ impl AccountRepository for DefaultAccountRepository<'_> {
     match account {
       None => Ok(None),
       Some(value) => {
-        let fk_user = value.0.fk_user;
+        let user_id = value.0.user_id;
         let user = self
           .user_repository
-          .get_by_id(fk_user as u32)
+          .get_by_id(user_id as u32)
           .await?
           .expect("Associated user has to exist");
         Ok(Some(to_entity(value, user)))
@@ -113,8 +113,8 @@ impl AccountRepository for DefaultAccountRepository<'_> {
     let users = to_i32(users);
 
     let count = Select::new::<DbAccount>()
-      .column::<i32>(DbAccount::TABLE_NAME, "fkuser")
-      .where_expression(Expression::new(ValueIn::new((DbAccount::TABLE_NAME, "fkuser"), &users)))
+      .column::<i32>(DbAccount::TABLE_NAME, "user_id")
+      .where_expression(Expression::new(ValueIn::new((DbAccount::TABLE_NAME, "user_id"), &users)))
       .query(self.client)
       .await?
       .into_iter()
@@ -130,7 +130,7 @@ fn to_entity(account: (DbAccount,), user: User) -> Account {
 
 impl DefaultAccountRepository<'_> {
   async fn to_entities(&self, items: Vec<(DbAccount,)>) -> Result<Vec<Account>, Box<dyn Error>> {
-    let user_ids: Vec<u32> = items.iter().map(|x| x.0.fk_user as u32).collect();
+    let user_ids: Vec<u32> = items.iter().map(|x| x.0.user_id as u32).collect();
 
     let mut users = match user_ids.is_empty() {
       true => vec![],
@@ -142,7 +142,7 @@ impl DefaultAccountRepository<'_> {
         .map(|x| {
           let user_index = users
             .iter()
-            .position(|y| y.id == x.0.fk_user as u32)
+            .position(|y| y.id == x.0.user_id as u32)
             .expect("Associated user should exist");
 
           let user = users.swap_remove(user_index);

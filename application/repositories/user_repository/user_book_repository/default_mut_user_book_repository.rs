@@ -42,9 +42,9 @@ impl MutUserBookRepository for DefaultMutUserBookRepository<'_> {
     let pages = book.pages.map(|x| x as i16);
     let score: Option<i16> = book.score.map(|x| x.to_u8().into());
     let insert = Insert::new::<DbUserBook>([
-      "fkuser",
-      "fkbook",
-      "userstatus",
+      "user_id",
+      "book_id",
+      "user_status",
       "favorite",
       "score",
       "review",
@@ -78,8 +78,8 @@ impl MutUserBookRepository for DefaultMutUserBookRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     Delete::new::<DbUserBook>(
-      Expression::value_equal(DbUserBook::TABLE_NAME, "fkuser", user_id)
-        .and(Expression::value_in((DbUserBook::TABLE_NAME, "fkbook"), &book_ids)),
+      Expression::value_equal(DbUserBook::TABLE_NAME, "user_id", user_id)
+        .and(Expression::value_in((DbUserBook::TABLE_NAME, "book_id"), &book_ids)),
     )
     .execute_transaction(self.transaction)
     .await?;
@@ -89,7 +89,7 @@ impl MutUserBookRepository for DefaultMutUserBookRepository<'_> {
   async fn remove_all(&self, user_ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let user_ids = to_i32(user_ids);
 
-    Delete::new::<DbUserBook>(Expression::value_in((DbUserBook::TABLE_NAME, "fkuser"), &user_ids))
+    Delete::new::<DbUserBook>(Expression::value_in((DbUserBook::TABLE_NAME, "user_id"), &user_ids))
       .execute_transaction(self.transaction)
       .await?;
     Ok(())

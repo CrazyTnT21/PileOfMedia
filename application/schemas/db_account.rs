@@ -6,8 +6,7 @@ use tokio_postgres::Row;
 #[derive(FromRow, Debug)]
 #[rename = "account"]
 pub struct DbAccount {
-  #[rename = "fkuser"]
-  pub fk_user: i32,
+  pub user_id: i32,
   pub email: String,
   pub password: String,
 }

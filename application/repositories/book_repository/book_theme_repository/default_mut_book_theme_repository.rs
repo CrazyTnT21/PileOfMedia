@@ -28,7 +28,7 @@ impl MutBookThemeRepository for DefaultMutBookThemeRepository<'_> {
   async fn add(&self, book_id: u32, themes: &[u32]) -> Result<(), Box<dyn Error>> {
     let book_id = book_id as i32;
     let themes = to_i32(themes);
-    let mut insert = Insert::new::<DbBookTheme>(["fkbook", "fktheme"]);
+    let mut insert = Insert::new::<DbBookTheme>(["book_id", "theme_id"]);
     themes.iter().for_each(|x| {
       insert.values_ref([&book_id, x]);
     });
@@ -40,8 +40,8 @@ impl MutBookThemeRepository for DefaultMutBookThemeRepository<'_> {
     let book_id = book_id as i32;
     let themes = to_i32(themes);
 
-    Delete::new::<DbBookTheme>(Expression::value_equal(DbBookTheme::TABLE_NAME, "fkbook", book_id).and(
-      Expression::new(ValueIn::new((DbBookTheme::TABLE_NAME, "fktheme"), &themes)),
+    Delete::new::<DbBookTheme>(Expression::value_equal(DbBookTheme::TABLE_NAME, "book_id", book_id).and(
+      Expression::new(ValueIn::new((DbBookTheme::TABLE_NAME, "theme_id"), &themes)),
     ))
     .execute_transaction(self.transaction)
     .await?;
@@ -52,7 +52,7 @@ impl MutBookThemeRepository for DefaultMutBookThemeRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     Delete::new::<DbBookTheme>(Expression::new(ValueIn::new(
-      (DbBookTheme::TABLE_NAME, "fkbook"),
+      (DbBookTheme::TABLE_NAME, "book_id"),
       &book_ids,
     )))
     .execute_transaction(self.transaction)

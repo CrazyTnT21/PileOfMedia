@@ -1,647 +1,643 @@
-/*
-drop database if exists collectiondb with (FORCE);
-create database collectiondb;
-*/
-CREATE TYPE language AS ENUM ( 'EN','DE','ES','DA','NL','JA','KO');
-CREATE TYPE status AS ENUM ('NotStarted','Ongoing','Finished','Paused');
-CREATE TYPE userstatus AS ENUM ('NotStarted','Ongoing','Finished','Paused');
-create table Franchise
+create type language as enum ( 'en','de','es','da','nl','ja','ko');
+create type status as enum ('not_started','ongoing','finished','paused');
+create type user_status as enum ('not_started','ongoing','finished','paused');
+create table franchise
 (
-  Id int primary key generated always as identity
+  id int primary key generated always as identity
 );
-create table Rating
+create table rating
 (
-  Id     int primary key generated always as identity,
-  Score  real,
-  Amount int not null default 0
+  id     int primary key generated always as identity,
+  score  real,
+  amount int not null default 0
 );
 
-create table FranchiseTranslation
+create table franchise_translation
 (
-  Name          varchar(50) not null,
+  name           varchar(50) not null,
 
-  FKTranslation int         not null references Franchise (Id),
-  Language      language    not null,
-  primary key (FKTranslation, Language)
-);
-
-create table Image
-(
-  Id int primary key generated always as identity
-);
-create table ImageData
-(
-  Id      int primary key generated always as identity,
-  FKImage int           not null references Image (Id),
-  Uri     varchar(2047) not null,
-  Width   smallint      not null,
-  Height  smallint      not null
-);
-create table Tag
-(
-  Id   int primary key generated always as identity,
-  Name varchar(50) not null
-);
-create table ImageTag
-(
-  FKImage int references Image (Id),
-  Tag     varchar(50),
-  primary key (FKImage, Tag)
+  translation_id int         not null references franchise (id),
+  language       language    not null,
+  primary key (translation_id, language)
 );
 
-create table Company
+create table image
 (
-  Id     int primary key generated always as identity,
-  Name   varchar(100) not null,
-  FKLogo int          not null references Image (Id)
+  id int primary key generated always as identity
+);
+create table image_data
+(
+  id       int primary key generated always as identity,
+  image_id int           not null references image (id),
+  uri      varchar(2047) not null,
+  width    smallint      not null,
+  height   smallint      not null
+);
+create table tag
+(
+  id   int primary key generated always as identity,
+  name varchar(50) not null
+);
+create table image_tag
+(
+  image_id int references image (id),
+  tag      varchar(50),
+  primary key (image_id, tag)
 );
 
-create table Platform
+create table company
 (
-  Id        int primary key generated always as identity,
-  Name      varchar(50) not null,
-  ShortName varchar(10),
-  FKCompany int         not null references Company (Id),
-  FKLogo    int         not null references Image (Id)
+  id      int primary key generated always as identity,
+  name    varchar(100) not null,
+  logo_id int          not null references image (id)
 );
 
-create table Genre
+create table platform
 (
-  Id int primary key generated always as identity
-);
-create table GenreTranslation
-(
-  Name          varchar(50) not null,
-
-  FKTranslation int         not null references Genre (Id),
-  Language      language    not null,
-  primary key (FKTranslation, Language)
+  id         int primary key generated always as identity,
+  name       varchar(50) not null,
+  short_name varchar(10),
+  company_id int         not null references company (id),
+  logo_id    int         not null references image (id)
 );
 
-create table Theme
+create table genre
 (
-  Id int primary key generated always as identity
+  id int primary key generated always as identity
 );
-create table ThemeTranslation
+create table genre_translation
 (
-  Name          varchar(50) not null,
+  name           varchar(50) not null,
 
-  FKTranslation int         not null references Theme (Id),
-  Language      language    not null,
-  primary key (FKTranslation, Language)
-);
-
-create table Role
-(
-  Id int primary key generated always as identity
-);
-create table RoleTranslation
-(
-  Name          varchar(50) not null,
-
-  FKTranslation int         not null references Role (Id),
-  Language      language    not null,
-  primary key (FKTranslation, Language)
+  translation_id int         not null references genre (id),
+  language       language    not null,
+  primary key (translation_id, language)
 );
 
-create table Character
+create table theme
 (
-  Id       int primary key generated always as identity,
-  Birthday date,
-  Height   int,
-  FKImage  int references Image (Id)
+  id int primary key generated always as identity
+);
+create table theme_translation
+(
+  name           varchar(50) not null,
+
+  translation_id int         not null references theme (id),
+  language       language    not null,
+  primary key (translation_id, language)
 );
 
-create table CharacterTranslation
+create table role
 (
-  Name          varchar(150) not null,
-  FirstName     varchar(50),
-  LastName      varchar(50),
-  Description   varchar(500),
-
-  FKTranslation int          not null references Character (Id),
-  Language      language     not null,
-  primary key (FKTranslation, Language)
+  id int primary key generated always as identity
 );
-
-create table Person
+create table role_translation
 (
-  Id        int primary key generated always as identity,
-  Name      varchar(100) not null,
-  FirstName varchar(50),
-  LastName  varchar(50),
-  Birthday  date,
-  Height    smallint,
-  FKImage   int references Image (Id)
+  name           varchar(50) not null,
+
+  translation_id int         not null references role (id),
+  language       language    not null,
+  primary key (translation_id, language)
 );
 
-create table PersonTranslation
+create table character
 (
-  Description   varchar(500),
-
-  FKTranslation int      not null references Person (Id),
-  Language      language not null,
-  primary key (FKTranslation, Language)
-);
-create table PersonRole
-(
-  FKPerson int not null references Person (Id),
-  FKRole   int not null references Role (Id),
-  primary key (FKPerson, FKRole)
+  id       int primary key generated always as identity,
+  birthday date,
+  height   int,
+  image_id int references image (id)
 );
 
-create table Movie
+create table character_translation
 (
-  Id     int primary key generated always as identity,
-  Airing date,
-  Length interval
-);
-create table MovieStatistic
-(
-  FKMovie    int  not null references Movie (Id) primary key,
-  FKRating   int  not null references Rating (Id),
-  Added      date not null DEFAULT (CURRENT_DATE),
-  Rank       int  not null default 0,
-  Popularity int  not null default 0,
-  Favorites  int  not null default 0,
-  Members    int  not null default 0
+  name           varchar(150) not null,
+  first_name     varchar(50),
+  last_name      varchar(50),
+  description    varchar(500),
+
+  translation_id int          not null references character (id),
+  language       language     not null,
+  primary key (translation_id, language)
 );
 
-create table MovieTranslation
+create table person
 (
-  Title         varchar(150) not null,
-  Description   varchar(500),
-  FKCover       int          not null references Image (Id),
-
-  FKTranslation int          not null references Movie (Id),
-  Language      language     not null,
-  primary key (FKTranslation, Language)
+  id         int primary key generated always as identity,
+  name       varchar(100) not null,
+  first_name varchar(50),
+  last_name  varchar(50),
+  birthday   date,
+  height     smallint,
+  image_id   int references image (id)
 );
 
-create table MovieGenre
+create table person_translation
 (
-  FKMovie int not null references Movie (Id),
-  FKGenre int not null references Genre (Id),
-  primary key (FKMovie, FKGenre)
-);
-create table MovieTheme
-(
-  FKMovie int not null references Movie (Id),
-  FKTheme int not null references Theme (Id),
-  primary key (FKMovie, FKTheme)
-);
-create table MovieInvolved
-(
-  FKMovie  int not null references Movie (Id),
-  FKPerson int not null references Person (Id),
-  FKRole   int not null references Role (Id),
-  primary key (FKMovie, FKPerson, FKRole)
-);
-create table GraphicNovel
-(
-  Id           int primary key generated always as identity,
-  PublishStart date,
-  PublishEnd   date,
-  Volumes      smallint,
-  Chapters     smallint,
-  Status       status not null
-);
-create table GraphicNovelStatistic
-(
-  FKGraphicNovel int  not null references GraphicNovel (Id) primary key,
-  FKRating       int  not null references Rating (Id),
-  Added          date not null DEFAULT (CURRENT_DATE),
-  Rank           int  not null default 0,
-  Popularity     int  not null default 0,
-  Favorites      int  not null default 0,
-  Members        int  not null default 0
-);
-create table GraphicNovelTranslation
-(
-  Title         varchar(150) not null,
-  Description   varchar(500),
-  FKCover       int          not null references Image (Id),
+  description    varchar(500),
 
-  FKTranslation int          not null references GraphicNovel (Id),
-  Language      language     not null,
-  primary key (FKTranslation, Language)
+  translation_id int      not null references person (id),
+  language       language not null,
+  primary key (translation_id, language)
 );
-create table GraphicNovelVolume
+create table person_role
 (
-  Volume         smallint unique not null,
-  FKGraphicNovel int             not null references GraphicNovel (Id),
-  Pages          smallint,
-  Published      date,
-  Score          smallint,
-  primary key (FKGraphicNovel, Volume)
-);
-create table GraphicNovelVolumeTranslation
-(
-  Title         varchar(150) not null,
-  Description   varchar(500),
-
-  FKTranslation int          not null references GraphicNovel (Id),
-  Language      language     not null,
-  primary key (FKTranslation, Language)
-);
-create table GraphicNovelChapter
-(
-  Chapter              smallint not null,
-  FKGraphicNovel       int      not null references GraphicNovel (Id),
-  FKGraphicNovelVolume int,
-  Pages                smallint not null,
-  Published            date,
-  Score                smallint,
-  foreign key (FKGraphicNovel, FKGraphicNovelVolume) references GraphicNovelVolume (FKGraphicNovel, Volume),
-  primary key (FKGraphicNovel, Chapter)
+  person_id int not null references person (id),
+  role_id   int not null references role (id),
+  primary key (person_id, role_id)
 );
 
-create table GraphicNovelChapterTranslation
+create table movie
 (
-  Title                 varchar(150) not null,
-  Description           varchar(500),
-
-  FKGraphicNovel        int          not null references GraphicNovel (Id),
-  FKGraphicNovelChapter int          not null,
-  Language              language     not null,
-  foreign key (FKGraphicNovel, FKGraphicNovelChapter) references GraphicNovelChapter (FKGraphicNovel, Chapter),
-  primary key (FKGraphicNovel, FKGraphicNovelChapter, Language)
+  id     int primary key generated always as identity,
+  airing date,
+  length interval
 );
-create table GraphicNovelPublisher
+create table movie_statistic
 (
-  FKGraphicNovel int not null references GraphicNovel (Id),
-  FKPublisher    int not null references Company (Id),
-  primary key (FKGraphicNovel, FKPublisher)
-);
-create table GraphicNovelCharacter
-(
-  FKGraphicNovel int not null references GraphicNovel (Id),
-  FKCharacter    int not null references Character (Id),
-  primary key (FKGraphicNovel, FKCharacter)
-);
-create table GraphicNovelGenre
-(
-  FKGraphicNovel int not null references GraphicNovel (Id),
-  FKGenre        int not null references Genre (Id),
-  primary key (FKGraphicNovel, FKGenre)
-);
-create table GraphicNovelTheme
-(
-  FKGraphicNovel int not null references GraphicNovel (Id),
-
-  FKTheme        int not null references Theme (Id),
-  primary key (FKGraphicNovel, FkTheme)
-);
-create table GraphicNovelInvolved
-(
-  FKGraphicNovel int not null references GraphicNovel (Id),
-  FKPerson       int not null references Person (Id),
-  FKRole         int not null references Role (Id),
-  primary key (FKGraphicNovel, FKPerson, FKRole)
-);
-create table Book
-(
-  Id          int primary key generated always as identity,
-  Published   date,
-  Slug        varchar(50) not null unique,
-
-  FKFranchise int references Franchise (Id)
-);
-create table BookEdition
-(
-  Id        int primary key generated always as identity,
-  Chapters  smallint,
-  Pages     smallint,
-  Words     int,
-  Published date,
-  ISBN13    char(13),
-  Language  language,
-  FKCover   int not null references Image (Id),
-  FKBook    int not null references Book (Id)
+  movie_id   int  not null references movie (id) primary key,
+  rating_id  int  not null references rating (id),
+  added      date not null default (current_date),
+  rank       int  not null default 0,
+  popularity int  not null default 0,
+  favorites  int  not null default 0,
+  members    int  not null default 0
 );
 
-create table BookEditionTranslation
+create table movie_translation
 (
-  Description   varchar(500),
+  title          varchar(150) not null,
+  description    varchar(500),
+  cover_id       int          not null references image (id),
 
-  FKTranslation int      not null references Book (Id),
-  Language      language not null,
-  primary key (FKTranslation, Language)
-);
-create table BookEditionInvolved
-(
-  FKBookEdition int not null references BookEdition (Id),
-  FkRole        int not null references Role (Id),
-  FKPerson      int not null references Person (Id),
-  primary key (FKBookEdition, FKRole, FKPerson)
-);
-create table BookStatistic
-(
-  FKBook     int  not null references Book (Id) primary key,
-  FKRating   int  not null references Rating (Id),
-  Added      date not null DEFAULT (CURRENT_DATE),
-  Rank       int  not null default 0,
-  Popularity int  not null default 0,
-  Favorites  int  not null default 0,
-  Members    int  not null default 0
-);
-create table BookTranslation
-(
-  Title         varchar(150) not null,
-  Description   varchar(500),
-  FKCover       int          not null references Image (Id),
-
-  FKTranslation int          not null references Book (Id),
-  Language      language     not null,
-  primary key (FKTranslation, Language)
-);
-create table BookCharacter
-(
-  FKBook      int not null references Book (Id),
-  FKCharacter int not null references Character (Id),
-  primary key (FKBook, FKCharacter)
-);
-create table BookImage
-(
-  FKBook  int not null references Book (Id),
-  FKImage int not null references Image (Id),
-  primary key (FKBook, FKImage)
-);
-create table BookGenre
-(
-  FKBook  int not null references Book (Id),
-  FKGenre int not null references Genre (Id),
-  primary key (FKBook, FKGenre)
-);
-create table BookTheme
-(
-  FKBook  int not null references Book (Id),
-  FKTheme int not null references Theme (Id),
-  primary key (FKBook, FKTheme)
-);
-create table BookInvolved
-(
-  FKBook   int not null references Book (Id),
-  FKRole   int not null references Role (Id),
-  FKPerson int not null references Person (Id),
-  primary key (FKBook, FKRole, FKPerson)
-);
-create table Show
-(
-  Id          int primary key generated always as identity,
-  AiringStart date,
-  AiringEnd   date,
-  Score       real CHECK (Score BETWEEN 0.99 AND 10.01),
-  Seasons     smallint,
-  Status      status not null,
-
-  FKFranchise int references Franchise (Id)
-);
-create table ShowStatistic
-(
-  FKShow     int  not null references Show (Id) primary key,
-  FKRating   int  not null references Rating (Id),
-  Added      date not null DEFAULT (CURRENT_DATE),
-  Rank       int  not null default 0,
-  Popularity int  not null default 0,
-  Favorites  int  not null default 0,
-  Members    int  not null default 0
-);
-create table ShowTranslation
-(
-  Title         varchar(150) not null,
-  Description   varchar(500),
-  FKCover       int          not null references Image (Id),
-
-  FKTranslation int          not null references Show (Id),
-  Language      language     not null,
-  primary key (FKTranslation, Language)
-);
-create table ShowSeason
-(
-  Season      smallint unique not null,
-  FKShow      int             not null references Show (Id),
-  Episodes    smallint,
-  AiringStart date,
-  AiringEnd   date,
-  Score       smallint, --TODO: separate table
-  primary key (FKShow, Season)
+  translation_id int          not null references movie (id),
+  language       language     not null,
+  primary key (translation_id, language)
 );
 
-create table ShowSeasonTranslation
+create table movie_genre
 (
-  Title        varchar(150) not null,
-  Description  varchar(500),
+  movie_id int not null references movie (id),
+  genre_id int not null references genre (id),
+  primary key (movie_id, genre_id)
+);
+create table movie_theme
+(
+  movie_id int not null references movie (id),
+  theme_id int not null references theme (id),
+  primary key (movie_id, theme_id)
+);
+create table movie_involved
+(
+  movie_id  int not null references movie (id),
+  person_id int not null references person (id),
+  role_id   int not null references role (id),
+  primary key (movie_id, person_id, role_id)
+);
+create table graphic_novel
+(
+  id            int primary key generated always as identity,
+  publish_start date,
+  publish_end   date,
+  volumes       smallint,
+  chapters      smallint,
+  status        status not null
+);
+create table graphic_novel_statistic
+(
+  graphic_novel_id int  not null references graphic_novel (id) primary key,
+  rating_id        int  not null references rating (id),
+  added            date not null default (current_date),
+  rank             int  not null default 0,
+  popularity       int  not null default 0,
+  favorites        int  not null default 0,
+  members          int  not null default 0
+);
+create table graphic_novel_translation
+(
+  title          varchar(150) not null,
+  description    varchar(500),
+  cover_id       int          not null references image (id),
 
-  FKShow       int          not null references Show (Id),
-  FKShowSeason int          not null,
-  Language     language     not null,
-  foreign key (FKShow, FKShowSeason) references ShowSeason (FKShow, Season),
-  primary key (FKShow, FKShowSeason, Language)
+  translation_id int          not null references graphic_novel (id),
+  language       language     not null,
+  primary key (translation_id, language)
 );
-create table ShowEpisode
+create table graphic_novel_volume
 (
-  Episode  smallint not null,
-  FKShow   int      not null references Show (Id),
-  FKSeason int,
-  Length   smallint,
-  Airing   date,
-  Score    smallint,
-  foreign key (FKShow, FKSeason) references ShowSeason (FKShow, Season),
-  primary key (FKShow, Episode)
+  volume           smallint unique not null,
+  graphic_novel_id int             not null references graphic_novel (id),
+  pages            smallint,
+  published        date,
+  score            smallint,
+  primary key (graphic_novel_id, volume)
 );
-create table ShowEpisodeTranslation
+create table graphic_novel_volume_translation
 (
-  Title         varchar(150) not null,
-  Description   varchar(500),
-  FKCover       int references Image (Id),
+  title          varchar(150) not null,
+  description    varchar(500),
 
-  FKShow        int          not null references Show (Id),
-  FKShowEpisode int          not null,
-  Language      language     not null,
-  foreign key (FKShow, FKShowEpisode) references ShowEpisode (FKShow, Episode),
-  primary key (FKShow, FKShowEpisode, Language)
+  translation_id int          not null references graphic_novel (id),
+  language       language     not null,
+  primary key (translation_id, language)
 );
-create table ShowCharacter
+create table graphic_novel_chapter
 (
-  FKShow      int not null references Show (Id),
-  FKCharacter int not null references Character (Id),
-  primary key (FKShow, FKCharacter)
+  chapter                 smallint not null,
+  graphic_novel_id        int      not null references graphic_novel (id),
+  graphic_novel_volume_id int,
+  pages                   smallint not null,
+  published               date,
+  score                   smallint,
+  foreign key (graphic_novel_id, graphic_novel_volume_id) references graphic_novel_volume (graphic_novel_id, volume),
+  primary key (graphic_novel_id, chapter)
 );
-create table ShowGenre
-(
-  FKShow  int not null references Show (Id),
-  FKGenre int not null references Genre (Id),
-  primary key (FKShow, FKGenre)
-);
-create table ShowTheme
-(
-  FKShow  int not null references Show (Id),
-  FKTheme int not null references Theme (Id),
-  primary key (FKShow, FKTheme)
-);
-create table ShowInvolved
-(
-  FKShow   int not null references Show (Id),
-  FKRole   int not null references Role (Id),
-  FKPerson int not null references Person (Id),
-  primary key (FKShow, FKRole, FKPerson)
-);
-create table Game
-(
-  Id          int primary key generated always as identity,
-  Released    date,
-  FKFranchise int references Franchise (Id)
-);
-create table GameStatistic
-(
-  FKGame     int  not null references Game (Id) primary key,
-  FKRating   int  not null references Rating (Id),
-  Added      date not null DEFAULT (CURRENT_DATE),
-  Rank       int  not null default 0,
-  Popularity int  not null default 0,
-  Favorites  int  not null default 0,
-  Members    int  not null default 0
-);
-create table GameTranslation
-(
-  Title         varchar(150) not null,
-  Description   varchar(500),
-  FKCover       int          not null references Image (Id),
 
-  FKTranslation int          not null references Game (Id),
-  Language      language     not null,
-  primary key (FKTranslation, Language)
-);
-create table GamePlatform
+create table graphic_novel_chapter_translation
 (
-  FKGame     int not null references Game (Id),
-  FKPlatform int not null references Platform (Id),
-  primary key (FKGame, FKPlatform)
+  title                    varchar(150) not null,
+  description              varchar(500),
+
+  graphic_novel_id         int          not null references graphic_novel (id),
+  graphic_novel_chapter_id int          not null,
+  language                 language     not null,
+  foreign key (graphic_novel_id, graphic_novel_chapter_id) references graphic_novel_chapter (graphic_novel_id, chapter),
+  primary key (graphic_novel_id, graphic_novel_chapter_id, language)
 );
-create table GameCharacter
+create table graphic_novel_publisher
 (
-  FKGame      int not null references Game (Id),
-  FKCharacter int not null references Character (Id),
-  primary key (FKGame, FKCharacter)
+  graphic_novel_id int not null references graphic_novel (id),
+  publisher_id     int not null references company (id),
+  primary key (graphic_novel_id, publisher_id)
 );
-create table GameGenre
+create table graphic_novel_character
 (
-  FKGame  int not null references Game (Id),
-  FKGenre int not null references Genre (Id),
-  primary key (FKGame, FKGenre)
+  graphic_novel_id int not null references graphic_novel (id),
+  character_id     int not null references character (id),
+  primary key (graphic_novel_id, character_id)
 );
-create table GameTheme
+create table graphic_novel_genre
 (
-  FKGame  int not null references Game (Id),
-  FKTheme int not null references Theme (Id),
-  primary key (FKGame, FKTheme)
+  graphic_novel_id int not null references graphic_novel (id),
+  genre_id         int not null references genre (id),
+  primary key (graphic_novel_id, genre_id)
 );
-create table GameInvolved
+create table graphic_novel_theme
 (
-  FKGame   int not null references Game (Id),
-  FKRole   int not null references Role (Id),
-  FKPerson int not null references Person (Id),
-  primary key (FKGame, FKRole, FKPerson)
+  graphic_novel_id int not null references graphic_novel (id),
+
+  theme_id         int not null references theme (id),
+  primary key (graphic_novel_id, theme_id)
 );
-create table "User"
+create table graphic_novel_involved
 (
-  Id               int primary key generated always as identity,
-  Name             varchar(50) not null unique,
-  Joined           date        not null DEFAULT (CURRENT_DATE),
-  Description      varchar(500),
-  FKProfilePicture int references Image (Id),
-  Deleted          boolean     not null DEFAULT false
+  graphic_novel_id int not null references graphic_novel (id),
+  person_id        int not null references person (id),
+  role_id          int not null references role (id),
+  primary key (graphic_novel_id, person_id, role_id)
 );
-create table UserAverage
+create table book
 (
-  FKUser              int not null primary key references "User" (Id),
-  GraphicNovelAverage real CHECK (GraphicNovelAverage BETWEEN 0.99 AND 10.01),
-  ShowAverage         real CHECK (ShowAverage BETWEEN 0.99 AND 10.01),
-  MovieAverage        real CHECK (MovieAverage BETWEEN 0.99 AND 10.01),
-  BookAverage         real CHECK (BookAverage BETWEEN 0.99 AND 10.01),
-  GameAverage         real CHECK (GameAverage BETWEEN 0.99 AND 10.01)
+  id           int primary key generated always as identity,
+  published    date,
+  slug         varchar(50) not null unique,
+
+  franchise_id int references franchise (id)
 );
-create table UserGraphicNovel
+create table book_edition
 (
-  FKUser         int        not null references "User" (Id),
-  FKGraphicNovel int        not null references GraphicNovel (Id),
-  UserStatus     userstatus not null,
-  Favorite       boolean    not null,
-  Score          smallint,
-  Review         varchar(255),
-  Start          date,
-  Finished       date,
-  Chapters       smallint,
-  Added          date       not null DEFAULT (CURRENT_DATE),
-  primary key (FKUser, FKGraphicNovel)
+  id        int primary key generated always as identity,
+  chapters  smallint,
+  pages     smallint,
+  words     int,
+  published date,
+  isbn13    char(13),
+  language  language,
+  cover_id  int not null references image (id),
+  book_id   int not null references book (id)
 );
-create table UserBook
+
+create table book_edition_translation
 (
-  FKUser        int        not null references "User" (Id),
-  FKBook        int        not null references Book (Id),
-  UserStatus    userstatus not null,
-  Favorite      boolean    not null,
-  Score         smallint,
-  Review        varchar(255),
-  Start         date,
-  Finished      date,
-  Chapters      smallint,
-  Pages         smallint,
-  Added         date       not null DEFAULT (CURRENT_DATE),
-  primary key (FKUser, FKBook)
+  description    varchar(500),
+
+  translation_id int      not null references book (id),
+  language       language not null,
+  primary key (translation_id, language)
 );
-create table UserShow
+create table book_edition_involved
 (
-  FKUser     int        not null references "User" (Id),
-  FKShow     int        not null references Show (Id),
-  UserStatus userstatus not null,
-  Favorite   boolean    not null,
-  Score      smallint,
-  Review     varchar(255),
-  Start      date,
-  Finished   date,
-  Episodes   smallint,
-  Added      date       not null DEFAULT (CURRENT_DATE),
-  primary key (FKUser, FKShow)
+  book_edition_id int not null references book_edition (id),
+  role_id         int not null references role (id),
+  person_id       int not null references person (id),
+  primary key (book_edition_id, role_id, person_id)
 );
-create table UserMovie
+create table book_statistic
 (
-  FKUser     int        not null references "User" (Id),
-  FKMovie    int        not null references Movie (Id),
-  UserStatus userstatus not null,
-  Favorite   boolean    not null,
-  Score      smallint,
-  Review     varchar(255),
-  Watched    date,
-  Added      date       not null DEFAULT (CURRENT_DATE),
-  primary key (FKUser, FKMovie)
+  book_id    int  not null references book (id) primary key,
+  rating_id  int  not null references rating (id),
+  added      date not null default (current_date),
+  rank       int  not null default 0,
+  popularity int  not null default 0,
+  favorites  int  not null default 0,
+  members    int  not null default 0
 );
-create table UserGame
+create table book_translation
 (
-  FKUser     int        not null references "User" (Id),
-  FKGame     int        not null references Game (Id),
-  UserStatus userstatus not null,
-  Favorite   boolean    not null,
-  Score      smallint,
-  Review     varchar(255),
-  Start      date,
-  Finished   date,
-  PlayTime   int,
-  Added      date       not null DEFAULT (CURRENT_DATE),
-  primary key (FKUser, FKGame)
+  title          varchar(150) not null,
+  description    varchar(500),
+  cover_id       int          not null references image (id),
+
+  translation_id int          not null references book (id),
+  language       language     not null,
+  primary key (translation_id, language)
 );
-create table Friendship
+create table book_character
 (
-  FKUser       int  not null references "User" (Id),
-  FKSecondUser int  not null references "User" (Id),
-  Added        date not null DEFAULT (CURRENT_DATE),
-  primary key (FKUser, FKSecondUser)
+  book_id      int not null references book (id),
+  character_id int not null references character (id),
+  primary key (book_id, character_id)
 );
-create table Account
+create table book_image
 (
-  FKUser   int                 not null primary key references "User" (Id),
-  EMail    varchar(255) unique not null,
-  Password varchar(255)        not null
+  book_id  int not null references book (id),
+  image_id int not null references image (id),
+  primary key (book_id, image_id)
 );
-create index AccountEmailIndex on Account using HASH (EMail);
+create table book_genre
+(
+  book_id  int not null references book (id),
+  genre_id int not null references genre (id),
+  primary key (book_id, genre_id)
+);
+create table book_theme
+(
+  book_id  int not null references book (id),
+  theme_id int not null references theme (id),
+  primary key (book_id, theme_id)
+);
+create table book_involved
+(
+  book_id   int not null references book (id),
+  role_id   int not null references role (id),
+  person_id int not null references person (id),
+  primary key (book_id, role_id, person_id)
+);
+create table show
+(
+  id           int primary key generated always as identity,
+  airing_start date,
+  airing_end   date,
+  score        real check (score between 0.99 and 10.01),
+  seasons      smallint,
+  status       status not null,
+
+  franchise_id int references franchise (id)
+);
+create table show_statistic
+(
+  show_id    int  not null references show (id) primary key,
+  rating_id  int  not null references rating (id),
+  added      date not null default (current_date),
+  rank       int  not null default 0,
+  popularity int  not null default 0,
+  favorites  int  not null default 0,
+  members    int  not null default 0
+);
+create table show_translation
+(
+  title          varchar(150) not null,
+  description    varchar(500),
+  cover_id       int          not null references image (id),
+
+  translation_id int          not null references show (id),
+  language       language     not null,
+  primary key (translation_id, language)
+);
+create table show_season
+(
+  season       smallint unique not null,
+  show_id      int             not null references show (id),
+  episodes     smallint,
+  airing_start date,
+  airing_end   date,
+  score        smallint, --TODO: separate table
+  primary key (show_id, season)
+);
+
+create table show_season_translation
+(
+  title          varchar(150) not null,
+  description    varchar(500),
+
+  show_id        int          not null references show (id),
+  show_season_id int          not null,
+  language       language     not null,
+  foreign key (show_id, show_season_id) references show_season (show_id, season),
+  primary key (show_id, show_season_id, language)
+);
+create table show_episode
+(
+  episode   smallint not null,
+  show_id   int      not null references show (id),
+  season_id int,
+  length    smallint,
+  airing    date,
+  score     smallint,
+  foreign key (show_id, season_id) references show_season (show_id, season),
+  primary key (show_id, episode)
+);
+create table show_episode_translation
+(
+  title           varchar(150) not null,
+  description     varchar(500),
+  cover_id        int references image (id),
+
+  show_id         int          not null references show (id),
+  show_episode_id int          not null,
+  language        language     not null,
+  foreign key (show_id, show_episode_id) references show_episode (show_id, episode),
+  primary key (show_id, show_episode_id, language)
+);
+create table show_character
+(
+  show_id      int not null references show (id),
+  character_id int not null references character (id),
+  primary key (show_id, character_id)
+);
+create table show_genre
+(
+  show_id  int not null references show (id),
+  genre_id int not null references genre (id),
+  primary key (show_id, genre_id)
+);
+create table show_theme
+(
+  show_id  int not null references show (id),
+  theme_id int not null references theme (id),
+  primary key (show_id, theme_id)
+);
+create table show_involved
+(
+  show_id   int not null references show (id),
+  role_id   int not null references role (id),
+  person_id int not null references person (id),
+  primary key (show_id, role_id, person_id)
+);
+create table game
+(
+  id           int primary key generated always as identity,
+  released     date,
+  franchise_id int references franchise (id)
+);
+create table game_statistic
+(
+  game_id    int  not null references game (id) primary key,
+  rating_id  int  not null references rating (id),
+  added      date not null default (current_date),
+  rank       int  not null default 0,
+  popularity int  not null default 0,
+  favorites  int  not null default 0,
+  members    int  not null default 0
+);
+create table game_translation
+(
+  title          varchar(150) not null,
+  description    varchar(500),
+  cover_id       int          not null references image (id),
+
+  translation_id int          not null references game (id),
+  language       language     not null,
+  primary key (translation_id, language)
+);
+create table game_platform
+(
+  game_id     int not null references game (id),
+  platform_id int not null references platform (id),
+  primary key (game_id, platform_id)
+);
+create table game_character
+(
+  game_id      int not null references game (id),
+  character_id int not null references character (id),
+  primary key (game_id, character_id)
+);
+create table game_genre
+(
+  game_id  int not null references game (id),
+  genre_id int not null references genre (id),
+  primary key (game_id, genre_id)
+);
+create table game_theme
+(
+  game_id  int not null references game (id),
+  theme_id int not null references theme (id),
+  primary key (game_id, theme_id)
+);
+create table game_involved
+(
+  game_id   int not null references game (id),
+  role_id   int not null references role (id),
+  person_id int not null references person (id),
+  primary key (game_id, role_id, person_id)
+);
+create table "user"
+(
+  id                 int primary key generated always as identity,
+  name               varchar(50) not null unique,
+  joined             date        not null default (current_date),
+  description        varchar(500),
+  profile_picture_id int references image (id),
+  deleted            boolean     not null default false
+);
+create table user_average
+(
+  user_id               int not null primary key references "user" (id),
+  graphic_novel_average real check (graphic_novel_average between 0.99 and 10.01),
+  show_average          real check (show_average between 0.99 and 10.01),
+  movie_average         real check (movie_average between 0.99 and 10.01),
+  book_average          real check (book_average between 0.99 and 10.01),
+  game_average          real check (game_average between 0.99 and 10.01)
+);
+create table user_graphic_novel
+(
+  user_id          int        not null references "user" (id),
+  graphic_novel_id int        not null references graphic_novel (id),
+  user_status      user_status not null,
+  favorite         boolean    not null,
+  score            smallint,
+  review           varchar(255),
+  start            date,
+  finished         date,
+  chapters         smallint,
+  added            date       not null default (current_date),
+  primary key (user_id, graphic_novel_id)
+);
+create table user_book
+(
+  user_id     int        not null references "user" (id),
+  book_id     int        not null references book (id),
+  user_status user_status not null,
+  favorite    boolean    not null,
+  score       smallint,
+  review      varchar(255),
+  start       date,
+  finished    date,
+  chapters    smallint,
+  pages       smallint,
+  added       date       not null default (current_date),
+  primary key (user_id, book_id)
+);
+create table user_show
+(
+  user_id     int        not null references "user" (id),
+  show_id     int        not null references show (id),
+  user_status user_status not null,
+  favorite    boolean    not null,
+  score       smallint,
+  review      varchar(255),
+  start       date,
+  finished    date,
+  episodes    smallint,
+  added       date       not null default (current_date),
+  primary key (user_id, show_id)
+);
+create table user_movie
+(
+  user_id     int        not null references "user" (id),
+  movie_id    int        not null references movie (id),
+  user_status user_status not null,
+  favorite    boolean    not null,
+  score       smallint,
+  review      varchar(255),
+  watched     date,
+  added       date       not null default (current_date),
+  primary key (user_id, movie_id)
+);
+create table user_game
+(
+  user_id     int        not null references "user" (id),
+  game_id     int        not null references game (id),
+  user_status user_status not null,
+  favorite    boolean    not null,
+  score       smallint,
+  review      varchar(255),
+  start       date,
+  finished    date,
+  play_time   int,
+  added       date       not null default (current_date),
+  primary key (user_id, game_id)
+);
+create table friendship
+(
+  user_id        int  not null references "user" (id),
+  second_user_id int  not null references "user" (id),
+  added          date not null default (current_date),
+  primary key (user_id, second_user_id)
+);
+create table account
+(
+  user_id  int                 not null primary key references "user" (id),
+  email    varchar(255) unique not null,
+  password varchar(255)        not null
+);
+create index account_email_index on account using hash (email);

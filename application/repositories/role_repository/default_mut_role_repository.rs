@@ -54,7 +54,7 @@ impl MutRoleRepository for DefaultMutRoleRepository<'_> {
   async fn delete(&self, ids: &[u32]) -> Result<(), Box<dyn Error>> {
     let ids = to_i32(ids);
 
-    Delete::new::<DbRoleTranslation>(fk_translation_in_ids(&ids))
+    Delete::new::<DbRoleTranslation>(translation_id_in_ids(&ids))
       .execute_transaction(self.transaction)
       .await?;
 
@@ -80,7 +80,7 @@ impl DefaultMutRoleRepository<'_> {
       .map(|x| (&x.1.name, DbLanguage::from(*x.0)))
       .collect();
 
-    let mut insert = Insert::new::<DbRoleTranslation>(["name", "fktranslation", "language"]);
+    let mut insert = Insert::new::<DbRoleTranslation>(["name", "translation_id", "language"]);
     for (title, language) in &translations {
       insert.values_ref([*title, &id, language]);
     }
@@ -88,8 +88,8 @@ impl DefaultMutRoleRepository<'_> {
     Ok(())
   }
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
-  Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "fktranslation"), ids))
+fn translation_id_in_ids(ids: &[i32]) -> Expression<'_> {
+  Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "translation_id"), ids))
 }
 fn role_id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbRole::TABLE_NAME, "id"), ids))

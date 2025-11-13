@@ -4,16 +4,13 @@ use from_row::FromRow;
 use tokio_postgres::Row;
 
 #[derive(FromRow, Debug)]
-#[rename = "charactertranslation"]
+#[rename = "character_translation"]
 pub struct DbCharacterTranslation {
   pub name: String,
-  #[rename = "firstname"]
   pub first_name: Option<String>,
-  #[rename = "lastname"]
   pub last_name: Option<String>,
   pub description: Option<String>,
-  #[rename = "fktranslation"]
-  pub fk_translation: i32,
+  pub translation_id: i32,
   pub language: DbLanguage,
 }
 impl DbCharacterTranslation {

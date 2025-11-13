@@ -48,18 +48,18 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
 
     let involved = Select::new::<DbBookInvolved>()
       .columns::<DbBookInvolved>(DbBookInvolved::TABLE_NAME)
-      .where_expression(fk_book_equal_id(book_id))
+      .where_expression(book_id_equal_id(book_id))
       .query_destruct(self.client)
       .await?;
 
     if involved.is_empty() {
       return Ok(vec![]);
     }
-    let mut person_ids: Vec<u32> = involved.iter().map(|x| x.fk_person as u32).collect();
+    let mut person_ids: Vec<u32> = involved.iter().map(|x| x.person_id as u32).collect();
     person_ids.sort_unstable();
     person_ids.dedup();
 
-    let mut role_ids: Vec<u32> = involved.iter().map(|x| x.fk_role as u32).collect();
+    let mut role_ids: Vec<u32> = involved.iter().map(|x| x.role_id as u32).collect();
     role_ids.sort_unstable();
     role_ids.dedup();
 
@@ -87,7 +87,7 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
     let involved = Select::new::<DbBookInvolved>()
       .columns::<DbBookInvolved>(DbBookInvolved::TABLE_NAME)
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookInvolved::TABLE_NAME, "fkbook"),
+        (DbBookInvolved::TABLE_NAME, "book_id"),
         &book_ids,
       )))
       .query_destruct(self.client)
@@ -96,11 +96,11 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
       return Ok(book_ids.iter().map(|x| (*x as u32, Vec::new())).collect());
     }
 
-    let mut person_ids: Vec<u32> = involved.iter().map(|x| x.fk_person as u32).collect();
+    let mut person_ids: Vec<u32> = involved.iter().map(|x| x.person_id as u32).collect();
     person_ids.sort_unstable();
     person_ids.dedup();
 
-    let mut role_ids: Vec<u32> = involved.iter().map(|x| x.fk_role as u32).collect();
+    let mut role_ids: Vec<u32> = involved.iter().map(|x| x.role_id as u32).collect();
     role_ids.sort_unstable();
     role_ids.dedup();
 
@@ -130,10 +130,10 @@ impl BookInvolvedRepository for DefaultBookInvolvedRepository<'_> {
       .collect();
 
     let filtered = Select::new::<DbBookInvolved>()
-      .column::<i32>(DbBookInvolved::TABLE_NAME, "fkperson")
-      .column::<i32>(DbBookInvolved::TABLE_NAME, "fkrole")
+      .column::<i32>(DbBookInvolved::TABLE_NAME, "person_id")
+      .column::<i32>(DbBookInvolved::TABLE_NAME, "role_id")
       .where_expression(involved_fks_in_ids(&involved))
-      .where_expression(fk_book_equal_id(book_id))
+      .where_expression(book_id_equal_id(book_id))
       .query(self.client)
       .await?
       .into_iter()
@@ -182,32 +182,32 @@ fn involved_to_map(
   result_result
 }
 fn involved_ids_to_map(result: &mut HashMap<i32, HashMap<i32, Vec<i32>>>, book_involved: &DbBookInvolved) {
-  let book_item = result.get_mut(&book_involved.fk_book);
+  let book_item = result.get_mut(&book_involved.book_id);
   let Some(person_map) = book_item else {
     let mut person_map = HashMap::new();
-    person_map.insert(book_involved.fk_person, vec![book_involved.fk_role]);
-    result.insert(book_involved.fk_book, person_map);
+    person_map.insert(book_involved.person_id, vec![book_involved.role_id]);
+    result.insert(book_involved.book_id, person_map);
     return;
   };
 
-  let person_item = person_map.get_mut(&book_involved.fk_person);
+  let person_item = person_map.get_mut(&book_involved.person_id);
   let Some(roles) = person_item else {
-    person_map.insert(book_involved.fk_person, vec![book_involved.fk_role]);
+    person_map.insert(book_involved.person_id, vec![book_involved.role_id]);
     return;
   };
-  if roles.contains(&book_involved.fk_role) {
+  if roles.contains(&book_involved.role_id) {
     return;
   }
-  roles.push(book_involved.fk_role);
+  roles.push(book_involved.role_id);
 }
-fn fk_book_equal_id<'a>(book_id: i32) -> Expression<'a> {
-  Expression::new(ValueEqual::new((DbBookInvolved::TABLE_NAME, "fkbook"), book_id))
+fn book_id_equal_id<'a>(book_id: i32) -> Expression<'a> {
+  Expression::new(ValueEqual::new((DbBookInvolved::TABLE_NAME, "book_id"), book_id))
 }
 fn involved_fks_in_ids(involved_ids: &[(i32, i32)]) -> Expression<'_> {
   Expression::new(ValueIn::new(
     (
-      (DbBookInvolved::TABLE_NAME, "fkperson"),
-      (DbBookInvolved::TABLE_NAME, "fkrole"),
+      (DbBookInvolved::TABLE_NAME, "person_id"),
+      (DbBookInvolved::TABLE_NAME, "role_id"),
     ),
     involved_ids,
   ))

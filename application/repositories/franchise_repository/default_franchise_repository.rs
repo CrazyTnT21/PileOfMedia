@@ -60,9 +60,9 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&franchises, &translations);
 
     let mut extra_translations = Select::new::<DbFranchiseTranslation>()
-      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "translation_id")
       .columns::<DbFranchiseTranslation>(DbFranchiseTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -70,7 +70,7 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
 
     let translations: Vec<(Language, i32, FranchiseTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let available = self.available_languages(&franchise_ids).await?;
@@ -92,7 +92,7 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
       .distinct_on(DbFranchise::TABLE_NAME, "id")
       .inner_join::<DbFranchiseTranslation>(
         None,
-        Expression::new(ValueEqual::new((DbFranchise::TABLE_NAME, "id"), id)).and(franchise_id_equal_fk_translation()),
+        Expression::new(ValueEqual::new((DbFranchise::TABLE_NAME, "id"), id)).and(franchise_id_equal_translation_id()),
       )
       .get_single_destruct(self.client)
       .await?;
@@ -102,7 +102,7 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
     let mut translations = Select::new::<DbFranchiseTranslation>()
       .columns::<DbFranchiseTranslation>(DbFranchiseTranslation::TABLE_NAME)
       .where_expression(
-        Expression::value_equal(DbFranchiseTranslation::TABLE_NAME, "fktranslation", item.id)
+        Expression::value_equal(DbFranchiseTranslation::TABLE_NAME, "translation_id", item.id)
           .and(in_languages(&db_languages)),
       )
       .query_destruct(self.client)
@@ -112,9 +112,9 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
     let [item] = items;
 
     let mut extra_translations = Select::new::<DbFranchiseTranslation>()
-      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "translation_id")
       .columns::<DbFranchiseTranslation>(DbFranchiseTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -157,9 +157,9 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&franchises, &translations);
 
     let mut extra_translations = Select::new::<DbFranchiseTranslation>()
-      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "translation_id")
       .columns::<DbFranchiseTranslation>(DbFranchiseTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -167,7 +167,7 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
 
     let translations: Vec<(Language, i32, FranchiseTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let translations = map_translation(&franchises, translations);
@@ -207,9 +207,9 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&franchises, &translations);
 
     let mut extra_translations = Select::new::<DbFranchiseTranslation>()
-      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbFranchiseTranslation::TABLE_NAME, "translation_id")
       .columns::<DbFranchiseTranslation>(DbFranchiseTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -217,7 +217,7 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
 
     let translations: Vec<(Language, i32, FranchiseTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let translations = map_translation(&franchises, translations);
@@ -246,10 +246,10 @@ impl FranchiseRepository for DefaultFranchiseRepository<'_> {
 impl DefaultFranchiseRepository<'_> {
   async fn available_languages(&self, ids: &[i32]) -> Result<HashMap<i32, Vec<Language>>, Box<dyn Error>> {
     let available_translations = Select::new::<DbFranchiseTranslation>()
-      .column::<i32>(DbFranchiseTranslation::TABLE_NAME, "fktranslation")
+      .column::<i32>(DbFranchiseTranslation::TABLE_NAME, "translation_id")
       .column::<DbLanguage>(DbFranchiseTranslation::TABLE_NAME, "language")
       .where_expression(Expression::new(ValueIn::new(
-        (DbFranchiseTranslation::TABLE_NAME, "fktranslation"),
+        (DbFranchiseTranslation::TABLE_NAME, "translation_id"),
         ids,
       )))
       .query(self.client)
@@ -269,7 +269,7 @@ fn franchise_translation_select<'a>(
 ) -> Select<'a, (DbFranchiseTranslation,)> {
   Select::new::<DbFranchiseTranslation>()
     .columns::<DbFranchiseTranslation>(DbFranchiseTranslation::TABLE_NAME)
-    .where_expression(fk_translation_in_ids(franchise_ids))
+    .where_expression(translation_id_in_ids(franchise_ids))
     .where_expression(in_languages(db_languages))
 }
 fn map_translation(
@@ -286,10 +286,10 @@ fn map_translation(
   }
   new_translations
 }
-fn franchise_id_equal_fk_translation<'a>() -> Expression<'a> {
+fn franchise_id_equal_translation_id<'a>() -> Expression<'a> {
   Expression::column_equal(
     (DbFranchise::TABLE_NAME, "id"),
-    (DbFranchiseTranslation::TABLE_NAME, "fktranslation"),
+    (DbFranchiseTranslation::TABLE_NAME, "translation_id"),
   )
 }
 fn franchise_translation_with_name(name: &String) -> Expression<'_> {
@@ -302,7 +302,7 @@ fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
   select.inner_join::<DbFranchiseTranslation>(
     None,
     Expression::value_i_like((DbFranchiseTranslation::TABLE_NAME, "name"), name)
-      .and(franchise_id_equal_fk_translation()),
+      .and(franchise_id_equal_translation_id()),
   )
 }
 fn to_entities(
@@ -322,7 +322,7 @@ fn to_entities(
     .collect()
 }
 fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<T>) -> Select<T> {
-  select.inner_join::<DbFranchiseTranslation>(None, franchise_id_equal_fk_translation())
+  select.inner_join::<DbFranchiseTranslation>(None, franchise_id_equal_translation_id())
 }
 fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new(
@@ -330,8 +330,8 @@ fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
     languages,
   ))
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
-  Expression::new(ValueIn::new((DbFranchiseTranslation::TABLE_NAME, "fktranslation"), ids))
+fn translation_id_in_ids(ids: &[i32]) -> Expression<'_> {
+  Expression::new(ValueIn::new((DbFranchiseTranslation::TABLE_NAME, "translation_id"), ids))
 }
 fn id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbFranchise::TABLE_NAME, "id"), ids))
@@ -342,7 +342,7 @@ fn no_translation_ids(franchise_ids: &[DbFranchise], translations: &[DbFranchise
     .filter_map(|x| {
       translations
         .iter()
-        .find(|y| y.fk_translation == x.id)
+        .find(|y| y.translation_id == x.id)
         .map_or(Some(x.id), |_| None)
     })
     .collect()

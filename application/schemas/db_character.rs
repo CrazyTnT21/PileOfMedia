@@ -12,8 +12,7 @@ pub struct DbCharacter {
   pub id: i32,
   pub birthday: Option<NaiveDate>,
   pub height: Option<i32>,
-  #[rename = "fkimage"]
-  pub fk_image: Option<i32>,
+  pub image_id: Option<i32>,
 }
 
 impl DbCharacter {

@@ -18,8 +18,7 @@ pub struct DbBook {
   pub id: i32,
   pub published: Option<NaiveDate>,
   pub slug: String,
-  #[rename = "fkfranchise"]
-  pub fk_franchise: Option<i32>,
+  pub franchise_id: Option<i32>,
 }
 
 impl DbBook {

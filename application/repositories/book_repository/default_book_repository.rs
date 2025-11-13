@@ -100,7 +100,7 @@ impl BookRepository for DefaultBookRepository<'_> {
       .distinct_on(DbBook::TABLE_NAME, "id")
       .inner_join::<DbBookTranslation>(
         None,
-        Expression::new(ValueEqual::new((DbBook::TABLE_NAME, "id"), db_id)).and(book_id_equal_fk_translation()),
+        Expression::new(ValueEqual::new((DbBook::TABLE_NAME, "id"), db_id)).and(book_id_equal_translation_id()),
       )
       .get_single_destruct(self.client)
       .await?;
@@ -109,7 +109,7 @@ impl BookRepository for DefaultBookRepository<'_> {
     };
     let translations = Select::new::<DbBookTranslation>()
       .columns::<DbBookTranslation>(DbBookTranslation::TABLE_NAME)
-      .where_expression(fk_translation_equal_id(item.id).and(in_languages(&db_languages)))
+      .where_expression(translation_id_equal_id(item.id).and(in_languages(&db_languages)))
       .query_destruct(self.client)
       .await?;
 
@@ -119,13 +119,13 @@ impl BookRepository for DefaultBookRepository<'_> {
     let translations: Vec<(Language, BookTranslation)> = translations
       .into_iter()
       .map(|x| {
-        let image = images.iter().find(|y| y.id as i32 == x.fk_cover).unwrap().clone();
+        let image = images.iter().find(|y| y.id as i32 == x.cover_id).unwrap().clone();
         (Language::from(x.language), x.to_entity(image))
       })
       .collect();
     let mut available = self.available_languages(&[db_id]).await?;
 
-    let franchise = match item.fk_franchise {
+    let franchise = match item.franchise_id {
       None => None,
       Some(x) => Some(self.franchise_repository.get_by_id(x as u32, languages).await?.unwrap()),
     };
@@ -165,8 +165,8 @@ impl BookRepository for DefaultBookRepository<'_> {
       .await?;
 
     let book_ids: Box<[u32]> = Select::new::<DbBookTranslation>()
-      .column::<i32>(DbBookTranslation::TABLE_NAME, "fktranslation")
-      .distinct_on(DbBookTranslation::TABLE_NAME, "fktranslation")
+      .column::<i32>(DbBookTranslation::TABLE_NAME, "translation_id")
+      .distinct_on(DbBookTranslation::TABLE_NAME, "translation_id")
       .where_expression(book_translation_with_title(&title))
       .pagination(pagination)
       .query_destruct(self.client)
@@ -195,7 +195,7 @@ impl BookRepository for DefaultBookRepository<'_> {
     let mut translations = Select::new::<DbBookTranslation>()
       .columns::<DbBookTranslation>(DbBookTranslation::TABLE_NAME)
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookTranslation::TABLE_NAME, "fktranslation"),
+        (DbBookTranslation::TABLE_NAME, "translation_id"),
         &db_ids,
       )))
       .where_expression(in_languages(&db_languages))
@@ -204,24 +204,24 @@ impl BookRepository for DefaultBookRepository<'_> {
 
     let no_translations: Vec<i32> = no_translation_ids(&books, &translations);
     let mut extra_translations = Select::new::<DbBookTranslation>()
-      .distinct_on(DbBookTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbBookTranslation::TABLE_NAME, "translation_id")
       .columns::<DbBookTranslation>(DbBookTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
     translations.append(&mut extra_translations);
 
-    let image_ids: Vec<u32> = translations.iter().map(|x| x.fk_cover as u32).collect();
+    let image_ids: Vec<u32> = translations.iter().map(|x| x.cover_id as u32).collect();
     let images = self.image_repository.get_by_ids(&image_ids).await?;
     let translations: Vec<(Language, i32, BookTranslation)> = translations
       .into_iter()
       .map(|x| {
-        let fk_cover = x.fk_cover;
+        let cover_id = x.cover_id;
         (
           x.language.into(),
-          x.fk_translation,
-          x.to_entity(images.iter().find(|y| y.id as i32 == fk_cover).unwrap().clone()),
+          x.translation_id,
+          x.to_entity(images.iter().find(|y| y.id as i32 == cover_id).unwrap().clone()),
         )
       })
       .collect();
@@ -275,17 +275,17 @@ impl BookRepository for DefaultBookRepository<'_> {
         None,
         Expression::new(ColumnEqual::new(
           (DbRating::TABLE_NAME, "id"),
-          (DbBookStatistic::TABLE_NAME, "fkrating"),
+          (DbBookStatistic::TABLE_NAME, "rating_id"),
         )),
       )
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookStatistic::TABLE_NAME, "fkbook"),
+        (DbBookStatistic::TABLE_NAME, "book_id"),
         &ids,
       )))
       .query(self.client)
       .await?
       .into_iter()
-      .map(|(statistic, rating)| (statistic.fk_book as u32, statistic.to_entity(rating.to_entity())))
+      .map(|(statistic, rating)| (statistic.book_id as u32, statistic.to_entity(rating.to_entity())))
       .collect();
 
     Ok(statistics)
@@ -311,10 +311,10 @@ impl BookRepository for DefaultBookRepository<'_> {
 impl DefaultBookRepository<'_> {
   async fn available_languages(&self, ids: &[i32]) -> Result<HashMap<i32, Vec<Language>>, Box<dyn Error>> {
     let available_translations = Select::new::<DbBookTranslation>()
-      .column::<i32>(DbBookTranslation::TABLE_NAME, "fktranslation")
+      .column::<i32>(DbBookTranslation::TABLE_NAME, "translation_id")
       .column::<DbLanguage>(DbBookTranslation::TABLE_NAME, "language")
       .where_expression(Expression::new(ValueIn::new(
-        (DbBookTranslation::TABLE_NAME, "fktranslation"),
+        (DbBookTranslation::TABLE_NAME, "translation_id"),
         ids,
       )))
       .query(self.client)
@@ -332,10 +332,10 @@ fn book_slug_equal_slug(slug: &str) -> Expression<'_> {
   Expression::value_equal(DbBook::TABLE_NAME, "slug", slug)
 }
 
-fn book_id_equal_fk_translation<'a>() -> Expression<'a> {
+fn book_id_equal_translation_id<'a>() -> Expression<'a> {
   Expression::column_equal(
     (DbBook::TABLE_NAME, "id"),
-    (DbBookTranslation::TABLE_NAME, "fktranslation"),
+    (DbBookTranslation::TABLE_NAME, "translation_id"),
   )
 }
 fn book_translation_with_title(title: &String) -> Expression<'_> {
@@ -345,8 +345,8 @@ fn book_translation_with_title(title: &String) -> Expression<'_> {
 fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbBookTranslation::TABLE_NAME, "language"), languages))
 }
-fn fk_translation_equal_id<'a>(id: i32) -> Expression<'a> {
-  Expression::value_equal(DbBookTranslation::TABLE_NAME, "fktranslation", id)
+fn translation_id_equal_id<'a>(id: i32) -> Expression<'a> {
+  Expression::value_equal(DbBookTranslation::TABLE_NAME, "translation_id", id)
 }
 
 fn map_translation(
@@ -379,7 +379,7 @@ fn to_entities(
     .map(|book| {
       let id = book.id;
       let franchise = book
-        .fk_franchise
+        .franchise_id
         .map(|x| franchises.iter().find(|y| y.id as i32 == x).unwrap().clone());
       book.to_entity(
         AvailableTranslations {
@@ -398,7 +398,7 @@ fn to_entities(
 }
 
 fn image_ids(items: &[DbBookTranslation]) -> Vec<u32> {
-  let mut result = items.iter().map(|x| x.fk_cover as u32).collect::<Vec<u32>>();
+  let mut result = items.iter().map(|x| x.cover_id as u32).collect::<Vec<u32>>();
   result.sort_unstable();
   result.dedup();
   result
@@ -407,14 +407,14 @@ fn image_ids(items: &[DbBookTranslation]) -> Vec<u32> {
 fn franchise_ids(items: &[DbBook]) -> Vec<u32> {
   let mut result = items
     .iter()
-    .filter_map(|x| x.fk_franchise.map(|x| x as u32))
+    .filter_map(|x| x.franchise_id.map(|x| x as u32))
     .collect::<Vec<u32>>();
   result.sort_unstable();
   result.dedup();
   result
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
-  Expression::new(ValueIn::new((DbBookTranslation::TABLE_NAME, "fktranslation"), ids))
+fn translation_id_in_ids(ids: &[i32]) -> Expression<'_> {
+  Expression::new(ValueIn::new((DbBookTranslation::TABLE_NAME, "translation_id"), ids))
 }
 fn no_translation_ids(book_ids: &[DbBook], translations: &[DbBookTranslation]) -> Vec<i32> {
   book_ids
@@ -422,7 +422,7 @@ fn no_translation_ids(book_ids: &[DbBook], translations: &[DbBookTranslation]) -
     .filter_map(|x| {
       translations
         .iter()
-        .find(|y| y.fk_translation == x.id)
+        .find(|y| y.translation_id == x.id)
         .map_or(Some(x.id), |_| None)
     })
     .collect()

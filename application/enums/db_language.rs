@@ -28,7 +28,7 @@ enum_from_sql!(DbLanguage, "language");
 
 impl DbLanguage {
   pub fn code(&self) -> String {
-    Into::<Language>::into(*self).language_code().to_uppercase()
+    Into::<Language>::into(*self).language_code().to_string()
   }
 }
 impl FromStr for DbLanguage {

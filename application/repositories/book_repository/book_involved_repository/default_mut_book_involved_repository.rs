@@ -32,7 +32,7 @@ impl MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'_> {
       .iter()
       .map(|x| (x.person_id as i32, x.role_id as i32))
       .collect();
-    let mut insert = Insert::new::<DbBookInvolved>(["fkbook", "fkperson", "fkrole"]);
+    let mut insert = Insert::new::<DbBookInvolved>(["book_id", "person_id", "role_id"]);
     involved.iter().for_each(|(x, y)| {
       insert.values_ref([&book_id, x, y]);
     });
@@ -48,10 +48,10 @@ impl MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'_> {
       .collect();
 
     Delete::new::<DbBookInvolved>(
-      Expression::value_equal(DbBookInvolved::TABLE_NAME, "fkbook", book_id).and(Expression::new(ValueIn::new(
+      Expression::value_equal(DbBookInvolved::TABLE_NAME, "book_id", book_id).and(Expression::new(ValueIn::new(
         (
-          (DbBookInvolved::TABLE_NAME, "fkperson"),
-          (DbBookInvolved::TABLE_NAME, "fkrole"),
+          (DbBookInvolved::TABLE_NAME, "person_id"),
+          (DbBookInvolved::TABLE_NAME, "role_id"),
         ),
         &involved,
       ))),
@@ -65,7 +65,7 @@ impl MutBookInvolvedRepository for DefaultMutBookInvolvedRepository<'_> {
     let book_ids = to_i32(book_ids);
 
     Delete::new::<DbBookInvolved>(Expression::new(ValueIn::new(
-      (DbBookInvolved::TABLE_NAME, "fkbook"),
+      (DbBookInvolved::TABLE_NAME, "book_id"),
       &book_ids,
     )))
     .execute_transaction(self.transaction)

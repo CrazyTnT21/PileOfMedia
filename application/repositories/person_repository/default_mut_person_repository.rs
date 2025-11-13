@@ -56,7 +56,7 @@ impl MutPersonRepository for DefaultMutPersonRepository<'_> {
     let ids = to_i32(ids);
 
     Delete::new::<DbPersonTranslation>(Expression::new(ValueIn::new(
-      (DbPersonTranslation::TABLE_NAME, "fktranslation"),
+      (DbPersonTranslation::TABLE_NAME, "translation_id"),
       &ids,
     )))
     .execute_transaction(self.transaction)
@@ -72,7 +72,7 @@ impl MutPersonRepository for DefaultMutPersonRepository<'_> {
 impl DefaultMutPersonRepository<'_> {
   async fn insert_person(&self, item: &CreatePartialPerson) -> Result<i32, Box<dyn Error>> {
     let image_id = item.image.as_ref().map(|x| x.id as i32);
-    let id = Insert::new::<DbPerson>(["name", "firstname", "lastname", "birthday", "height", "fkimage"])
+    let id = Insert::new::<DbPerson>(["name", "first_name", "last_name", "birthday", "height", "image_id"])
       .values([
         &item.name,
         &item.first_name,
@@ -92,7 +92,7 @@ impl DefaultMutPersonRepository<'_> {
       .iter()
       .map(|(language, item)| (DbLanguage::from(*language), item))
       .collect();
-    let mut insert = Insert::new::<DbPersonTranslation>(["description", "fktranslation", "language"]);
+    let mut insert = Insert::new::<DbPersonTranslation>(["description", "translation_id", "language"]);
     for (language, item) in &translations {
       insert.values_ref([&item.description, &id, language]);
     }

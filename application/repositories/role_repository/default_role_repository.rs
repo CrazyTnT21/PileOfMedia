@@ -60,9 +60,9 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&roles, &translations);
 
     let mut extra_translations = Select::new::<DbRoleTranslation>()
-      .distinct_on(DbRoleTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbRoleTranslation::TABLE_NAME, "translation_id")
       .columns::<DbRoleTranslation>(DbRoleTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -70,7 +70,7 @@ impl RoleRepository for DefaultRoleRepository<'_> {
 
     let translations: Vec<(Language, i32, RoleTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let available = self.available_languages(&role_ids).await?;
@@ -89,7 +89,7 @@ impl RoleRepository for DefaultRoleRepository<'_> {
       .distinct_on(DbRole::TABLE_NAME, "id")
       .inner_join::<DbRoleTranslation>(
         None,
-        Expression::new(ValueEqual::new((DbRole::TABLE_NAME, "id"), id)).and(role_id_equal_fk_translation()),
+        Expression::new(ValueEqual::new((DbRole::TABLE_NAME, "id"), id)).and(role_id_equal_translation_id()),
       )
       .get_single_destruct(self.client)
       .await?;
@@ -99,7 +99,7 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let mut translations = Select::new::<DbRoleTranslation>()
       .columns::<DbRoleTranslation>(DbRoleTranslation::TABLE_NAME)
       .where_expression(
-        Expression::value_equal(DbRoleTranslation::TABLE_NAME, "fktranslation", item.id)
+        Expression::value_equal(DbRoleTranslation::TABLE_NAME, "translation_id", item.id)
           .and(in_languages(&db_languages)),
       )
       .query_destruct(self.client)
@@ -109,9 +109,9 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let [item] = items;
 
     let mut extra_translations = Select::new::<DbRoleTranslation>()
-      .distinct_on(DbRoleTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbRoleTranslation::TABLE_NAME, "translation_id")
       .columns::<DbRoleTranslation>(DbRoleTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -154,9 +154,9 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&roles, &translations);
 
     let mut extra_translations = Select::new::<DbRoleTranslation>()
-      .distinct_on(DbRoleTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbRoleTranslation::TABLE_NAME, "translation_id")
       .columns::<DbRoleTranslation>(DbRoleTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -164,7 +164,7 @@ impl RoleRepository for DefaultRoleRepository<'_> {
 
     let translations: Vec<(Language, i32, RoleTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let translations = map_translation(&roles, translations);
@@ -204,9 +204,9 @@ impl RoleRepository for DefaultRoleRepository<'_> {
     let no_translations: Vec<i32> = no_translation_ids(&roles, &translations);
 
     let mut extra_translations = Select::new::<DbRoleTranslation>()
-      .distinct_on(DbRoleTranslation::TABLE_NAME, "fktranslation")
+      .distinct_on(DbRoleTranslation::TABLE_NAME, "translation_id")
       .columns::<DbRoleTranslation>(DbRoleTranslation::TABLE_NAME)
-      .where_expression(fk_translation_in_ids(&no_translations))
+      .where_expression(translation_id_in_ids(&no_translations))
       .query_destruct(self.client)
       .await?;
 
@@ -214,7 +214,7 @@ impl RoleRepository for DefaultRoleRepository<'_> {
 
     let translations: Vec<(Language, i32, RoleTranslation)> = translations
       .into_iter()
-      .map(|x| (x.language.into(), x.fk_translation, x.to_entity()))
+      .map(|x| (x.language.into(), x.translation_id, x.to_entity()))
       .collect();
 
     let translations = map_translation(&roles, translations);
@@ -240,10 +240,10 @@ impl RoleRepository for DefaultRoleRepository<'_> {
 impl DefaultRoleRepository<'_> {
   async fn available_languages(&self, ids: &[i32]) -> Result<HashMap<i32, Vec<Language>>, Box<dyn Error>> {
     let available_translations = Select::new::<DbRoleTranslation>()
-      .column::<i32>(DbRoleTranslation::TABLE_NAME, "fktranslation")
+      .column::<i32>(DbRoleTranslation::TABLE_NAME, "translation_id")
       .column::<DbLanguage>(DbRoleTranslation::TABLE_NAME, "language")
       .where_expression(Expression::new(ValueIn::new(
-        (DbRoleTranslation::TABLE_NAME, "fktranslation"),
+        (DbRoleTranslation::TABLE_NAME, "translation_id"),
         ids,
       )))
       .query(self.client)
@@ -263,7 +263,7 @@ fn role_translation_select<'a>(
 ) -> Select<'a, (DbRoleTranslation,)> {
   Select::new::<DbRoleTranslation>()
     .columns::<DbRoleTranslation>(DbRoleTranslation::TABLE_NAME)
-    .where_expression(fk_translation_in_ids(role_ids))
+    .where_expression(translation_id_in_ids(role_ids))
     .where_expression(in_languages(db_languages))
 }
 fn map_translation(
@@ -280,10 +280,10 @@ fn map_translation(
   }
   new_translations
 }
-fn role_id_equal_fk_translation<'a>() -> Expression<'a> {
+fn role_id_equal_translation_id<'a>() -> Expression<'a> {
   Expression::column_equal(
     (DbRole::TABLE_NAME, "id"),
-    (DbRoleTranslation::TABLE_NAME, "fktranslation"),
+    (DbRoleTranslation::TABLE_NAME, "translation_id"),
   )
 }
 fn role_translation_with_name(name: &String) -> Expression<'_> {
@@ -295,7 +295,7 @@ fn inner_join_translation_on_name<'a, T: FromRow<DbType = T> + CombinedType>(
 ) -> Select<'a, T> {
   select.inner_join::<DbRoleTranslation>(
     None,
-    Expression::value_i_like((DbRoleTranslation::TABLE_NAME, "name"), name).and(role_id_equal_fk_translation()),
+    Expression::value_i_like((DbRoleTranslation::TABLE_NAME, "name"), name).and(role_id_equal_translation_id()),
   )
 }
 fn to_entities(
@@ -315,13 +315,13 @@ fn to_entities(
     .collect()
 }
 fn inner_join_translation<T: FromRow<DbType = T> + CombinedType>(select: Select<T>) -> Select<T> {
-  select.inner_join::<DbRoleTranslation>(None, role_id_equal_fk_translation())
+  select.inner_join::<DbRoleTranslation>(None, role_id_equal_translation_id())
 }
 fn in_languages(languages: &[DbLanguage]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "language"), languages))
 }
-fn fk_translation_in_ids(ids: &[i32]) -> Expression<'_> {
-  Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "fktranslation"), ids))
+fn translation_id_in_ids(ids: &[i32]) -> Expression<'_> {
+  Expression::new(ValueIn::new((DbRoleTranslation::TABLE_NAME, "translation_id"), ids))
 }
 fn id_in_ids(ids: &[i32]) -> Expression<'_> {
   Expression::new(ValueIn::new((DbRole::TABLE_NAME, "id"), ids))
@@ -332,7 +332,7 @@ fn no_translation_ids(role_ids: &[DbRole], translations: &[DbRoleTranslation]) -
     .filter_map(|x| {
       translations
         .iter()
-        .find(|y| y.fk_translation == x.id)
+        .find(|y| y.translation_id == x.id)
         .map_or(Some(x.id), |_| None)
     })
     .collect()

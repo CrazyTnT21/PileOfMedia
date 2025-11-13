@@ -4,10 +4,9 @@ use domain::entities::image::image_data::ImageData;
 use from_row::FromRow;
 
 #[derive(Debug, FromRow)]
-#[rename = "imagedata"]
+#[rename = "image_data"]
 pub struct DbImageData {
-  #[rename = "fkimage"]
-  pub fk_image: i32,
+  pub image_id: i32,
   pub uri: String,
   pub width: i16,
   pub height: i16,

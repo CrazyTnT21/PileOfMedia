@@ -32,7 +32,7 @@ impl<'a> DefaultMutUserRepository<'a> {
 #[async_trait]
 impl MutUserRepository for DefaultMutUserRepository<'_> {
   async fn create(&self, user: CreatePartialUser) -> Result<User, Box<dyn Error>> {
-    let id: i32 = Insert::new::<DbUser>(["name", "description", "fkprofilepicture"])
+    let id: i32 = Insert::new::<DbUser>(["name", "description", "profile_picture_id"])
       .values([
         &user.name,
         &user.description,

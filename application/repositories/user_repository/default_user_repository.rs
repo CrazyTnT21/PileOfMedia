@@ -59,7 +59,7 @@ impl UserRepository for DefaultUserRepository<'_> {
       .where_expression(Expression::new(ValueEqual::new((DbUser::TABLE_NAME, "id"), id)))
       .get_single(self.client)
       .await?;
-    let image_id = user.as_ref().and_then(|x| x.0.fk_profile_picture);
+    let image_id = user.as_ref().and_then(|x| x.0.profile_picture_id);
     let image = match image_id {
       None => None,
       Some(id) => self.image_repository.get_by_id(id as u32).await?,
@@ -135,7 +135,7 @@ impl DefaultUserRepository<'_> {
   async fn to_entities(&self, items: Vec<(DbUser,)>) -> Result<Vec<User>, Box<dyn Error>> {
     let image_ids: Vec<u32> = items
       .iter()
-      .filter_map(|x| x.0.fk_profile_picture.map(|x| x as u32))
+      .filter_map(|x| x.0.profile_picture_id.map(|x| x as u32))
       .collect();
 
     let mut images = match image_ids.is_empty() {
@@ -148,7 +148,7 @@ impl DefaultUserRepository<'_> {
         .map(|x| {
           let image_index = x
             .0
-            .fk_profile_picture
+            .profile_picture_id
             .and_then(|x| images.iter().position(|y| y.id == x as u32));
           let image = image_index.map(|x| images.swap_remove(x));
           x.0.to_entity(image)

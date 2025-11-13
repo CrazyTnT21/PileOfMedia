@@ -41,8 +41,8 @@ impl UserBookRepository for DefaultUserBookRepository<'_> {
     let book_id = book_id as i32;
     let items = Select::new::<DbUserBook>()
       .columns_table::<DbUserBook>()
-      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "fkbook", book_id))
-      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "fkuser", user_id))
+      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "book_id", book_id))
+      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "user_id", user_id))
       .get_single_destruct(self.client)
       .await?;
 
@@ -52,7 +52,7 @@ impl UserBookRepository for DefaultUserBookRepository<'_> {
 
     let book = self
       .book_repository
-      .get_by_id(item.fk_book as u32, languages)
+      .get_by_id(item.book_id as u32, languages)
       .await?
       .unwrap();
     let result = item.to_entity(book);
@@ -69,11 +69,11 @@ impl UserBookRepository for DefaultUserBookRepository<'_> {
     let book_ids = to_i32(book_ids);
     let items = Select::new::<DbUserBook>()
       .columns_table::<DbUserBook>()
-      .where_expression(Expression::value_in((DbUserBook::TABLE_NAME, "fkbook"), &book_ids))
-      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "fkuser", user_id))
+      .where_expression(Expression::value_in((DbUserBook::TABLE_NAME, "book_id"), &book_ids))
+      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "user_id", user_id))
       .query_destruct(self.client)
       .await?;
-    let book_ids: Vec<u32> = items.iter().map(|x| x.fk_book as u32).collect();
+    let book_ids: Vec<u32> = items.iter().map(|x| x.book_id as u32).collect();
     let books = self.book_repository.get_by_ids(&book_ids, languages).await?;
 
     let user_books = to_user_book(items, books);
@@ -84,18 +84,18 @@ impl UserBookRepository for DefaultUserBookRepository<'_> {
     let user_id = user_id as i32;
 
     let user_books = Select::new::<DbUserBook>()
-      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "fkuser", user_id))
+      .where_expression(Expression::value_equal(DbUserBook::TABLE_NAME, "user_id", user_id))
       .columns_table::<DbUserBook>()
       .query_destruct(self.client)
       .await?;
 
-    let book_ids: Vec<u32> = user_books.iter().map(|x| x.fk_book as u32).collect();
+    let book_ids: Vec<u32> = user_books.iter().map(|x| x.book_id as u32).collect();
     let books = self.book_repository.get_by_ids(&book_ids, languages).await?;
 
     let items = user_books
       .into_iter()
       .map(|x| {
-        let book_id = x.fk_book;
+        let book_id = x.book_id;
         x.to_entity(books.iter().find(|y| y.id as i32 == book_id).unwrap().clone())
       })
       .collect();
@@ -110,19 +110,19 @@ impl UserBookRepository for DefaultUserBookRepository<'_> {
     let user_ids = to_i32(user_ids);
     let db_user_books = Select::new::<DbUserBook>()
       .columns_table::<DbUserBook>()
-      .where_expression(Expression::value_in(column::<DbUserBook>("fkuser"), &user_ids))
+      .where_expression(Expression::value_in(column::<DbUserBook>("user_id"), &user_ids))
       .query_destruct(self.client)
       .await?;
 
-    let book_ids: Vec<u32> = db_user_books.iter().map(|x| x.fk_book as u32).collect();
+    let book_ids: Vec<u32> = db_user_books.iter().map(|x| x.book_id as u32).collect();
     let books = self.book_repository.get_by_ids(&book_ids, languages).await?;
 
     let user_books: Vec<(u32, UserBook)> = db_user_books
       .into_iter()
       .map(|x| {
-        let book_id = x.fk_book as u32;
+        let book_id = x.book_id as u32;
         (
-          x.fk_user as u32,
+          x.user_id as u32,
           x.to_entity(books.iter().find(|y| y.id == book_id).unwrap().clone()),
         )
       })
@@ -140,10 +140,10 @@ impl UserBookRepository for DefaultUserBookRepository<'_> {
       }
     }
     let filtered = Select::new::<DbUserBook>()
-      .column::<i32>(DbUserBook::TABLE_NAME, "fkuser")
-      .column::<i32>(DbUserBook::TABLE_NAME, "fkbook")
+      .column::<i32>(DbUserBook::TABLE_NAME, "user_id")
+      .column::<i32>(DbUserBook::TABLE_NAME, "book_id")
       .where_expression(Expression::value_in(
-        (column::<DbUserBook>("fkuser"), column::<DbUserBook>("fkbook")),
+        (column::<DbUserBook>("user_id"), column::<DbUserBook>("book_id")),
         &result,
       ))
       .query(self.client)
@@ -161,7 +161,7 @@ fn to_user_book(items: Vec<DbUserBook>, mut books: Vec<Book>) -> Vec<UserBook> {
   items
     .into_iter()
     .map(|x| {
-      let book_id = x.fk_book as u32;
+      let book_id = x.book_id as u32;
       x.to_entity(books.remove(books.iter().position(|y| y.id == book_id).unwrap()))
     })
     .collect()

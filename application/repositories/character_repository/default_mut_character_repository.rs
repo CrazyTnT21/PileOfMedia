@@ -58,7 +58,7 @@ impl MutCharacterRepository for DefaultMutCharacterRepository<'_> {
     let ids = to_i32(ids);
 
     Delete::new::<DbCharacterTranslation>(Expression::new(ValueIn::new(
-      (DbCharacterTranslation::TABLE_NAME, "fktranslation"),
+      (DbCharacterTranslation::TABLE_NAME, "translation_id"),
       &ids,
     )))
     .execute_transaction(self.transaction)
@@ -74,7 +74,7 @@ impl MutCharacterRepository for DefaultMutCharacterRepository<'_> {
 impl DefaultMutCharacterRepository<'_> {
   async fn insert_character(&self, item: &CreatePartialCharacter) -> Result<i32, Box<dyn Error>> {
     let image_id = item.image.as_ref().map(|x| x.id as i32);
-    let id = Insert::new::<DbCharacter>(["birthday", "height", "fkimage"])
+    let id = Insert::new::<DbCharacter>(["birthday", "height", "image_id"])
       .values([&item.birthday, &item.height_cm.map(|x| x as i32), &image_id])
       .returning_transaction("id", self.transaction)
       .await?;
@@ -90,11 +90,11 @@ impl DefaultMutCharacterRepository<'_> {
 
     let mut insert = Insert::new::<DbCharacterTranslation>([
       "description",
-      "fktranslation",
+      "translation_id",
       "language",
       "name",
-      "firstname",
-      "lastname",
+      "first_name",
+      "last_name",
     ]);
     for (language, item) in &translations {
       insert.values_ref([

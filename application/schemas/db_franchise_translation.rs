@@ -6,11 +6,10 @@ use from_row::FromRow;
 use crate::enums::db_language::DbLanguage;
 
 #[derive(FromRow, Debug)]
-#[rename = "franchisetranslation"]
+#[rename = "franchise_translation"]
 pub struct DbFranchiseTranslation {
   pub name: String,
-  #[rename = "fktranslation"]
-  pub fk_translation: i32,
+  pub translation_id: i32,
   pub language: DbLanguage,
 }
 impl DbFranchiseTranslation {
