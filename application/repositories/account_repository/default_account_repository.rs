@@ -4,7 +4,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio_postgres::Client;
 
-use domain::entities::account::{Account, Email};
+use domain::entities::account::{Account};
 use domain::entities::user::User;
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
@@ -14,6 +14,7 @@ use repositories::user_repository::UserRepository;
 
 use crate::convert_to_sql::to_i32;
 use crate::schemas::db_account::DbAccount;
+use crate::schemas::db_user::DbUser;
 use crate::select::Select;
 use crate::select::conditions::value_equal::ValueEqual;
 use crate::select::conditions::value_in::ValueIn;
@@ -84,14 +85,10 @@ impl AccountRepository for DefaultAccountRepository<'_> {
     Ok(self.to_entities(accounts).await?)
   }
 
-  async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, Box<dyn Error>> {
-    let email = &email.0;
+  async fn get_by_username(&self, name: &str) -> Result<Option<Account>, Box<dyn Error>> {
     let account = Select::new::<DbAccount>()
       .columns::<DbAccount>(DbAccount::TABLE_NAME)
-      .where_expression(Expression::new(ValueEqual::new(
-        (DbAccount::TABLE_NAME, "email"),
-        email,
-      )))
+      .inner_join::<DbUser>(None, Expression::value_equal(DbUser::TABLE_NAME, "name", name))
       .get_single(self.client)
       .await?;
 
@@ -114,7 +111,10 @@ impl AccountRepository for DefaultAccountRepository<'_> {
 
     let count = Select::new::<DbAccount>()
       .column::<i32>(DbAccount::TABLE_NAME, "user_id")
-      .where_expression(Expression::new(ValueIn::new((DbAccount::TABLE_NAME, "user_id"), &users)))
+      .where_expression(Expression::new(ValueIn::new(
+        (DbAccount::TABLE_NAME, "user_id"),
+        &users,
+      )))
       .query(self.client)
       .await?
       .into_iter()

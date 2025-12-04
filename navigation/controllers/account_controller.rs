@@ -23,7 +23,7 @@ use crate::openapi::responses::bad_request::BadRequest;
 use crate::openapi::responses::not_authorized::NotAuthorized;
 use crate::openapi::responses::server_error::ServerError;
 use domain::entities::account::create_account::CreateAccount;
-use domain::entities::account::{Email, Password};
+use domain::entities::account::{Password};
 use domain::entities::user::User;
 use services::account_service::AccountService;
 use services::account_service::mut_account_service::MutAccountService;
@@ -32,7 +32,7 @@ pub mod account_doc;
 
 #[derive(Serialize, Deserialize, Debug, ToSchema)]
 pub struct LoginData {
-  email: String,
+  username: String,
   password: String,
 }
 
@@ -90,12 +90,12 @@ async fn login(
   let pooled = app_state.pool.get().await.unwrap();
 
   let password = login_data.password;
-  let email = login_data.email;
+  let username = login_data.username;
 
   let account = {
     let service = get_service(&pooled);
     service
-      .login(&Email(email), &Password(password))
+      .login(&username, &Password(password))
       .await
       .map_err(convert_service_error)?
   };

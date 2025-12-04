@@ -546,8 +546,7 @@ create table "user"
   name               varchar(50) not null unique,
   joined             date        not null default (current_date),
   description        varchar(500),
-  profile_picture_id int references image (id),
-  deleted            boolean     not null default false
+  profile_picture_id int references image (id)
 );
 create table user_average
 (
@@ -637,7 +636,5 @@ create table friendship
 create table account
 (
   user_id  int                 not null primary key references "user" (id),
-  email    varchar(255) unique not null,
   password varchar(255)        not null
 );
-create index account_email_index on account using hash (email);

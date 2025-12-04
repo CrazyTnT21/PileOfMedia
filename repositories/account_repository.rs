@@ -2,7 +2,7 @@ use std::error::Error;
 
 use async_trait::async_trait;
 
-use domain::entities::account::{Account, Email};
+use domain::entities::account::{Account};
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 
@@ -13,6 +13,6 @@ pub trait AccountRepository: Send + Sync {
   async fn get(&self, pagination: Pagination) -> Result<ItemsTotal<Account>, Box<dyn Error>>;
   async fn get_by_user_id(&self, id: u32) -> Result<Option<Account>, Box<dyn Error>>;
   async fn get_by_user_ids(&self, ids: &[u32]) -> Result<Vec<Account>, Box<dyn Error>>;
-  async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, Box<dyn Error>>;
+  async fn get_by_username(&self, name: &str) -> Result<Option<Account>, Box<dyn Error>>;
   async fn filter_existing(&self, users: &[u32]) -> Result<Vec<u32>, Box<dyn Error>>;
 }

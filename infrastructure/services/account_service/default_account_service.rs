@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use async_trait::async_trait;
-use domain::entities::account::{Account, Email, Password};
+use domain::entities::account::{Account, Password};
 use domain::items_total::ItemsTotal;
 use domain::pagination::Pagination;
 use repositories::account_repository::AccountRepository;
@@ -31,19 +31,19 @@ impl AccountService for DefaultAccountService<'_> {
     Ok(self.account_repository.get_by_user_id(id).await?)
   }
 
-  async fn get_by_email(&self, email: &Email) -> Result<Option<Account>, ServiceError<AccountServiceError>> {
-    Ok(self.account_repository.get_by_email(email).await?)
+  async fn get_by_username(&self, name: &str) -> Result<Option<Account>, ServiceError<AccountServiceError>> {
+    Ok(self.account_repository.get_by_username(name).await?)
   }
 
   async fn login(
     &self,
-    email: &Email,
+    name: &str,
     given_password: &Password,
   ) -> Result<Account, ServiceError<AccountServiceError>> {
     let account = self
-      .get_by_email(email)
+      .get_by_username(name)
       .await?
-      .ok_or_else(unknown_email_or_invalid_password)?;
+      .ok_or_else(unknown_username_or_invalid_password)?;
 
     let hash = password_hash(&account.password.0)?;
 
@@ -51,7 +51,7 @@ impl AccountService for DefaultAccountService<'_> {
 
     match verified_password {
       Ok(()) => Ok(account),
-      Err(argon2::password_hash::Error::Password) => Err(unknown_email_or_invalid_password()),
+      Err(argon2::password_hash::Error::Password) => Err(unknown_username_or_invalid_password()),
       Err(e) => Err(ServiceError::ServerError(Box::new(e))),
     }
   }
@@ -61,6 +61,6 @@ fn password_hash(argon_password_hash: &str) -> Result<PasswordHash<'_>, ServiceE
   PasswordHash::new(argon_password_hash).map_err(|y| map_server_error(Box::new(y)))
 }
 
-const fn unknown_email_or_invalid_password() -> ServiceError<AccountServiceError> {
-  ServiceError::ClientError(AccountServiceError::UnknownEmailOrInvalidPassword)
+const fn unknown_username_or_invalid_password() -> ServiceError<AccountServiceError> {
+  ServiceError::ClientError(AccountServiceError::UnknownUsernameOrInvalidPassword)
 }

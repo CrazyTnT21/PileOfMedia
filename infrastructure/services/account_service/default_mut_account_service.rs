@@ -54,7 +54,6 @@ impl MutAccountService for DefaultMutAccountService<'_> {
     })?;
     let account = CreatePartialAccount {
       user,
-      email: data.email,
       password: hash_password(&data.password.0)?,
     };
     Ok(self.mut_account_repository.create(account).await?)
@@ -64,22 +63,22 @@ impl MutAccountService for DefaultMutAccountService<'_> {
 impl DefaultMutAccountService<'_> {
   async fn validate_create(&self, account: &CreateAccount) -> Result<(), ServiceError<MutAccountServiceError>> {
     let data = &account.account;
-    if data.email.0.is_empty() {
-      return Err(ClientError(MutAccountServiceError::InvalidEmail));
+    if data.user.name.is_empty() {
+      return Err(ClientError(MutAccountServiceError::InvalidUsername));
     };
     if data.password.0.is_empty() {
       return Err(ClientError(MutAccountServiceError::InvalidPassword));
     }
-    let exists_email = self
+    let exists_username = self
       .account_service
-      .get_by_email(&data.email)
+      .get_by_username(&data.user.name)
       .await
       .map_err(|x| match x {
         ClientError(x) => ClientError(OtherError(Box::new(x))),
         ServerError(x) => ServerError(x),
       })?;
-    if exists_email.is_some() {
-      return Err(ClientError(MutAccountServiceError::EmailAlreadyExists));
+    if exists_username.is_some() {
+      return Err(ClientError(MutAccountServiceError::UsernameAlreadyExists));
     };
     //TODO: username validation
     Ok(())

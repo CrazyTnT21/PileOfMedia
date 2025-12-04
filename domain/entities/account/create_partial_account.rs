@@ -1,4 +1,4 @@
-use crate::entities::account::{Email, Password};
+use crate::entities::account::{Password};
 use crate::entities::user::User;
 
 #[derive(Debug, Clone)]
@@ -6,6 +6,5 @@ use crate::entities::user::User;
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct CreatePartialAccount {
   pub user: User,
-  pub email: Email,
   pub password: Password,
 }

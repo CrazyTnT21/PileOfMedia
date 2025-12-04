@@ -1,4 +1,4 @@
-use crate::entities::account::{Email, Password};
+use crate::entities::account::{Password};
 use crate::entities::image::create_image::CreateImage;
 use crate::entities::user::create_user::CreateUserData;
 
@@ -15,7 +15,6 @@ pub struct CreateAccount {
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct CreateAccountData {
   pub user: CreateUserData,
-  pub email: Email,
   pub password: Password,
 }
 

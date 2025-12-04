@@ -5,7 +5,6 @@ use domain::available_translations::GenreAvailableTranslations;
 use domain::available_translations::PersonAvailableTranslations;
 use domain::available_translations::RoleAvailableTranslations;
 use domain::available_translations::ThemeAvailableTranslations;
-use domain::entities::account::Email;
 use domain::entities::account::Password;
 use domain::entities::account::create_account::CreateAccount;
 use domain::entities::account::create_account::CreateAccountData;
@@ -112,7 +111,6 @@ use crate::controllers::user_controller::user_doc::UserDoc;
     CreateUser,
     CreateUserData,
     CreateImage,
-    Email,
     Password,
     LoginData,
     LoginReturnData,
